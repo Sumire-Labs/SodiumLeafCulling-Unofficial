@@ -1,5 +1,3 @@
-import dev.kikugie.stonecutter.StonecutterSettings
-
 pluginManagement {
 	repositories {
 		mavenCentral()
@@ -14,21 +12,19 @@ pluginManagement {
 }
 
 plugins {
-	id("dev.kikugie.stonecutter") version "0.5-alpha.4"
+	id("dev.kikugie.stonecutter") version "0.9.1-beta.3"
 	id("org.gradle.toolchains.foojay-resolver-convention") version "0.9.0"
 }
 
-extensions.configure<StonecutterSettings> {
+stonecutter {
 	kotlinController = true
 	centralScript = "build.gradle.kts"
 	shared {
-		fun mc(version: String, vararg loaders: String) {
-			for (it in loaders) vers("$version-$it", version)
+		fun mc(mcVersion: String, vararg loaders: String) {
+			for (loader in loaders) version("$mcVersion-$loader", mcVersion)
 		}
 
-		mc("1.20.1", "forge")
-		mc("1.21.1", "fabric" , "neoforge")
-		//mc("26.1.1", "neoforge") // Requires Gradle 9.4 + Loom 1.15 - build separately
+		mc("26.1.1", "neoforge")
 	}
 	create(rootProject)
 }

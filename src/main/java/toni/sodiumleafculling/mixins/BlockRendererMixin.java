@@ -48,16 +48,14 @@ public abstract class BlockRendererMixin {
 
     #if AFTER_26_1_1
     // Sodium 0.8: BlockRenderer extends AbstractBlockRenderContext
-    // Redirect forceOpaque calculation to make surrounded leaves render as solid
-    @Shadow protected LevelSlice slice;
-    @Shadow protected BlockPos pos;
-
+    // Use accessor to reach parent class fields (slice, pos) since @Shadow can't find them in BlockRenderer directly
     @Redirect(method = "renderModel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/block/ModelBlockRenderer;forceOpaque(ZLnet/minecraft/world/level/block/state/BlockState;)Z"))
     private boolean inject$forceOpaque(boolean cutoutLeaves, BlockState state) {
         boolean original = net.minecraft.client.renderer.block.ModelBlockRenderer.forceOpaque(cutoutLeaves, state);
         if (!original && state.getBlock() instanceof LeavesBlock) {
+            var ctx = (AbstractBlockRenderContextAccessor) this;
             var quality = ((PerformanceSettingsAccessor) SodiumClientMod.options().performance).sodiumleafculling$getQuality();
-            if (quality.isSolid() && LeafCulling.surroundedByLeaves(this.slice, this.pos)) {
+            if (quality.isSolid() && LeafCulling.surroundedByLeaves(ctx.getSlice(), ctx.getPos())) {
                 return true;
             }
         }

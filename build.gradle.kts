@@ -11,26 +11,26 @@ val settings = object : TxniTemplateSettings {
 
 			if (mcVersion == "1.21.1")
 			{
-				deps.modImplementation(modrinth("sodium", "mc1.21.1-0.6.13-fabric"))
+				deps.implementation(modrinth("sodium", "mc1.21.1-0.6.13-fabric"))
 				deps.runtimeOnly(modrinth("moreculling", "0.27.1"))
 			}
 			else
 			{
-				deps.modImplementation(modrinth("sodium", "mc1.20.1-0.5.11"))
+				deps.implementation(modrinth("sodium", "mc1.20.1-0.5.11"))
 				deps.runtimeOnly(modrinth("moreculling", "0.24.0"))
-				deps.modImplementation(modrinth("indium", "1.0.34+mc1.20.1"))
+				deps.implementation(modrinth("indium", "1.0.34+mc1.20.1"))
 			}
 		}
 
 		override fun addForge(deps: DependencyHandlerScope) {
-			deps.modImplementation(modrinth("embeddium", "0.3.31+mc1.20.1"))
+			deps.implementation(modrinth("embeddium", "0.3.31+mc1.20.1"))
 			deps.compileOnly(deps.annotationProcessor("io.github.llamalad7:mixinextras-common:0.3.5")!!)
 			deps.include(deps.implementation("io.github.llamalad7:mixinextras-forge:0.3.5")!!)
 		}
 
 		override fun addNeo(deps: DependencyHandlerScope) {
 			if (mcVersion == "26.1.1") {
-				deps.implementation(modrinth("sodium", "mc26.1.1-0.8.9-neoforge"))
+				// Sodium added via modImplementation in dependencies block
 			} else {
 				deps.implementation(modrinth("sodium", "mc1.21.1-0.6.13-neoforge"))
 
@@ -76,8 +76,8 @@ plugins {
 	`maven-publish`
 	kotlin("jvm")
 	kotlin("plugin.serialization")
-	id("dev.kikugie.j52j") version "1.0"
-	id("dev.architectury.loom")
+	//id("dev.kikugie.j52j") version "1.0" // Incompatible with Gradle 9.x
+	id("dev.architectury.loom-no-remap")
 	id("me.modmuss50.mod-publish-plugin")
 	id("systems.manifold.manifold-gradle-plugin")
 }
@@ -103,6 +103,7 @@ class ModData {
 val mod = ModData()
 
 val mcVersion = stonecutter.current.project.substringBeforeLast('-')
+val isUnobfuscated = mcVersion.startsWith("26.")
 
 val loader = loom.platform.get().name.lowercase()
 val isFabric = loader == "fabric"
@@ -138,27 +139,14 @@ dependencies {
 	// apply the Manifold processor, do not remove this unless you want to swap back to Stonecutter preprocessor
 	implementation(annotationProcessor("systems.manifold:manifold-preprocessor:${manifold.manifoldVersion.get()}")!!)
 
-	@Suppress("UnstableApiUsage")
-	mappings(loom.layered {
-		officialMojangMappings()
-		val parchmentVersion = when (mcVersion) {
-			"1.18.2" -> "1.18.2:2022.11.06"
-			"1.19.2" -> "1.19.2:2022.11.27"
-			"1.20.1" -> "1.20.1:2023.09.03"
-			"1.21.1" -> "1.21:2024.07.28"
-			else -> "" // 26.1+ does not need Parchment (obfuscation removed)
-		}
-		if (parchmentVersion.isNotEmpty()) {
-			parchment("org.parchmentmc.data:parchment-$parchmentVersion@zip")
-		}
-	})
+	// 26.1.1+ is unobfuscated - no mappings needed with loom-no-remap
 
 	settings.depsHandler.addGlobal(this)
 
 	if (isFabric) {
 		settings.depsHandler.addFabric(this)
-		modImplementation("net.fabricmc.fabric-api:fabric-api:${property("deps.fapi")}")
-		modImplementation("net.fabricmc:fabric-loader:${property("deps.fabric_loader")}")
+		implementation("net.fabricmc.fabric-api:fabric-api:${property("deps.fapi")}")
+		implementation("net.fabricmc:fabric-loader:${property("deps.fabric_loader")}")
 	}
 
 	if (isForge) {
@@ -169,6 +157,10 @@ dependencies {
 	if (isNeo) {
 		settings.depsHandler.addNeo(this)
 		"neoForge"("net.neoforged:neoforge:${property("deps.fml")}")
+		if (mcVersion == "26.1.1") {
+			// Use Fabric Sodium for compilation (no JarJar nesting), NeoForge version at runtime
+			compileOnly("maven.modrinth:sodium:mc26.1.1-0.8.9-fabric")
+		}
 	}
 
 	vineflowerDecompilerClasspath("org.vineflower:vineflower:1.10.1")
@@ -176,11 +168,13 @@ dependencies {
 
 // Loom config
 loom {
-	try {
-		accessWidenerPath.set(rootProject.file("src/main/resources/${mod.id}.accesswidener"))
-	}
-	catch (_: Exception) {
-		println("Could not set accesswidener!")
+	if (!isUnobfuscated) {
+		try {
+			accessWidenerPath.set(rootProject.file("src/main/resources/${mod.id}.accesswidener"))
+		}
+		catch (_: Exception) {
+			println("Could not set accesswidener!")
+		}
 	}
 
 
@@ -210,15 +204,18 @@ tasks.withType<JavaCompile>() {
 	options.compilerArgs.add("-Xplugin:Manifold")
 	// modify the JavaCompile task and inject our auto-generated Manifold symbols
 	if(!this.name.startsWith("_")) { // check the name, so we don't inject into Forge internal compilation
-		ManifoldMC.setupPreprocessor(options.compilerArgs, loader, projectDir, mcVersion, stonecutter.active.project == stonecutter.current.project, false)
+		ManifoldMC.setupPreprocessor(options.compilerArgs, loader, projectDir, mcVersion, stonecutter.active?.project == stonecutter.current.project, false)
 	}
 }
 
 project.tasks.register("setupManifoldPreprocessors") {
-	ManifoldMC.setupPreprocessor(ArrayList(), loader, projectDir, mcVersion, stonecutter.active.project == stonecutter.current.project, true)
+	ManifoldMC.setupPreprocessor(ArrayList(), loader, projectDir, mcVersion, stonecutter.active?.project == stonecutter.current.project, true)
 }
 
-tasks.setupChiseledBuild { finalizedBy("setupManifoldPreprocessors") }
+// Run Manifold preprocessor setup after stonecutter switches
+tasks.matching { it.name == "setupChiseledBuild" }.configureEach { finalizedBy("setupManifoldPreprocessors") }
+// Also run on first build if the task doesn't exist
+tasks.named("compileJava") { dependsOn("setupManifoldPreprocessors") }
 
 tasks.register<RenameExampleMod>("renameExampleMod", rootDir, mod.id, mod.name, mod.displayName, mod.namespace, mod.group).configure {
 	group = "build helpers"
@@ -230,7 +227,7 @@ tasks.register<RenameExampleMod>("renameExampleMod", rootDir, mod.id, mod.name, 
 
 val buildAndCollect = tasks.register<Copy>("buildAndCollect") {
 	group = "build"
-	from(tasks.remapJar.get().archiveFile)
+	from(tasks.jar.get().archiveFile)
 	into(rootProject.layout.buildDirectory.file("libs/${mod.version}"))
 	dependsOn("build")
 }
@@ -292,8 +289,8 @@ stonecutter {
 
 // Publishing
 publishMods {
-	file = tasks.remapJar.get().archiveFile
-	additionalFiles.from(tasks.remapSourcesJar.get().archiveFile)
+	file = tasks.jar.get().archiveFile
+	additionalFiles.from(tasks.named<Jar>("sourcesJar").get().archiveFile)
 	displayName = "${mod.name} ${loader.replaceFirstChar { it.uppercase() }} ${mod.version} for ${property("mod.mc_title")}"
 	version = mod.version
 	changelog = rootProject.file("CHANGELOG.md").readText()

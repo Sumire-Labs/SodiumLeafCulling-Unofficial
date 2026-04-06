@@ -2,27 +2,20 @@ plugins {
     id("dev.kikugie.stonecutter")
     kotlin("jvm") version "2.0.0" apply false
     kotlin("plugin.serialization") version "2.0.0" apply false
-    id("co.uzzu.dotenv.gradle") version "4.0.0"
-    id("dev.architectury.loom") version "1.10-SNAPSHOT" apply false
+    id("dev.architectury.loom") version "1.14.473" apply false
+    id("dev.architectury.loom-no-remap") version "1.14.473" apply false
     id("me.modmuss50.mod-publish-plugin") apply false
     id("systems.manifold.manifold-gradle-plugin") version "0.0.2-alpha" apply false
 }
 
-stonecutter active "1.21.1-fabric" /* [SC] DO NOT EDIT */
+stonecutter active "26.1.1-neoforge" /* [SC] DO NOT EDIT */
 
-stonecutter registerChiseled tasks.register("chiseledBuild", stonecutter.chiseled) {
-    group = "project"
-    ofTask("build")
+stonecutter parameters {
+    // Manifold handles preprocessor constants via ManifoldMC.kt
 }
 
-stonecutter registerChiseled tasks.register("chiseledBuildAndCollect", stonecutter.chiseled) {
-    group = "project"
-    ofTask("buildAndCollect")
+stonecutter tasks {
+    named("build")
+    named("buildAndCollect")
+    named("publishMods")
 }
-
-stonecutter registerChiseled tasks.register("chiseledPublishMods", stonecutter.chiseled) {
-    group = "project"
-    ofTask("publishMods")
-}
-
-stonecutter.automaticPlatformConstants = true
