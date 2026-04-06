@@ -10,18 +10,15 @@ import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.Redirect;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import toni.sodiumleafculling.LeafCulling;
 import toni.sodiumleafculling.PerformanceSettingsAccessor;
 import java.util.List;
 
-#if AFTER_26_1_1
+#if AFTER_21_11
 import net.caffeinemc.mods.sodium.client.SodiumClientMod;
 import net.caffeinemc.mods.sodium.client.render.chunk.compile.pipeline.BlockRenderer;
-import net.caffeinemc.mods.sodium.client.world.LevelSlice;
 #elif AFTER_21_1
 import net.caffeinemc.mods.sodium.client.SodiumClientMod;
 import net.caffeinemc.mods.sodium.client.render.chunk.compile.pipeline.BlockRenderer;
@@ -46,18 +43,16 @@ import me.jellysquid.mods.sodium.client.render.chunk.terrain.material.Material;
 @Mixin(value = BlockRenderer.class, remap = false, priority = 100)
 public abstract class BlockRendererMixin {
 
-    #if AFTER_26_1_1
+    #if AFTER_21_11
     // Sodium 0.8: BlockRenderer extends AbstractBlockRenderContext
-    // Redirect forceOpaque calculation to make surrounded leaves render as solid
-    @Shadow protected LevelSlice slice;
-    @Shadow protected BlockPos pos;
-
+    // Use accessor to reach parent class fields (slice, pos)
     @Redirect(method = "renderModel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/block/ModelBlockRenderer;forceOpaque(ZLnet/minecraft/world/level/block/state/BlockState;)Z"))
     private boolean inject$forceOpaque(boolean cutoutLeaves, BlockState state) {
         boolean original = net.minecraft.client.renderer.block.ModelBlockRenderer.forceOpaque(cutoutLeaves, state);
         if (!original && state.getBlock() instanceof LeavesBlock) {
+            var ctx = (AbstractBlockRenderContextAccessor) this;
             var quality = ((PerformanceSettingsAccessor) SodiumClientMod.options().performance).sodiumleafculling$getQuality();
-            if (quality.isSolid() && LeafCulling.surroundedByLeaves(this.slice, this.pos)) {
+            if (quality.isSolid() && LeafCulling.surroundedByLeaves(ctx.getSlice(), ctx.getPos())) {
                 return true;
             }
         }
@@ -104,7 +99,6 @@ public abstract class BlockRendererMixin {
         {
             var renderLayer = ctx.renderLayer();
             ctx.update(ctx.pos(), new BlockPos((int) ctx.origin().x(), (int) ctx.origin().y(), (int)ctx.origin().z()), ctx.state(), ctx.model(), ctx.seed(), ctx.modelData(), RenderType.solid());
-//            ctx.renderLayer = RenderType.solid();
 
             List<BakedQuad> quads = this.getGeometry(ctx, face);
             var leafmaterial = DefaultMaterials.forRenderLayer(ctx.renderLayer());
@@ -115,7 +109,6 @@ public abstract class BlockRendererMixin {
             }
 
             ctx.update(ctx.pos(), new BlockPos((int) ctx.origin().x(), (int) ctx.origin().y(), (int)ctx.origin().z()), ctx.state(), ctx.model(), ctx.seed(), ctx.modelData(), renderLayer);
-            //ctx.renderLayer = renderLayer;
         }
 
         return getGeometry(ctx, face);

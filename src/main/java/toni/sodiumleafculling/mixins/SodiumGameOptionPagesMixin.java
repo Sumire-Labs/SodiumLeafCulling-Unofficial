@@ -14,7 +14,7 @@ import toni.sodiumleafculling.LeafCullingQuality;
 import toni.sodiumleafculling.PerformanceSettingsAccessor;
 import java.util.List;
 
-#if AFTER_26_1_1
+#if AFTER_21_11
 import net.caffeinemc.mods.sodium.client.gui.SodiumConfigBuilder;
 import net.caffeinemc.mods.sodium.client.gui.SodiumOptions;
 import net.caffeinemc.mods.sodium.api.config.StorageEventHandler;
@@ -35,7 +35,7 @@ import me.jellysquid.mods.sodium.client.gui.options.control.CyclingControl;
 import me.jellysquid.mods.sodium.client.gui.options.storage.SodiumOptionsStorage;
 #endif
 
-#if AFTER_26_1_1
+#if AFTER_21_11
 @Mixin(value = SodiumConfigBuilder.class, remap = false, priority = 100)
 public class SodiumGameOptionPagesMixin {
 

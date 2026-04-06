@@ -15,7 +15,7 @@ import toni.sodiumleafculling.LeafCulling;
 import toni.sodiumleafculling.LeafCullingQuality;
 import toni.sodiumleafculling.PerformanceSettingsAccessor;
 
-#if AFTER_26_1_1
+#if AFTER_21_11
 import net.caffeinemc.mods.sodium.client.SodiumClientMod;
 import net.caffeinemc.mods.sodium.client.render.model.AbstractBlockRenderContext;
 import net.minecraft.client.renderer.block.BlockAndTintGetter;
@@ -27,7 +27,7 @@ import me.jellysquid.mods.sodium.client.SodiumClientMod;
 import me.jellysquid.mods.sodium.client.render.chunk.compile.pipeline.BlockOcclusionCache;
 #endif
 
-#if AFTER_26_1_1
+#if AFTER_21_11
 @Mixin(value = AbstractBlockRenderContext.class, remap = false, priority = 100)
 public class BlockOcclusionCacheMixin {
 

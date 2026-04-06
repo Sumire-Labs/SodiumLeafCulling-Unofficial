@@ -9,15 +9,16 @@ val settings = object : TxniTemplateSettings {
 		override fun addFabric(deps: DependencyHandlerScope) {
 			deps.include(deps.implementation(deps.annotationProcessor("com.bawnorton.mixinsquared:mixinsquared-fabric:0.2.0-beta.6")!!)!!)
 
-			if (mcVersion == "1.21.1")
-			{
-				deps.modImplementation(modrinth("sodium", "mc1.21.1-0.6.13-fabric"))
-				deps.runtimeOnly(modrinth("moreculling", "0.27.1"))
+			val sodiumSlug = when (mcVersion) {
+				"1.21.11" -> "mc1.21.11-0.8.7-fabric"
+				"1.21.4" -> "mc1.21.4-0.6.13-fabric"
+				"1.21.1" -> "mc1.21.1-0.6.13-fabric"
+				"1.20.4" -> "mc1.20.4-0.5.8"
+				else -> "mc1.20.1-0.5.13-fabric"
 			}
-			else
-			{
-				deps.modImplementation(modrinth("sodium", "mc1.20.1-0.5.11"))
-				deps.runtimeOnly(modrinth("moreculling", "0.24.0"))
+			deps.modImplementation(modrinth("sodium", sodiumSlug))
+
+			if (mcVersion == "1.20.1") {
 				deps.modImplementation(modrinth("indium", "1.0.34+mc1.20.1"))
 			}
 		}
@@ -29,11 +30,20 @@ val settings = object : TxniTemplateSettings {
 		}
 
 		override fun addNeo(deps: DependencyHandlerScope) {
-			if (mcVersion == "26.1.1") {
-				deps.implementation(modrinth("sodium", "mc26.1.1-0.8.9-neoforge"))
-			} else {
-				deps.implementation(modrinth("sodium", "mc1.21.1-0.6.13-neoforge"))
-
+			val sodiumSlug = when (mcVersion) {
+				"1.21.11" -> "mc1.21.11-0.8.7-neoforge"
+				"1.21.4" -> "mc1.21.4-0.6.13-neoforge"
+				"1.21.1" -> "mc1.21.1-0.6.13-neoforge"
+				"1.20.4" -> null // Use Embeddium for 1.20.4 NeoForge
+				else -> null
+			}
+			if (sodiumSlug != null) {
+				deps.implementation(modrinth("sodium", sodiumSlug))
+			}
+			if (mcVersion == "1.20.4") {
+				deps.modImplementation(modrinth("embeddium", "0.3.25+mc1.20.4"))
+			}
+			if (mcVersion == "1.21.1") {
 				deps.compileOnly("org.sinytra.forgified-fabric-api:fabric-api-base:0.4.42+d1308dedd1")
 				deps.compileOnly("org.sinytra.forgified-fabric-api:fabric-renderer-api-v1:3.4.0+acb05a39d1")
 			}
@@ -145,8 +155,11 @@ dependencies {
 			"1.18.2" -> "1.18.2:2022.11.06"
 			"1.19.2" -> "1.19.2:2022.11.27"
 			"1.20.1" -> "1.20.1:2023.09.03"
+			"1.20.4" -> "1.20.4:2024.04.14"
 			"1.21.1" -> "1.21:2024.07.28"
-			else -> "" // 26.1+ does not need Parchment (obfuscation removed)
+			"1.21.4" -> "1.21.4:2024.12.07"
+			"1.21.11" -> "1.21.4:2024.12.07" // Use 1.21.4 parchment as fallback
+			else -> ""
 		}
 		if (parchmentVersion.isNotEmpty()) {
 			parchment("org.parchmentmc.data:parchment-$parchmentVersion@zip")
