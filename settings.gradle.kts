@@ -30,7 +30,7 @@ extensions.configure<StonecutterSettings> {
 		mc("1.20.4", "fabric", "neoforge")
 		mc("1.21.1", "fabric", "neoforge")
 		mc("1.21.4", "fabric", "neoforge")
-		mc("1.21.11", "fabric", "neoforge")
+		//mc("1.21.11", "fabric", "neoforge") // Requires Loom 1.14+ - build separately like 26.1.1
 		//mc("26.1.1", "neoforge") // Requires Gradle 9.4 + Loom 1.15 - build separately
 	}
 	create(rootProject)
