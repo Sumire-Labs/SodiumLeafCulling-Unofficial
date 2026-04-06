@@ -15,6 +15,7 @@ pluginManagement {
 
 plugins {
 	id("dev.kikugie.stonecutter") version "0.5-alpha.4"
+	id("org.gradle.toolchains.foojay-resolver-convention") version "0.9.0"
 }
 
 extensions.configure<StonecutterSettings> {
@@ -25,8 +26,9 @@ extensions.configure<StonecutterSettings> {
 			for (it in loaders) vers("$version-$it", version)
 		}
 
-		//mc("1.20.1", "fabric" , "forge")
+		mc("1.20.1", "forge")
 		mc("1.21.1", "fabric" , "neoforge")
+		//mc("26.1.1", "neoforge") // Requires Gradle 9.4 + Loom 1.15 - build separately
 	}
 	create(rootProject)
 }

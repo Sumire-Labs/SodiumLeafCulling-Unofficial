@@ -29,10 +29,14 @@ val settings = object : TxniTemplateSettings {
 		}
 
 		override fun addNeo(deps: DependencyHandlerScope) {
-			deps.implementation(modrinth("sodium", "mc1.21.1-0.6.13-neoforge"))
+			if (mcVersion == "26.1.1") {
+				deps.implementation(modrinth("sodium", "mc26.1.1-0.8.9-neoforge"))
+			} else {
+				deps.implementation(modrinth("sodium", "mc1.21.1-0.6.13-neoforge"))
 
-			deps.compileOnly("org.sinytra.forgified-fabric-api:fabric-api-base:0.4.42+d1308dedd1")
-			deps.compileOnly("org.sinytra.forgified-fabric-api:fabric-renderer-api-v1:3.4.0+acb05a39d1")
+				deps.compileOnly("org.sinytra.forgified-fabric-api:fabric-api-base:0.4.42+d1308dedd1")
+				deps.compileOnly("org.sinytra.forgified-fabric-api:fabric-renderer-api-v1:3.4.0+acb05a39d1")
+			}
 		}
 	}
 
@@ -142,9 +146,11 @@ dependencies {
 			"1.19.2" -> "1.19.2:2022.11.27"
 			"1.20.1" -> "1.20.1:2023.09.03"
 			"1.21.1" -> "1.21:2024.07.28"
-			else -> ""
+			else -> "" // 26.1+ does not need Parchment (obfuscation removed)
 		}
-		parchment("org.parchmentmc.data:parchment-$parchmentVersion@zip")
+		if (parchmentVersion.isNotEmpty()) {
+			parchment("org.parchmentmc.data:parchment-$parchmentVersion@zip")
+		}
 	})
 
 	settings.depsHandler.addGlobal(this)
@@ -268,15 +274,19 @@ tasks.processResources {
 }
 
 stonecutter {
-	val j21 = eval(mcVersion, ">=1.20.6")
+	val j25 = mcVersion.startsWith("26.")
+	val j21 = if (j25) true else eval(mcVersion, ">=1.20.6")
+	val jvmVer = if (j25) 25 else if (j21) 21 else 17
+
 	java {
 		withSourcesJar()
-		sourceCompatibility = if (j21) JavaVersion.VERSION_21 else JavaVersion.VERSION_17
-		targetCompatibility = if (j21) JavaVersion.VERSION_21 else JavaVersion.VERSION_17
+		toolchain {
+			languageVersion.set(JavaLanguageVersion.of(jvmVer))
+		}
 	}
 
 	kotlin {
-		jvmToolchain(if (j21) 21 else 17)
+		jvmToolchain(jvmVer)
 	}
 }
 

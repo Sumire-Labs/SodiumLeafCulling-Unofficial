@@ -7,17 +7,22 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import toni.sodiumleafculling.LeafCulling;
 import toni.sodiumleafculling.PerformanceSettingsAccessor;
 import java.util.List;
 
-#if AFTER_21_1
+#if AFTER_26_1_1
+import net.caffeinemc.mods.sodium.client.SodiumClientMod;
+import net.caffeinemc.mods.sodium.client.render.chunk.compile.pipeline.BlockRenderer;
+import net.caffeinemc.mods.sodium.client.world.LevelSlice;
+#elif AFTER_21_1
 import net.caffeinemc.mods.sodium.client.SodiumClientMod;
 import net.caffeinemc.mods.sodium.client.render.chunk.compile.pipeline.BlockRenderer;
 import net.caffeinemc.mods.sodium.client.render.frapi.mesh.MutableQuadViewImpl;
@@ -41,7 +46,24 @@ import me.jellysquid.mods.sodium.client.render.chunk.terrain.material.Material;
 @Mixin(value = BlockRenderer.class, remap = false, priority = 100)
 public abstract class BlockRendererMixin {
 
-    #if AFTER_21_1
+    #if AFTER_26_1_1
+    // Sodium 0.8: BlockRenderer extends AbstractBlockRenderContext
+    // Redirect forceOpaque calculation to make surrounded leaves render as solid
+    @Shadow protected LevelSlice slice;
+    @Shadow protected BlockPos pos;
+
+    @Redirect(method = "renderModel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/block/ModelBlockRenderer;forceOpaque(ZLnet/minecraft/world/level/block/state/BlockState;)Z"))
+    private boolean inject$forceOpaque(boolean cutoutLeaves, BlockState state) {
+        boolean original = net.minecraft.client.renderer.block.ModelBlockRenderer.forceOpaque(cutoutLeaves, state);
+        if (!original && state.getBlock() instanceof LeavesBlock) {
+            var quality = ((PerformanceSettingsAccessor) SodiumClientMod.options().performance).sodiumleafculling$getQuality();
+            if (quality.isSolid() && LeafCulling.surroundedByLeaves(this.slice, this.pos)) {
+                return true;
+            }
+        }
+        return original;
+    }
+    #elif AFTER_21_1
     @ModifyVariable(method = "processQuad", at = @At("STORE"))
     private BlendMode inject$processQuad(BlendMode blendMode, MutableQuadViewImpl quad) {
         var ctx = (AbstractBlockRenderContextAccessor) this;

@@ -10,12 +10,14 @@ class ManifoldMC {
             isActive: Boolean,
             clearMainProject: Boolean
         ) {
-            val mcVers = listOf("1.18.2", "1.19.2", "1.20.1", "1.21.1")
+            val mcVers = listOf("1.18.2", "1.19.2", "1.20.1", "1.21.1", "26.1.1")
             val mcIndex = mcVers.indexOf(mcString)
             val argList = ArrayList<String>()
 
             for (i in mcVers.indices) {
-                val mcStr = mcVers[i].replace(".", "_").substring(2)
+                val mcStr = mcVers[i].replace(".", "_").let { str ->
+                    if (str.startsWith("1_")) str.substring(2) else str
+                }
                 if (mcIndex < i) argList.add("BEFORE_$mcStr")
                 if (mcIndex <= i) argList.add("UPTO_$mcStr")
                 if (mcIndex == i) argList.add("CURRENT_$mcStr")
