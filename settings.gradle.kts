@@ -25,6 +25,7 @@ stonecutter {
 		}
 
 		mc("26.1.1", "neoforge")
+		mc("26.2", "neoforge", "fabric")
 	}
 	create(rootProject)
 }

@@ -9,7 +9,15 @@ val settings = object : TxniTemplateSettings {
 		override fun addFabric(deps: DependencyHandlerScope) {
 			deps.include(deps.implementation(deps.annotationProcessor("com.bawnorton.mixinsquared:mixinsquared-fabric:0.2.0-beta.6")!!)!!)
 
-			if (mcVersion == "1.21.1")
+			if (mcVersion.startsWith("26."))
+			{
+				val sodiumSlug = when (mcVersion) {
+					"26.2" -> "mc26.2-0.9.0-fabric"
+					else -> "mc26.1.1-0.8.9-fabric"
+				}
+				deps.implementation(modrinth("sodium", sodiumSlug))
+			}
+			else if (mcVersion == "1.21.1")
 			{
 				deps.implementation(modrinth("sodium", "mc1.21.1-0.6.13-fabric"))
 				deps.runtimeOnly(modrinth("moreculling", "0.27.1"))
@@ -29,8 +37,8 @@ val settings = object : TxniTemplateSettings {
 		}
 
 		override fun addNeo(deps: DependencyHandlerScope) {
-			if (mcVersion == "26.1.1") {
-				// Sodium added via modImplementation in dependencies block
+			if (mcVersion.startsWith("26.")) {
+				// Sodium(unobfuscated 26.x) は dependencies ブロックで compileOnly 追加（JarJar nesting なし）
 			} else {
 				deps.implementation(modrinth("sodium", "mc1.21.1-0.6.13-neoforge"))
 
@@ -157,9 +165,14 @@ dependencies {
 	if (isNeo) {
 		settings.depsHandler.addNeo(this)
 		"neoForge"("net.neoforged:neoforge:${property("deps.fml")}")
-		if (mcVersion == "26.1.1") {
-			// Use Fabric Sodium for compilation (no JarJar nesting), NeoForge version at runtime
-			compileOnly("maven.modrinth:sodium:mc26.1.1-0.8.9-fabric")
+		// Sodium (unobfuscated 26.x): Fabric jar をコンパイルに使う（クラスが flat で JarJar nesting なし）
+		val sodiumCompile = when (mcVersion) {
+			"26.1.1" -> "mc26.1.1-0.8.9-fabric"
+			"26.2" -> "mc26.2-0.9.0-fabric"
+			else -> null
+		}
+		if (sodiumCompile != null) {
+			compileOnly("maven.modrinth:sodium:$sodiumCompile")
 		}
 	}
 
