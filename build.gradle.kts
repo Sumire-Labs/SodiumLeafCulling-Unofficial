@@ -12,7 +12,7 @@ val settings = object : TxniTemplateSettings {
 			val sodiumSlug = when (mcVersion) {
 				"1.21.11" -> "mc1.21.11-0.8.7-fabric"
 				"1.21.4" -> "mc1.21.4-0.6.13-fabric"
-				"1.21.1" -> "mc1.21.1-0.6.13-fabric"
+				"1.21.1" -> "mc1.21.1-0.8.12-beta.2-fabric"
 				"1.20.4" -> "mc1.20.4-0.5.8"
 				else -> "mc1.20.1-0.5.13-fabric"
 			}
@@ -33,12 +33,18 @@ val settings = object : TxniTemplateSettings {
 			val sodiumSlug = when (mcVersion) {
 				"1.21.11" -> "mc1.21.11-0.8.7-neoforge"
 				"1.21.4" -> "mc1.21.4-0.6.13-neoforge"
-				"1.21.1" -> "mc1.21.1-0.6.13-neoforge"
+				"1.21.1" -> "mc1.21.1-0.8.12-beta.2-neoforge"
 				"1.20.4" -> null // Use Embeddium for 1.20.4 NeoForge
 				else -> null
 			}
 			if (sodiumSlug != null) {
-				deps.implementation(modrinth("sodium", sodiumSlug))
+				if (mcVersion == "1.21.1") {
+					// Sodium 0.8.x ships its real classes as a Jar-in-Jar; modImplementation makes
+					// Loom extract the nested mod and put the actual classes on the classpath.
+					deps.modImplementation(modrinth("sodium", sodiumSlug))
+				} else {
+					deps.implementation(modrinth("sodium", sodiumSlug))
+				}
 			}
 			if (mcVersion == "1.20.4") {
 				deps.modImplementation(modrinth("embeddium", "0.3.25+mc1.20.4"))
@@ -119,9 +125,16 @@ val isFabric = loader == "fabric"
 val isForge = loader == "forge"
 val isNeo = loader == "neoforge"
 
-version = "${mod.version}-$mcVersion"
+// Fabric は Sodium が mod id "sodiumleafculling" を breaks 指定しているため、Fabric のみ別 id にして回避する。
+// NeoForge/Forge は mod id にハイフンを使えず、かつ Sodium の breaks 対象外なので元の id を維持する。
+val modId = if (isFabric) "${mod.id}-unofficial" else mod.id
+
+// 1.21.1 は Sodium 0.8 対応の大規模変更のため 2.0.0 にバンプ（他バージョンは mod.version のまま）
+val modVersion = if (mcVersion == "1.21.1") "2.0.0" else mod.version
+
+version = "$modVersion-$mcVersion"
 group = mod.group
-base { archivesName.set("${mod.id}-$loader") }
+base { archivesName.set("${modId}-$loader") }
 
 // Dependencies
 repositories {
@@ -187,10 +200,22 @@ dependencies {
 	vineflowerDecompilerClasspath("org.vineflower:vineflower:1.10.1")
 }
 
+// NeoForge distributes Sodium 0.8.x as a thin bootstrap jar with the real mod bundled as a
+// Jar-in-Jar. Loom remaps only the outer jar and does not expose nested NeoForge jars to the
+// compile classpath, so extract the nested mod jar ourselves and add it as compileOnly.
+if (isNeo && mcVersion == "1.21.1") {
+	val sodiumNeoOuter = configurations.detachedConfiguration(
+		dependencies.create("maven.modrinth:sodium:mc1.21.1-0.8.12-beta.2-neoforge")
+	).apply { isTransitive = false }
+	dependencies.add("compileOnly", zipTree(sodiumNeoOuter.singleFile).matching {
+		include("META-INF/jarjar/net.caffeinemc.sodium-neoforge-*.jar")
+	})
+}
+
 // Loom config
 loom {
 	try {
-		accessWidenerPath.set(rootProject.file("src/main/resources/${mod.id}.accesswidener"))
+		accessWidenerPath.set(rootProject.file("src/main/resources/${mod.namespace}.accesswidener"))
 	}
 	catch (_: Exception) {
 		println("Could not set accesswidener!")
@@ -199,7 +224,7 @@ loom {
 
 	if (loader == "forge") forge {
 		convertAccessWideners.set(true)
-		mixinConfigs("mixins.${mod.id}.json")
+		mixinConfigs("mixins.${mod.namespace}.json")
 	} else if (loader == "neoforge") neoForge {
 
 	}
@@ -244,7 +269,7 @@ tasks.register<RenameExampleMod>("renameExampleMod", rootDir, mod.id, mod.name, 
 val buildAndCollect = tasks.register<Copy>("buildAndCollect") {
 	group = "build"
 	from(tasks.remapJar.get().archiveFile)
-	into(rootProject.layout.buildDirectory.file("libs/${mod.version}"))
+	into(rootProject.layout.buildDirectory.file("libs/${modVersion}"))
 	dependsOn("build")
 }
 
@@ -262,13 +287,10 @@ if (stonecutter.current.isActive) {
 
 // Resources
 tasks.processResources {
-//	inputs.property("version", mod.version)
-//	inputs.property("mc", mod.mcDep)
-
 	val map = mapOf(
-		"version" to mod.version,
+		"version" to modVersion,
 		"mc" to mod.mcDep,
-		"id" to mod.id,
+		"id" to modId,
 		"group" to mod.group,
 		"author" to mod.author,
 		"namespace" to mod.namespace,
@@ -280,6 +302,10 @@ tasks.processResources {
 		"fml" to if (loader == "neoforge") "1" else "45",
 		"mnd" to if (loader == "neoforge") "" else "mandatory = true"
 	)
+
+	// メタデータ(version/name/display_name 等)を入力として追跡する。
+	// これが無いと値を変えても processResources が up-to-date でスキップされ、jar に古い値が残る。
+	inputs.properties(map)
 
 	filesMatching("fabric.mod.json") { expand(map) }
 	filesMatching("META-INF/mods.toml") { expand(map) }
@@ -307,8 +333,8 @@ stonecutter {
 publishMods {
 	file = tasks.remapJar.get().archiveFile
 	additionalFiles.from(tasks.remapSourcesJar.get().archiveFile)
-	displayName = "${mod.name} ${loader.replaceFirstChar { it.uppercase() }} ${mod.version} for ${property("mod.mc_title")}"
-	version = mod.version
+	displayName = "${mod.name} ${loader.replaceFirstChar { it.uppercase() }} ${modVersion} for ${property("mod.mc_title")}"
+	version = modVersion
 	changelog = rootProject.file("CHANGELOG.md").readText()
 	type = STABLE
 	modLoaders.add(loader)
@@ -341,7 +367,7 @@ publishing {
 	publications {
 		create<MavenPublication>("mavenJava") {
 			groupId = "${property("mod.group")}.${mod.id}"
-			artifactId = mod.version
+			artifactId = modVersion
 			version = mcVersion
 
 			from(components["java"])

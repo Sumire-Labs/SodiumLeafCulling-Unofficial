@@ -15,7 +15,7 @@
 	"icon": "assets/${namespace}/textures/mod_logo.png",
 	"environment": "*",
 	"mixins": [
-		"mixins.${id}.json"
+		"mixins.${namespace}.json"
 	],
 	"entrypoints" : {
 		"mixinsquared": [
@@ -27,5 +27,5 @@
 		"fabricloader": ">=0.15.0",
 		"fabric-api": "*"
 	},
-	"accessWidener": "${id}.accesswidener"
+	"accessWidener": "${namespace}.accesswidener"
 }

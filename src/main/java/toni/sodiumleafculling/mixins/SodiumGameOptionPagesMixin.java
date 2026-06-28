@@ -23,6 +23,16 @@ import net.caffeinemc.mods.sodium.api.config.option.OptionImpact;
 import net.caffeinemc.mods.sodium.api.config.structure.ConfigBuilder;
 import net.caffeinemc.mods.sodium.api.config.structure.OptionPageBuilder;
 import net.minecraft.resources.Identifier;
+#elif CURRENT_21_1
+// Sodium 0.8.x backport for 1.21.1: new config API, but MC 1.21.1 still uses ResourceLocation (not Identifier)
+import net.caffeinemc.mods.sodium.client.gui.SodiumConfigBuilder;
+import net.caffeinemc.mods.sodium.client.gui.SodiumOptions;
+import net.caffeinemc.mods.sodium.api.config.StorageEventHandler;
+import net.caffeinemc.mods.sodium.api.config.option.OptionFlag;
+import net.caffeinemc.mods.sodium.api.config.option.OptionImpact;
+import net.caffeinemc.mods.sodium.api.config.structure.ConfigBuilder;
+import net.caffeinemc.mods.sodium.api.config.structure.OptionPageBuilder;
+import net.minecraft.resources.ResourceLocation;
 #elif AFTER_21_1
 import net.caffeinemc.mods.sodium.client.gui.SodiumGameOptionPages;
 import net.caffeinemc.mods.sodium.client.gui.options.*;
@@ -49,6 +59,34 @@ public class SodiumGameOptionPagesMixin {
                 .addOption(
                     builder.createEnumOption(
                         Identifier.fromNamespaceAndPath("sodiumleafculling", "performance.leaf_culling"),
+                        LeafCullingQuality.class)
+                        .setStorageHandler(this.sodiumStorage)
+                        .setName(Component.translatable("sodiumleafculling.options.leaf_culling.name"))
+                        .setTooltip(Component.translatable("sodiumleafculling.options.leaf_culling.tooltip"))
+                        .setDefaultValue(LeafCullingQuality.SOLID_AGGRESSIVE)
+                        .setBinding(
+                            value -> ((PerformanceSettingsAccessor) this.sodiumOpts.performance).sodiumleafculling$setQuality(value),
+                            () -> ((PerformanceSettingsAccessor) this.sodiumOpts.performance).sodiumleafculling$getQuality())
+                        .setImpact(OptionImpact.MEDIUM)
+                        .setFlags(OptionFlag.REQUIRES_RENDERER_RELOAD)
+                )
+        );
+    }
+}
+#elif CURRENT_21_1
+@Mixin(value = SodiumConfigBuilder.class, remap = false, priority = 100)
+public class SodiumGameOptionPagesMixin {
+
+    @Shadow @Final private StorageEventHandler sodiumStorage;
+    @Shadow @Final private SodiumOptions sodiumOpts;
+
+    @Inject(method = "buildPerformancePage", at = @At("RETURN"))
+    private void inject$leafcullingoption(ConfigBuilder builder, CallbackInfoReturnable<OptionPageBuilder> cir) {
+        cir.getReturnValue().addOptionGroup(
+            builder.createOptionGroup()
+                .addOption(
+                    builder.createEnumOption(
+                        ResourceLocation.fromNamespaceAndPath("sodiumleafculling", "performance.leaf_culling"),
                         LeafCullingQuality.class)
                         .setStorageHandler(this.sodiumStorage)
                         .setName(Component.translatable("sodiumleafculling.options.leaf_culling.name"))
