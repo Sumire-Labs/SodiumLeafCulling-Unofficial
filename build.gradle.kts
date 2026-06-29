@@ -278,6 +278,10 @@ tasks.processResources {
 		"mnd" to if (loader == "neoforge") "" else "mandatory = true"
 	)
 
+	// メタデータ(mc_dep/version/name 等)を入力として追跡する。
+	// これが無いと値を変えても processResources が up-to-date でスキップされ、jar に古い値が残る。
+	inputs.properties(map)
+
 	filesMatching("fabric.mod.json") { expand(map) }
 	filesMatching("META-INF/mods.toml") { expand(map) }
 	filesMatching("META-INF/neoforge.mods.toml") { expand(map) }

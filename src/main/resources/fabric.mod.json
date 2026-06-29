@@ -26,6 +26,5 @@
 		"minecraft": "${mc}",
 		"fabricloader": ">=0.15.0",
 		"fabric-api": "*"
-	},
-	"accessWidener": "${id}.accesswidener"
+	}
 }
