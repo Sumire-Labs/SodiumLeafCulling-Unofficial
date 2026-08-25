@@ -31,3 +31,13 @@ mandatory=true
 versionRange="${renderer}"
 ordering="AFTER"
 side="CLIENT"
+
+# Xenon already includes equivalent leaf-culling functionality. Forge 1.20.1
+# has no dedicated incompatible dependency type, so an optional dependency
+# with an intentionally impossible version requirement declares the conflict.
+[[dependencies."${id}"]]
+modId="xenon"
+mandatory=false
+versionRange="[0.0.0-NOT-COMPATIBLE]"
+ordering="NONE"
+side="CLIENT"

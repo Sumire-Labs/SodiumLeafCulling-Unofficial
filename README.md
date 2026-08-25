@@ -95,6 +95,8 @@ The Forge 1.20.1 and NeoForge 1.20.4 targets use the dedicated `embeddium`
 Stonecutter branch. It changes Embeddium's initial `RenderType`-to-`Material`
 selection for surrounded leaves, so the model is emitted once into the solid
 terrain buffer instead of being manually rendered alongside the cutout copy.
+The Forge 1.20.1 metadata also declares Xenon incompatible because Xenon already
+includes equivalent leaf-culling functionality.
 
 Build-plugin versions are kept in `settings.gradle.kts`, the loader-specific
 build scripts, and `gradle/wrapper/gradle-wrapper.properties`. Update them
