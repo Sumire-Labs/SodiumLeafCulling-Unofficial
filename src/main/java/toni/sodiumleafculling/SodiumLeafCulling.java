@@ -7,7 +7,8 @@ package toni.sodiumleafculling;
 *///?}
 
 //? if !fabric {
-/*@Mod("sodiumleafculling")
+/*@Mod(SodiumLeafCulling.MOD_ID)
 *///?}
 public class SodiumLeafCulling {
+    public static final String MOD_ID = "slc_unofficial";
 }

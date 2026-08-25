@@ -1,4 +1,4 @@
-# Sodium Leaf Culling Unofficial
+# SodiumLeafCulling-Unofficial
 
 An unofficial, multi-version fork of Sodium Leaf Culling. The project uses
 [Stonecutter](https://stonecutter.kikugie.dev/) to share one source tree across
@@ -17,6 +17,10 @@ Fabric, Forge, and NeoForge builds.
 
 NeoForge 1.21.9 is intentionally absent because Sodium does not publish a
 compatible NeoForge artifact for that Minecraft release.
+
+The Fabric mod ID is `slc-unofficial`. Forge and NeoForge use
+`slc_unofficial` because those loaders do not permit hyphens in mod IDs. The
+internal Java package and resource namespace remain `sodiumleafculling`.
 
 ## Development
 
@@ -50,8 +54,11 @@ Replace `1.21.11-fabric` with any entry represented in the support table. To
 build every registered target and collect the distributable jars, run:
 
 ```powershell
-.\gradlew.bat buildAndCollect
+.\gradlew.bat buildAndCollect --configure-on-demand
 ```
+
+The distributable and sources jars are collected under
+`build/libs/<mod-version>`.
 
 Use `tasks` to inspect all available Gradle tasks and `projects` to list the
 generated target projects:
@@ -69,8 +76,8 @@ as Fabric Loader, MixinSquared, and MixinExtras live at the top of that file;
 Minecraft- and loader-specific pins live in the corresponding version table.
 The per-loader `mod.renderer_compat` values also keep runtime Sodium or
 Embeddium versions on the API generation that each mixin was verified against.
-Minecraft 1.21.1 retains its existing `2.0.0` version override; other targets
-currently inherit the global `1.0.1` project version.
+All targets currently use mod version `3.0.0` because the new IDs and build
+layout are intentionally not release-compatible with earlier artifacts.
 
 When adding or updating a Minecraft target:
 
@@ -83,6 +90,11 @@ When adding or updating a Minecraft target:
 Forge 1.20.1 uses `mixins.sodiumleafculling.forge.json` so its production SRG
 refmap is loaded; Fabric and NeoForge use `mixins.sodiumleafculling.json`.
 Keep the two client-mixin lists aligned when adding or removing a mixin.
+
+The Forge 1.20.1 and NeoForge 1.20.4 targets use the dedicated `embeddium`
+Stonecutter branch. It changes Embeddium's initial `RenderType`-to-`Material`
+selection for surrounded leaves, so the model is emitted once into the solid
+terrain buffer instead of being manually rendered alongside the cutout copy.
 
 Build-plugin versions are kept in `settings.gradle.kts`, the loader-specific
 build scripts, and `gradle/wrapper/gradle-wrapper.properties`. Update them

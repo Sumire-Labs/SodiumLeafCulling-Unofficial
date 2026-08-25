@@ -140,6 +140,7 @@ tasks {
             "version" to project.property("mod.version"),
             "description" to project.property("mod.description"),
             "author" to project.property("mod.author"),
+            "contributor" to project.property("mod.contributor"),
             "license" to project.property("mod.license"),
             "github" to project.property("mod.github"),
             "minecraft" to project.property("mod.mc_compat"),

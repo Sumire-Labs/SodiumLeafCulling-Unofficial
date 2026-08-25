@@ -6,7 +6,7 @@ plugins {
 version = "${project.property("mod.version")}+${sc.current.version}"
 base.archivesName = "${project.property("mod.fabric_id")}-fabric"
 
-val modId = project.property("mod.id").toString()
+val modId = project.property("mod.fabric_id").toString()
 
 val requiredJava = when {
     sc.current.parsed >= "26.1" -> JavaVersion.VERSION_25
@@ -89,6 +89,7 @@ tasks {
             "version" to project.property("mod.version"),
             "description" to project.property("mod.description"),
             "author" to project.property("mod.author"),
+            "contributor" to project.property("mod.contributor"),
             "license" to project.property("mod.license"),
             "github" to project.property("mod.github"),
             "minecraft" to project.property("mod.mc_compat"),

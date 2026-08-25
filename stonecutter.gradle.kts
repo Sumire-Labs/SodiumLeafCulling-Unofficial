@@ -23,6 +23,9 @@ stonecutter parameters {
     constants["sodium_modern_renderer"] = current.parsed >= "1.21.11"
     constants["sodium_chunk_layer"] = current.version == "1.21.11"
     constants["sodium_frapi_chunk_layer"] = current.parsed >= "1.21.6" && current.parsed < "1.21.11"
+    // Embeddium 0.3 selects a terrain Material from the Forge/NeoForge
+    // RenderType, unlike legacy Sodium's direct BlockState lookup.
+    constants["embeddium"] = current.project in setOf("1.20.1-forge", "1.20.4-neoforge")
 
     replacements {
         string(current.parsed >= "1.21.11") {

@@ -1,17 +1,18 @@
 # Centralized, reproducible project metadata and dependency pins.
-mod.id = "sodiumleafculling"
-mod.fabric_id = "sodiumleafculling-unofficial"
+mod.id = "slc_unofficial"
+mod.fabric_id = "slc-unofficial"
 mod.namespace = "sodiumleafculling"
-mod.name = "Sodium Leaf Culling Unofficial"
+mod.name = "SodiumLeafCulling-Unofficial"
 mod.group = "toni"
-mod.version = "1.0.1"
+mod.version = "3.0.0"
 mod.author = "toni"
+mod.contributor = "s12kuma01"
 mod.license = "MIT"
 mod.description = "Smart leaf culling for Sodium and Embeddium."
 mod.github = "Sumire-Labs/SodiumLeafCulling-Unofficial"
 
-publish.modrinth = "M25bkObt"
-publish.curseforge = "1089479"
+publish.modrinth = ""
+publish.curseforge = ""
 
 deps.fabric_loader = "0.19.3"
 deps.mixinsquared = "0.3.3"
@@ -51,7 +52,6 @@ deps.neo_loader = "20.4.251"
 deps.embeddium = "0.3.25+mc1.20.4"
 
 ["1.21.1"]
-mod.version = "2.0.0"
 mod.mc_releases = ["1.21.1"]
 
 [fabric."1.21.1"]
