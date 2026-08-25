@@ -1,0 +1,284 @@
+# Centralized, reproducible project metadata and dependency pins.
+mod.id = "sodiumleafculling"
+mod.fabric_id = "sodiumleafculling-unofficial"
+mod.namespace = "sodiumleafculling"
+mod.name = "Sodium Leaf Culling Unofficial"
+mod.group = "toni"
+mod.version = "1.0.1"
+mod.author = "toni"
+mod.license = "MIT"
+mod.description = "Smart leaf culling for Sodium and Embeddium."
+mod.github = "Sumire-Labs/SodiumLeafCulling-Unofficial"
+
+publish.modrinth = "M25bkObt"
+publish.curseforge = "1089479"
+
+deps.fabric_loader = "0.19.3"
+deps.mixinsquared = "0.3.3"
+deps.mixinextras = "0.5.4"
+loomx.loom_version = "1.17.19"
+
+["1.20.1"]
+mod.mc_releases = ["1.20.1"]
+
+[fabric."1.20.1"]
+mod.mc_compat = "1.20.1"
+mod.renderer_compat = "=0.5.13"
+deps.fabric_api = "0.92.11+1.20.1"
+deps.sodium = "mc1.20.1-0.5.13-fabric"
+deps.indium = "1.0.36+mc1.20.1"
+
+[forge."1.20.1"]
+mod.mc_compat = "[1.20.1]"
+mod.renderer_compat = "[0.3.31+mc1.20.1]"
+deps.forge = "1.20.1-47.4.23"
+deps.embeddium = "0.3.31+mc1.20.1"
+
+["1.20.4"]
+mod.mc_releases = ["1.20.4"]
+
+[fabric."1.20.4"]
+mod.mc_compat = "1.20.4"
+mod.renderer_compat = "=0.5.8"
+deps.fabric_api = "0.97.3+1.20.4"
+deps.sodium = "mc1.20.4-0.5.8"
+deps.indium = "1.0.31+mc1.20.4"
+
+[neoforge."1.20.4"]
+mod.mc_compat = "[1.20.4]"
+mod.renderer_compat = "[0.3.25+mc1.20.4]"
+deps.neo_loader = "20.4.251"
+deps.embeddium = "0.3.25+mc1.20.4"
+
+["1.21.1"]
+mod.version = "2.0.0"
+mod.mc_releases = ["1.21.1"]
+
+[fabric."1.21.1"]
+mod.mc_compat = "1.21.1"
+mod.renderer_compat = "=0.8.12"
+deps.fabric_api = "0.116.15+1.21.1"
+deps.sodium = "mc1.21.1-0.8.12-fabric"
+
+[neoforge."1.21.1"]
+mod.mc_compat = "[1.21.1]"
+mod.renderer_compat = "[0.8.12+mc1.21.1]"
+deps.neo_loader = "21.1.248"
+deps.sodium = "mc1.21.1-0.8.12-neoforge"
+deps.sodium_maven = "0.8.12+mc1.21.1"
+deps.forgified_api_base = "0.4.42+d1308ded19"
+deps.forgified_renderer_api = "3.4.1+9125b6dc19"
+
+["1.21.2"]
+mod.mc_releases = ["1.21.2"]
+
+[fabric."1.21.2"]
+mod.mc_compat = "1.21.2"
+mod.renderer_compat = "=0.6.13"
+deps.fabric_api = "0.106.1+1.21.2"
+deps.sodium = "mc1.21.3-0.6.13-fabric"
+
+[neoforge."1.21.2"]
+mod.mc_compat = "[1.21.2]"
+mod.renderer_compat = "[0.6.0-beta.5+mc1.21.3]"
+deps.neo_loader = "21.2.1-beta"
+deps.sodium = "mc1.21.3-0.6.0-beta.5-neoforge"
+deps.fabric_renderer_api = "4.0.3+c47b9d4373"
+
+["1.21.3"]
+mod.mc_releases = ["1.21.3"]
+
+[fabric."1.21.3"]
+mod.mc_compat = "1.21.3"
+mod.renderer_compat = "=0.6.13"
+deps.fabric_api = "0.114.1+1.21.3"
+deps.sodium = "mc1.21.3-0.6.13-fabric"
+
+[neoforge."1.21.3"]
+mod.mc_compat = "[1.21.3]"
+mod.renderer_compat = "[0.6.13+mc1.21.3]"
+deps.neo_loader = "21.3.97"
+deps.sodium = "mc1.21.3-0.6.13-neoforge"
+deps.fabric_renderer_api = "4.0.5+fd37071f40"
+
+["1.21.4"]
+mod.mc_releases = ["1.21.4"]
+
+[fabric."1.21.4"]
+mod.mc_compat = "1.21.4"
+mod.renderer_compat = "=0.6.13"
+deps.fabric_api = "0.119.4+1.21.4"
+deps.sodium = "mc1.21.4-0.6.13-fabric"
+
+[neoforge."1.21.4"]
+mod.mc_compat = "[1.21.4]"
+mod.renderer_compat = "[0.6.13+mc1.21.4]"
+deps.neo_loader = "21.4.157"
+deps.sodium = "mc1.21.4-0.6.13-neoforge"
+deps.fabric_renderer_api = "5.0.3+50f0feb204"
+
+["1.21.5"]
+mod.mc_releases = ["1.21.5"]
+
+[fabric."1.21.5"]
+mod.mc_compat = "1.21.5"
+mod.renderer_compat = "=0.6.13"
+deps.fabric_api = "0.128.2+1.21.5"
+deps.sodium = "mc1.21.5-0.6.13-fabric"
+
+[neoforge."1.21.5"]
+mod.mc_compat = "[1.21.5]"
+mod.renderer_compat = "[0.6.13+mc1.21.5]"
+deps.neo_loader = "21.5.98"
+deps.sodium = "mc1.21.5-0.6.13-neoforge"
+deps.fabric_renderer_api = "6.1.2+bdf4842249"
+
+["1.21.6"]
+mod.mc_releases = ["1.21.6"]
+
+[fabric."1.21.6"]
+mod.mc_compat = "1.21.6"
+mod.renderer_compat = "=0.7.3"
+deps.fabric_api = "0.128.2+1.21.6"
+deps.sodium = "mc1.21.8-0.7.3-fabric"
+
+[neoforge."1.21.6"]
+mod.mc_compat = "[1.21.6]"
+mod.renderer_compat = "[0.7.3+mc1.21.8]"
+deps.neo_loader = "21.6.20-beta"
+deps.sodium = "mc1.21.8-0.7.3-neoforge"
+
+["1.21.7"]
+mod.mc_releases = ["1.21.7"]
+
+[fabric."1.21.7"]
+mod.mc_compat = "1.21.7"
+mod.renderer_compat = "=0.7.3"
+deps.fabric_api = "0.129.0+1.21.7"
+deps.sodium = "mc1.21.8-0.7.3-fabric"
+
+[neoforge."1.21.7"]
+mod.mc_compat = "[1.21.7]"
+mod.renderer_compat = "[0.7.3+mc1.21.8]"
+deps.neo_loader = "21.7.25-beta"
+deps.sodium = "mc1.21.8-0.7.3-neoforge"
+
+["1.21.8"]
+mod.mc_releases = ["1.21.8"]
+
+[fabric."1.21.8"]
+mod.mc_compat = "1.21.8"
+mod.renderer_compat = "=0.7.3"
+deps.fabric_api = "0.136.1+1.21.8"
+deps.sodium = "mc1.21.8-0.7.3-fabric"
+
+[neoforge."1.21.8"]
+mod.mc_compat = "[1.21.8]"
+mod.renderer_compat = "[0.7.3+mc1.21.8]"
+deps.neo_loader = "21.8.54"
+deps.sodium = "mc1.21.8-0.7.3-neoforge"
+
+["1.21.9"]
+mod.mc_releases = ["1.21.9"]
+
+[fabric."1.21.9"]
+mod.mc_compat = "1.21.9"
+mod.renderer_compat = "=0.7.3"
+deps.fabric_api = "0.134.1+1.21.9"
+deps.sodium = "mc1.21.10-0.7.3-fabric"
+
+["1.21.10"]
+mod.mc_releases = ["1.21.10"]
+
+[fabric."1.21.10"]
+mod.mc_compat = "1.21.10"
+mod.renderer_compat = "=0.7.3"
+deps.fabric_api = "0.138.4+1.21.10"
+deps.sodium = "mc1.21.10-0.7.3-fabric"
+
+[neoforge."1.21.10"]
+mod.mc_compat = "[1.21.10]"
+mod.renderer_compat = "[0.7.3+mc1.21.10]"
+deps.neo_loader = "21.10.64"
+deps.sodium = "mc1.21.10-0.7.3-neoforge"
+deps.sodium_nested_path = "META-INF/jarjar/net.caffeinemc.sodium-neoforge-0.7.3+mc1.21.10-mod.jar"
+
+["1.21.11"]
+mod.mc_releases = ["1.21.11"]
+
+[fabric."1.21.11"]
+mod.mc_compat = "1.21.11"
+mod.renderer_compat = "=0.8.13"
+deps.fabric_api = "0.141.6+1.21.11"
+deps.sodium = "mc1.21.11-0.8.13-fabric"
+
+[neoforge."1.21.11"]
+mod.mc_compat = "[1.21.11]"
+mod.renderer_compat = "[0.8.13+mc1.21.11]"
+deps.neo_loader = "21.11.45"
+deps.sodium = "mc1.21.11-0.8.13-neoforge"
+deps.sodium_maven = "0.8.13+mc1.21.11"
+
+["26.1"]
+mod.mc_releases = ["26.1"]
+
+[fabric."26.1"]
+mod.mc_compat = "26.1"
+mod.renderer_compat = "=0.8.9"
+deps.fabric_api = "0.155.2+26.1.2"
+deps.sodium = "mc26.1.1-0.8.9-fabric"
+
+[neoforge."26.1"]
+mod.mc_compat = "[26.1]"
+mod.renderer_compat = "[0.8.9+mc26.1.1]"
+deps.neo_loader = "26.1.0.19-beta"
+deps.sodium = "mc26.1.1-0.8.9-neoforge"
+deps.sodium_maven = "0.8.9+mc26.1.1"
+
+["26.1.1"]
+mod.mc_releases = ["26.1.1"]
+
+[fabric."26.1.1"]
+mod.mc_compat = "26.1.1"
+mod.renderer_compat = "=0.8.9"
+deps.fabric_api = "0.155.2+26.1.2"
+deps.sodium = "mc26.1.1-0.8.9-fabric"
+
+[neoforge."26.1.1"]
+mod.mc_compat = "[26.1.1]"
+mod.renderer_compat = "[0.8.9+mc26.1.1]"
+deps.neo_loader = "26.1.1.15-beta"
+deps.sodium = "mc26.1.1-0.8.9-neoforge"
+deps.sodium_maven = "0.8.9+mc26.1.1"
+
+["26.1.2"]
+mod.mc_releases = ["26.1.2"]
+
+[fabric."26.1.2"]
+mod.mc_compat = "26.1.2"
+mod.renderer_compat = "=0.9.1"
+deps.fabric_api = "0.155.2+26.1.2"
+deps.sodium = "mc26.1.2-0.9.1-fabric"
+
+[neoforge."26.1.2"]
+mod.mc_compat = "[26.1.2]"
+mod.renderer_compat = "[0.9.1+mc26.1.2]"
+deps.neo_loader = "26.1.2.97"
+deps.sodium = "mc26.1.2-0.9.1-neoforge"
+deps.sodium_maven = "0.9.1+mc26.1.2"
+
+["26.2"]
+mod.mc_releases = ["26.2"]
+
+[fabric."26.2"]
+mod.mc_compat = "26.2"
+mod.renderer_compat = "=0.9.1"
+deps.fabric_api = "0.158.0+26.2"
+deps.sodium = "mc26.2-0.9.1-fabric"
+
+[neoforge."26.2"]
+mod.mc_compat = "[26.2]"
+mod.renderer_compat = "[0.9.1+mc26.2]"
+deps.neo_loader = "26.2.0.67"
+deps.sodium = "mc26.2-0.9.1-neoforge"
+deps.sodium_maven = "0.9.1+mc26.2"

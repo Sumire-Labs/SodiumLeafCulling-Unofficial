@@ -1,39 +1,44 @@
-import dev.kikugie.stonecutter.StonecutterSettings
-
 pluginManagement {
-	repositories {
-		mavenCentral()
-		gradlePluginPortal()
-		maven("https://maven.fabricmc.net/")
-		maven("https://maven.architectury.dev")
-		maven("https://maven.minecraftforge.net")
-		maven("https://maven.neoforged.net/releases/")
-		maven("https://maven.kikugie.dev/snapshots")
-		maven("https://maven.kikugie.dev/releases")
-	}
+    repositories {
+        mavenCentral()
+        gradlePluginPortal()
+        maven("https://maven.fabricmc.net/") { name = "FabricMC" }
+        maven("https://maven.neoforged.net/releases/") { name = "NeoForged" }
+        maven("https://maven.kikugie.dev/releases") { name = "KikuGie Releases" }
+    }
 }
 
 plugins {
-	id("dev.kikugie.stonecutter") version "0.5-alpha.4"
-	id("org.gradle.toolchains.foojay-resolver-convention") version "0.9.0"
+    id("dev.kikugie.stonecutter") version "0.9.7"
+    id("dev.kikugie.loom-back-compat") version "0.4.2"
+    id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
 
-extensions.configure<StonecutterSettings> {
-	kotlinController = true
-	centralScript = "build.gradle.kts"
-	shared {
-		fun mc(version: String, vararg loaders: String) {
-			for (it in loaders) vers("$version-$it", version)
-		}
+stonecutter {
+    create(rootProject) {
+        fun target(project: String, vararg loaders: String, version: String = project) {
+            for (loader in loaders) {
+                version("$project-$loader", version)
+                    .buildscript("build.$loader.gradle.kts")
+            }
+        }
 
-		mc("1.20.1", "fabric", "forge")
-		mc("1.20.4", "fabric", "neoforge")
-		mc("1.21.1", "fabric", "neoforge")
-		mc("1.21.4", "fabric", "neoforge")
-		//mc("1.21.11", "fabric", "neoforge") // Requires Loom 1.14+ - build separately like 26.1.1
-		//mc("26.1.1", "neoforge") // Requires Gradle 9.4 + Loom 1.15 - build separately
-	}
-	create(rootProject)
+        // Existing legacy targets retained during the build-system migration.
+        target("1.20.1", "fabric", "forge")
+        target("1.20.4", "fabric", "neoforge")
+
+        // Every 1.21 patch release for which Sodium publishes the requested loader.
+        for (patch in 1..8) target("1.21.$patch", "fabric", "neoforge")
+        target("1.21.9", "fabric") // Sodium has no NeoForge artifact for Minecraft 1.21.9.
+        for (patch in 10..11) target("1.21.$patch", "fabric", "neoforge")
+
+        target("26.1", "fabric", "neoforge")
+        target("26.1.1", "fabric", "neoforge")
+        target("26.1.2", "fabric", "neoforge")
+        target("26.2", "fabric", "neoforge")
+
+        vcsVersion = "26.2-fabric"
+    }
 }
 
-rootProject.name = "SodiumLeafCulling"
+rootProject.name = "SodiumLeafCulling-Unofficial"

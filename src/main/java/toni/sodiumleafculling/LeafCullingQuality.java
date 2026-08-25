@@ -1,11 +1,11 @@
 package toni.sodiumleafculling;
 
 import net.minecraft.network.chat.Component;
-#if AFTER_21_1
+//? if sodium_caffeine {
 import net.caffeinemc.mods.sodium.client.gui.options.TextProvider;
-#else
-import me.jellysquid.mods.sodium.client.gui.options.TextProvider;
-#endif
+//?} else {
+/*import me.jellysquid.mods.sodium.client.gui.options.TextProvider;
+*///?}
 
 public enum LeafCullingQuality implements TextProvider {
     NONE("options.leaf_culling.none"),

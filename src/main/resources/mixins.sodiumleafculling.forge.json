@@ -3,6 +3,7 @@
   "minVersion": "0.8",
   "package": "toni.sodiumleafculling.mixins",
   "compatibilityLevel": "${java}",
+  "refmap": "mixins.sodiumleafculling.refmap.json",
   "client": [
     "AbstractBlockRenderContextAccessor",
     "BlockOcclusionCacheMixin",

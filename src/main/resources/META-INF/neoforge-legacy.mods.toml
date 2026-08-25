@@ -1,5 +1,5 @@
 modLoader="javafml"
-loaderVersion="[47,)"
+loaderVersion="[1,)"
 license="${license}"
 showAsResourcePack=false
 issueTrackerURL="https://github.com/${github}/issues"
@@ -12,22 +12,24 @@ authors="${author}"
 logoFile="assets/${namespace}/textures/mod_logo.png"
 displayURL="https://github.com/${github}"
 displayTest="IGNORE_ALL_VERSION"
-features={java_version="[${java_version},)"}
 description='''${description}'''
 
 [[mixins]]
-config="mixins.${namespace}.forge.json"
+config="mixins.${namespace}.json"
+
+[features.${id}]
+javaVersion="[${java_version},)"
 
 [[dependencies."${id}"]]
 modId="minecraft"
-mandatory=true
+type="required"
 versionRange="${minecraft}"
 ordering="NONE"
 side="CLIENT"
 
 [[dependencies."${id}"]]
 modId="embeddium"
-mandatory=true
+type="required"
 versionRange="${renderer}"
 ordering="AFTER"
 side="CLIENT"

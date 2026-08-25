@@ -1,31 +1,37 @@
 {
-	"schemaVersion": 1,
-	"id": "${id}",
-	"name": "${display_name}",
-	"version": "${version}",
-	"description": "${description}",
-	"authors": [
-		"${author}"
-	],
-	"contact": {
-		"sources": "https://github.com/${github}/${name}",
-		"issues": "https://github.com/${github}/${name}/issues"
-	},
-	"license": "${license}",
-	"icon": "assets/${namespace}/textures/mod_logo.png",
-	"environment": "*",
-	"mixins": [
-		"mixins.${namespace}.json"
-	],
-	"entrypoints" : {
-		"mixinsquared": [
-			"${group}.${namespace}.LeafCullingMixinCanceller"
-		]
-	},
-	"depends": {
-		"minecraft": "${mc}",
-		"fabricloader": ">=0.15.0",
-		"fabric-api": "*"
-	},
-	"accessWidener": "${namespace}.accesswidener"
+  "schemaVersion": 1,
+  "id": "${id}",
+  "version": "${version}",
+  "name": "${name}",
+  "description": "${description}",
+  "authors": [
+    "${author}"
+  ],
+  "contact": {
+    "homepage": "https://github.com/${github}",
+    "sources": "https://github.com/${github}",
+    "issues": "https://github.com/${github}/issues"
+  },
+  "license": "${license}",
+  "icon": "assets/${namespace}/textures/mod_logo.png",
+  "environment": "client",
+  "entrypoints": {
+    "mixinsquared": [
+      "toni.${namespace}.LeafCullingMixinCanceller"
+    ]
+  },
+  "mixins": [
+    {
+      "config": "mixins.${namespace}.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=0.19.0",
+    "minecraft": "${minecraft}",
+    "java": ">=${java_version}",
+    "fabric-api": "*",
+    "sodium": "${renderer}",
+    "mixinsquared": ">=0.3.3"
+  }
 }

@@ -1,0 +1,135 @@
+name: Build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      full_matrix:
+        description: Build every registered Minecraft/loader target
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  representative:
+    name: ${{ matrix.target }} (${{ matrix.os }})
+    if: ${{ github.event_name != 'workflow_dispatch' || !inputs.full_matrix }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: 1.20.1-forge
+          - os: windows-latest
+            target: 1.20.4-neoforge
+          - os: ubuntu-latest
+            target: 1.21.1-fabric
+          - os: windows-latest
+            target: 1.21.9-fabric
+          - os: ubuntu-latest
+            target: 1.21.11-neoforge
+          - os: windows-latest
+            target: 26.1.1-neoforge
+          - os: ubuntu-latest
+            target: 26.2-fabric
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Gradle
+        # v5 deliberately avoids the additional caching terms introduced in v6.
+        uses: gradle/actions/setup-gradle@v5
+
+      - name: Make Gradle wrapper executable
+        if: runner.os != 'Windows'
+        run: chmod +x gradlew
+
+      - name: Build ${{ matrix.target }}
+        if: runner.os != 'Windows'
+        run: ./gradlew :${{ matrix.target }}:build --configure-on-demand --stacktrace
+
+      - name: Build ${{ matrix.target }} on Windows
+        if: runner.os == 'Windows'
+        run: .\gradlew.bat :${{ matrix.target }}:build --configure-on-demand --stacktrace
+
+  full-matrix:
+    name: Full matrix / ${{ matrix.target }}
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.full_matrix }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        target:
+          - 1.20.1-fabric
+          - 1.20.1-forge
+          - 1.20.4-fabric
+          - 1.20.4-neoforge
+          - 1.21.1-fabric
+          - 1.21.1-neoforge
+          - 1.21.2-fabric
+          - 1.21.2-neoforge
+          - 1.21.3-fabric
+          - 1.21.3-neoforge
+          - 1.21.4-fabric
+          - 1.21.4-neoforge
+          - 1.21.5-fabric
+          - 1.21.5-neoforge
+          - 1.21.6-fabric
+          - 1.21.6-neoforge
+          - 1.21.7-fabric
+          - 1.21.7-neoforge
+          - 1.21.8-fabric
+          - 1.21.8-neoforge
+          - 1.21.9-fabric
+          - 1.21.10-fabric
+          - 1.21.10-neoforge
+          - 1.21.11-fabric
+          - 1.21.11-neoforge
+          - 26.1-fabric
+          - 26.1-neoforge
+          - 26.1.1-fabric
+          - 26.1.1-neoforge
+          - 26.1.2-fabric
+          - 26.1.2-neoforge
+          - 26.2-fabric
+          - 26.2-neoforge
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Gradle
+        # v5 deliberately avoids the additional caching terms introduced in v6.
+        uses: gradle/actions/setup-gradle@v5
+
+      - name: Make Gradle wrapper executable
+        run: chmod +x gradlew
+
+      - name: Build ${{ matrix.target }}
+        run: ./gradlew :${{ matrix.target }}:build --configure-on-demand --stacktrace

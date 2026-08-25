@@ -1,0 +1,140 @@
+plugins {
+    id("net.neoforged.moddev.legacyforge") version "2.0.144"
+    id("neoforge-mutex")
+    `maven-publish`
+}
+
+version = "${project.property("mod.version")}+${sc.current.version}"
+base.archivesName = "${project.property("mod.id")}-forge"
+
+val modId = project.property("mod.id").toString()
+
+val requiredJava = JavaVersion.VERSION_17
+
+repositories {
+    exclusiveContent {
+        forRepository {
+            maven("https://api.modrinth.com/maven") {
+                name = "Modrinth"
+            }
+        }
+        filter { includeGroup("maven.modrinth") }
+    }
+}
+
+dependencies {
+    add("modImplementation", "maven.modrinth:embeddium:${project.property("deps.embeddium")}")
+
+    annotationProcessor("org.spongepowered:mixin:0.8.5:processor")
+
+    val mixinExtrasVersion = project.property("deps.mixinextras").toString()
+    val mixinExtrasCommon = "io.github.llamalad7:mixinextras-common:$mixinExtrasVersion"
+    annotationProcessor(mixinExtrasCommon)
+    compileOnly(mixinExtrasCommon)
+
+    val mixinExtrasForge = implementation("io.github.llamalad7:mixinextras-forge:$mixinExtrasVersion")!!
+    jarJar(mixinExtrasForge)
+}
+
+legacyForge {
+    version = project.property("deps.forge") as String
+    validateAccessTransformers = true
+
+    mods {
+        register(project.property("mod.id") as String) {
+            sourceSet(sourceSets.main.get())
+        }
+    }
+
+    runs {
+        register("client") {
+            gameDirectory = rootProject.file("run/${sc.current.project}")
+            jvmArgument("-Dmixin.debug.export=true")
+            jvmArgument("-Dsodium.checks.issue2561=false")
+            client()
+        }
+    }
+}
+
+mixin {
+    add(sourceSets.main.get(), "mixins.sodiumleafculling.refmap.json")
+    config("mixins.sodiumleafculling.forge.json")
+}
+
+java {
+    withSourcesJar()
+    sourceCompatibility = requiredJava
+    targetCompatibility = requiredJava
+
+    toolchain {
+        vendor = JvmVendorSpec.ADOPTIUM
+        languageVersion = JavaLanguageVersion.of(requiredJava.majorVersion)
+    }
+}
+
+tasks {
+    named("createMinecraftArtifacts") {
+        dependsOn("stonecutterGenerate")
+    }
+
+    withType<JavaCompile>().configureEach {
+        options.encoding = "UTF-8"
+        options.release.set(requiredJava.majorVersion.toInt())
+    }
+
+    processResources {
+        val values = mapOf(
+            "id" to project.property("mod.id"),
+            "namespace" to project.property("mod.namespace"),
+            "name" to project.property("mod.name"),
+            "version" to project.property("mod.version"),
+            "description" to project.property("mod.description"),
+            "author" to project.property("mod.author"),
+            "license" to project.property("mod.license"),
+            "github" to project.property("mod.github"),
+            "minecraft" to project.property("mod.mc_compat"),
+            "renderer" to project.property("mod.renderer_compat"),
+            "java" to "JAVA_${requiredJava.majorVersion}",
+            "java_version" to requiredJava.majorVersion,
+        )
+
+        inputs.properties(values)
+        filesMatching("META-INF/mods.toml") { expand(values) }
+        filesMatching("mixins.sodiumleafculling.forge.json") { expand(values) }
+        exclude(
+            "fabric.mod.json",
+            "mixins.sodiumleafculling.json",
+            "META-INF/neoforge-legacy.mods.toml",
+            "META-INF/neoforge.mods.toml",
+        )
+    }
+
+    jar {
+        manifest {
+            attributes["MixinConfigs"] = "mixins.sodiumleafculling.forge.json"
+        }
+
+        from(rootProject.file("LICENSE.md")) {
+            rename("LICENSE\\.md", "LICENSE.md_$modId")
+        }
+    }
+
+    register<Copy>("buildAndCollect") {
+        group = "build"
+        description = "Builds and collects the Forge jars for this target."
+        inputs.property("version", project.property("mod.version"))
+        from(named<Jar>("reobfJar").flatMap { it.archiveFile }, named<Jar>("sourcesJar").flatMap { it.archiveFile })
+        into(rootProject.layout.buildDirectory.dir("libs/${project.property("mod.version")}"))
+    }
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("mavenJava") {
+            groupId = project.property("mod.group").toString()
+            artifactId = "${project.property("mod.id")}-forge"
+            version = project.version.toString()
+            from(components["java"])
+        }
+    }
+}

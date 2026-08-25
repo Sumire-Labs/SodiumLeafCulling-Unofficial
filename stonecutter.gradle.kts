@@ -1,28 +1,37 @@
 plugins {
     id("dev.kikugie.stonecutter")
-    kotlin("jvm") version "2.0.0" apply false
-    kotlin("plugin.serialization") version "2.0.0" apply false
-    id("co.uzzu.dotenv.gradle") version "4.0.0"
-    id("dev.architectury.loom") version "1.10-SNAPSHOT" apply false
-    id("me.modmuss50.mod-publish-plugin") apply false
-    id("systems.manifold.manifold-gradle-plugin") version "0.0.2-alpha" apply false
 }
 
-stonecutter active "1.21.1-fabric" /* [SC] DO NOT EDIT */
+stonecutter active "26.2-fabric"
 
-stonecutter registerChiseled tasks.register("chiseledBuild", stonecutter.chiseled) {
-    group = "project"
-    ofTask("build")
+stonecutter parameters {
+    val (version, loader) = current.project.split('-', limit = 2)
+
+    properties {
+        tags(version, loader)
+    }
+
+    constants {
+        match(loader, "fabric", "forge", "neoforge")
+    }
+
+    // Sodium 0.8's public configuration API was backported to 1.21.1, then
+    // became the regular API again in 1.21.11. Rendering internals changed at
+    // the latter boundary only.
+    constants["sodium_caffeine"] = current.parsed >= "1.21.1"
+    constants["sodium_modern_config"] = current.version == "1.21.1" || current.parsed >= "1.21.11"
+    constants["sodium_modern_renderer"] = current.parsed >= "1.21.11"
+    constants["sodium_chunk_layer"] = current.version == "1.21.11"
+    constants["sodium_frapi_chunk_layer"] = current.parsed >= "1.21.6" && current.parsed < "1.21.11"
+
+    replacements {
+        string(current.parsed >= "1.21.11") {
+            replace("ResourceLocation", "Identifier")
+        }
+    }
 }
 
-stonecutter registerChiseled tasks.register("chiseledBuildAndCollect", stonecutter.chiseled) {
-    group = "project"
-    ofTask("buildAndCollect")
+stonecutter tasks {
+    named("build")
+    named("buildAndCollect")
 }
-
-stonecutter registerChiseled tasks.register("chiseledPublishMods", stonecutter.chiseled) {
-    group = "project"
-    ofTask("publishMods")
-}
-
-stonecutter.automaticPlatformConstants = true

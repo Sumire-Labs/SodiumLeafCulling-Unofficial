@@ -15,19 +15,24 @@ import toni.sodiumleafculling.LeafCulling;
 import toni.sodiumleafculling.LeafCullingQuality;
 import toni.sodiumleafculling.PerformanceSettingsAccessor;
 
-#if AFTER_21_11
+//? if sodium_modern_renderer {
 import net.caffeinemc.mods.sodium.client.SodiumClientMod;
 import net.caffeinemc.mods.sodium.client.render.model.AbstractBlockRenderContext;
-import net.minecraft.client.renderer.block.BlockAndTintGetter;
-#elif AFTER_21_1
-import net.caffeinemc.mods.sodium.client.SodiumClientMod;
+//?} elif sodium_caffeine {
+/*import net.caffeinemc.mods.sodium.client.SodiumClientMod;
 import net.caffeinemc.mods.sodium.client.render.chunk.compile.pipeline.BlockOcclusionCache;
-#else
-import me.jellysquid.mods.sodium.client.SodiumClientMod;
+*///?} else {
+/*import me.jellysquid.mods.sodium.client.SodiumClientMod;
 import me.jellysquid.mods.sodium.client.render.chunk.compile.pipeline.BlockOcclusionCache;
-#endif
+*///?}
 
-#if AFTER_21_11
+//? if >=26.1 {
+import net.minecraft.client.renderer.block.BlockAndTintGetter;
+//?} elif sodium_modern_renderer {
+/*import net.minecraft.world.level.BlockAndTintGetter;
+*///?}
+
+//? if sodium_modern_renderer {
 @Mixin(value = AbstractBlockRenderContext.class, remap = false, priority = 100)
 public class BlockOcclusionCacheMixin {
 
@@ -63,8 +68,8 @@ public class BlockOcclusionCacheMixin {
         }
     }
 }
-#else
-@Mixin(value = BlockOcclusionCache.class, priority = 100)
+//?} else {
+/*@Mixin(value = BlockOcclusionCache.class, priority = 100)
 public class BlockOcclusionCacheMixin {
 
     @Inject(method = "shouldDrawSide", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;skipRendering(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/Direction;)Z"), locals = LocalCapture.CAPTURE_FAILHARD, cancellable = true)
@@ -96,4 +101,4 @@ public class BlockOcclusionCacheMixin {
          }
     }
 }
-#endif
+*///?}

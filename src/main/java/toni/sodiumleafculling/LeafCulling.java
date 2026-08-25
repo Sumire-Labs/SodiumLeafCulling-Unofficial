@@ -5,18 +5,17 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.AirBlock;
 import net.minecraft.world.level.block.LeavesBlock;
-#if AFTER_21_1
+//? if sodium_caffeine {
 import net.caffeinemc.mods.sodium.client.SodiumClientMod;
-#else
-import me.jellysquid.mods.sodium.client.SodiumClientMod;
-#endif
+//?} else {
+/*import me.jellysquid.mods.sodium.client.SodiumClientMod;
+*///?}
 
 public class LeafCulling {
     private static final Direction[] VALUES = Direction.values();
 
     public static boolean isFacingAir(BlockGetter view, BlockPos pos, Direction facing) {
-        var vec = facing.getNormal();
-        return view.getBlockState(pos.offset(vec)).getBlock() instanceof AirBlock;
+        return view.getBlockState(pos.relative(facing)).getBlock() instanceof AirBlock;
     }
 
     public static boolean surroundedByLeaves(BlockGetter view, BlockPos pos) {
@@ -25,12 +24,12 @@ public class LeafCulling {
             if (isAggressiveMode && (dir == Direction.DOWN || dir == Direction.UP))
                 continue;
 
-            var dirPos = pos.offset(dir.getNormal());
+            var dirPos = pos.relative(dir);
             var blockstate = view.getBlockState(dirPos);
             if (blockstate.getBlock() instanceof LeavesBlock)
                 continue;
 
-            if (blockstate.isSolidRender(view, pos))
+            if (blockstate.isSolidRender(/*? if <1.21.2 {*//*view, dirPos*//*?}*/))
                 continue;
 
             return false;
@@ -43,10 +42,11 @@ public class LeafCulling {
         if (isFacingAir(view, pos, facing))
             return false;
 
-        var vec = facing.getNormal();
         var cull = true;
+        var checkPos = pos.mutable();
         for (int i = 1; i <= depth; i++) {
-            var state = view.getBlockState(pos.offset(vec.multiply(i)));
+            checkPos.move(facing);
+            var state = view.getBlockState(checkPos);
             cull &= state != null && state.getBlock() instanceof LeavesBlock;
         }
 

@@ -1,25 +1,34 @@
-modLoader = "javafml"
+modLoader="javafml"
 loaderVersion="[1,)"
 license="${license}"
 showAsResourcePack=false
-
-issueTrackerURL = "https://github.com/${github}/${name}/issues"
+issueTrackerURL="https://github.com/${github}/issues"
 
 [[mods]]
 modId="${id}"
 version="${version}"
+displayName="${name}"
 authors="${author}"
-displayName="${display_name}"
-description="${description}"
 logoFile="assets/${namespace}/textures/mod_logo.png"
-displayURL = "https://github.com/${github}/${name}/"
+displayURL="https://github.com/${github}"
+description='''${description}'''
 
 [[mixins]]
-config = "mixins.${namespace}.json"
+config="mixins.${namespace}.json"
+
+[features.${id}]
+javaVersion="[${java_version},)"
 
 [[dependencies."${id}"]]
 modId="minecraft"
-mandatory=true
-versionRange="${mc}"
+type="required"
+versionRange="${minecraft}"
 ordering="NONE"
-side="BOTH"
+side="CLIENT"
+
+[[dependencies."${id}"]]
+modId="sodium"
+type="required"
+versionRange="${renderer}"
+ordering="AFTER"
+side="CLIENT"

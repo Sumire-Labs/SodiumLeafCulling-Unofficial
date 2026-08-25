@@ -1,6 +1,5 @@
 package toni.sodiumleafculling.mixins;
 
-
 import net.minecraft.network.chat.Component;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -14,7 +13,7 @@ import toni.sodiumleafculling.LeafCullingQuality;
 import toni.sodiumleafculling.PerformanceSettingsAccessor;
 import java.util.List;
 
-#if AFTER_21_11
+//? if sodium_modern_config {
 import net.caffeinemc.mods.sodium.client.gui.SodiumConfigBuilder;
 import net.caffeinemc.mods.sodium.client.gui.SodiumOptions;
 import net.caffeinemc.mods.sodium.api.config.StorageEventHandler;
@@ -23,29 +22,19 @@ import net.caffeinemc.mods.sodium.api.config.option.OptionImpact;
 import net.caffeinemc.mods.sodium.api.config.structure.ConfigBuilder;
 import net.caffeinemc.mods.sodium.api.config.structure.OptionPageBuilder;
 import net.minecraft.resources.Identifier;
-#elif CURRENT_21_1
-// Sodium 0.8.x backport for 1.21.1: new config API, but MC 1.21.1 still uses ResourceLocation (not Identifier)
-import net.caffeinemc.mods.sodium.client.gui.SodiumConfigBuilder;
-import net.caffeinemc.mods.sodium.client.gui.SodiumOptions;
-import net.caffeinemc.mods.sodium.api.config.StorageEventHandler;
-import net.caffeinemc.mods.sodium.api.config.option.OptionFlag;
-import net.caffeinemc.mods.sodium.api.config.option.OptionImpact;
-import net.caffeinemc.mods.sodium.api.config.structure.ConfigBuilder;
-import net.caffeinemc.mods.sodium.api.config.structure.OptionPageBuilder;
-import net.minecraft.resources.ResourceLocation;
-#elif AFTER_21_1
-import net.caffeinemc.mods.sodium.client.gui.SodiumGameOptionPages;
+//?} elif sodium_caffeine {
+/*import net.caffeinemc.mods.sodium.client.gui.SodiumGameOptionPages;
 import net.caffeinemc.mods.sodium.client.gui.options.*;
 import net.caffeinemc.mods.sodium.client.gui.options.control.CyclingControl;
 import net.caffeinemc.mods.sodium.client.gui.options.storage.SodiumOptionsStorage;
-#else
-import me.jellysquid.mods.sodium.client.gui.SodiumGameOptionPages;
+*///?} else {
+/*import me.jellysquid.mods.sodium.client.gui.SodiumGameOptionPages;
 import me.jellysquid.mods.sodium.client.gui.options.*;
 import me.jellysquid.mods.sodium.client.gui.options.control.CyclingControl;
 import me.jellysquid.mods.sodium.client.gui.options.storage.SodiumOptionsStorage;
-#endif
+*///?}
 
-#if AFTER_21_11
+//? if sodium_modern_config {
 @Mixin(value = SodiumConfigBuilder.class, remap = false, priority = 100)
 public class SodiumGameOptionPagesMixin {
 
@@ -73,36 +62,8 @@ public class SodiumGameOptionPagesMixin {
         );
     }
 }
-#elif CURRENT_21_1
-@Mixin(value = SodiumConfigBuilder.class, remap = false, priority = 100)
-public class SodiumGameOptionPagesMixin {
-
-    @Shadow @Final private StorageEventHandler sodiumStorage;
-    @Shadow @Final private SodiumOptions sodiumOpts;
-
-    @Inject(method = "buildPerformancePage", at = @At("RETURN"))
-    private void inject$leafcullingoption(ConfigBuilder builder, CallbackInfoReturnable<OptionPageBuilder> cir) {
-        cir.getReturnValue().addOptionGroup(
-            builder.createOptionGroup()
-                .addOption(
-                    builder.createEnumOption(
-                        ResourceLocation.fromNamespaceAndPath("sodiumleafculling", "performance.leaf_culling"),
-                        LeafCullingQuality.class)
-                        .setStorageHandler(this.sodiumStorage)
-                        .setName(Component.translatable("sodiumleafculling.options.leaf_culling.name"))
-                        .setTooltip(Component.translatable("sodiumleafculling.options.leaf_culling.tooltip"))
-                        .setDefaultValue(LeafCullingQuality.SOLID_AGGRESSIVE)
-                        .setBinding(
-                            value -> ((PerformanceSettingsAccessor) this.sodiumOpts.performance).sodiumleafculling$setQuality(value),
-                            () -> ((PerformanceSettingsAccessor) this.sodiumOpts.performance).sodiumleafculling$getQuality())
-                        .setImpact(OptionImpact.MEDIUM)
-                        .setFlags(OptionFlag.REQUIRES_RENDERER_RELOAD)
-                )
-        );
-    }
-}
-#else
-@Mixin(value = SodiumGameOptionPages.class, remap = false, priority = 100)
+//?} else {
+/*@Mixin(value = SodiumGameOptionPages.class, remap = false, priority = 100)
 public class SodiumGameOptionPagesMixin {
     @Unique
     private static final SodiumOptionsStorage leafcullingOpts = new SodiumOptionsStorage();
@@ -124,4 +85,4 @@ public class SodiumGameOptionPagesMixin {
         );
     }
 }
-#endif
+*///?}
