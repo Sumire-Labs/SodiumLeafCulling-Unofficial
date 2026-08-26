@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   validate:
-    name: Validate release tag
+    name: Read release version
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions:
@@ -29,7 +29,7 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Match tag to mod.version
+      - name: Read mod.version for release
         id: version
         env:
           TAG_NAME: ${{ github.ref_name }}
@@ -37,19 +37,14 @@ jobs:
         run: |
           set -euo pipefail
           mod_version="$(sed -nE 's/^mod\.version = "([^"]+)"/\1/p' stonecutter.properties.toml)"
-          tag_version="${TAG_NAME#v}"
-          tag_regex='^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$'
+          semver_regex='^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$'
 
-          if [[ ! "$TAG_NAME" =~ $tag_regex ]]; then
-            echo "Release tags must look like v3.0.0; got '$TAG_NAME'." >&2
+          if [[ -z "$mod_version" || ! "$mod_version" =~ $semver_regex ]]; then
+            echo "Invalid or missing mod.version: '$mod_version'." >&2
             exit 1
           fi
 
-          if [[ "$tag_version" != "$mod_version" ]]; then
-            echo "Tag version '$tag_version' does not match mod.version '$mod_version'." >&2
-            exit 1
-          fi
-
+          echo "Release tag '$TAG_NAME' will publish mod version '$mod_version'."
           echo "mod_version=$mod_version" >> "$GITHUB_OUTPUT"
 
   build:
@@ -131,9 +126,9 @@ jobs:
           mapfile -t assets < <(find release-assets -maxdepth 1 -type f -name '*.jar' -print | sort)
           assets+=(release-assets/SHA256SUMS)
 
-          if gh release view "$TAG_NAME" >/dev/null 2>&1; then
+          if gh release view -- "$TAG_NAME" >/dev/null 2>&1; then
             echo "Release $TAG_NAME already exists; replacing its build assets."
-            gh release upload "$TAG_NAME" "${assets[@]}" --clobber
+            gh release upload --clobber -- "$TAG_NAME" "${assets[@]}"
           else
             release_flags=(
               --verify-tag
@@ -146,10 +141,10 @@ jobs:
               release_flags+=(--prerelease)
             fi
 
-            gh release create "$TAG_NAME" "${assets[@]}" "${release_flags[@]}"
+            gh release create "${release_flags[@]}" -- "$TAG_NAME" "${assets[@]}"
           fi
 
-          release_url="$(gh release view "$TAG_NAME" --json url --jq .url)"
+          release_url="$(gh release view --json url --jq .url -- "$TAG_NAME")"
           echo "release_url=$release_url" >> "$GITHUB_OUTPUT"
           echo "GitHub Release: $release_url" >> "$GITHUB_STEP_SUMMARY"
 

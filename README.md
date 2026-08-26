@@ -81,10 +81,10 @@ runtime jars:
    dispatches. It builds all 33 Minecraft/loader targets in separate jobs,
    rejects sources/dev/plain jars, and exposes the combined
    `slc-unofficial-jars` artifact on the Actions run for 14 days.
-2. **Release** runs for a pushed canonical `v` tag. The tag (for example
-   `v3.0.0`) must match `mod.version` (for example `3.0.0`). It rebuilds all
-   targets once, creates a GitHub Release with generated notes, and attaches
-   all 33 runtime jars plus `SHA256SUMS`.
+2. **Release** runs for any pushed tag. The tag identifies the GitHub Release,
+   while `mod.version` in the tagged commit determines the JAR and platform
+   version. It rebuilds all targets once, creates a GitHub Release with
+   generated notes, and attaches all 33 runtime jars plus `SHA256SUMS`.
 3. **Publish to CurseForge and Modrinth** is called only after the GitHub
    Release succeeds. It publishes each target as its own platform version so
    its Minecraft version and loader metadata remain accurate. A manual run can
@@ -97,13 +97,13 @@ Configure these GitHub repository variables before enabling platform uploads:
 
 Configure `MODRINTH_TOKEN` and `CURSEFORGE_TOKEN` as secrets in a GitHub
 Environment named `publishing` (repository secrets also work). For unattended
-publishing, restrict that environment to trusted `v*` tags without required
-reviewers, and protect creation or modification of `v*` tags with a repository
-ruleset. GitHub approvals apply to individual matrix deployments, so enabling
-required reviewers can require repeated approval waves while the two-at-a-time
-publisher advances. A platform is skipped when its project-ID variable is
-empty; if an ID exists but its token is missing, that platform job fails
-instead of silently pretending to publish.
+publishing, configure its deployment tag rules to match the tag convention you
+intend to use, leave required reviewers disabled, and protect tag creation or
+modification with a repository ruleset. GitHub approvals apply to individual
+matrix deployments, so enabling required reviewers can require repeated
+approval waves while the two-at-a-time publisher advances. A platform is
+skipped when its project-ID variable is empty; if an ID exists but its token is
+missing, that platform job fails instead of silently pretending to publish.
 
 For a partial retry, dispatch **Publish to CurseForge and Modrinth**, choose the
 failed platform, and enter its exact target such as `1.21.11-neoforge`. Leaving
@@ -112,17 +112,22 @@ already present. If the `publishing` environment permits only tags, run the
 retry on the tag ref instead of the default branch, for example:
 
 ```sh
-gh workflow run release-to-cf-mr.yml --ref v3.0.0 \
-  -f tag=v3.0.0 -f target=1.21.11-neoforge \
+gh workflow run release-to-cf-mr.yml --ref 3.0.0 \
+  -f tag=3.0.0 -f target=1.21.11-neoforge \
   -f publish_modrinth=true -f publish_curseforge=false
 ```
 
 To create version `3.0.0` after changing and validating `mod.version`:
 
 ```sh
-git tag v3.0.0
-git push origin v3.0.0
+git tag 3.0.0
+git push origin 3.0.0
 ```
+
+Use one release tag per `mod.version`. Pushing multiple alias tags such as
+`3.0.0` and `v3.0.0` for the same tagged version produces identical Modrinth
+and CurseForge version identifiers, so the later platform upload is rejected as
+a duplicate.
 
 All workflow actions are pinned to immutable commit SHAs. The publishing
 workflow uses `mc-publish` 3.3.1 and does not rebuild source code or receive
