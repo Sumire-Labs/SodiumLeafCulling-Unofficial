@@ -1,135 +1,282 @@
-name: Build
+name: Build all versions
 
 on:
   push:
+    branches:
+      - '**'
   pull_request:
   workflow_dispatch:
     inputs:
-      full_matrix:
-        description: Build every registered Minecraft/loader target
+      artifact_name:
+        description: Name of the combined downloadable artifact
         required: false
-        type: boolean
-        default: false
+        type: string
+        default: slc-unofficial-jars
+      retention_days:
+        description: Number of days to retain the combined artifact
+        required: false
+        type: number
+        default: 14
+  workflow_call:
+    inputs:
+      artifact_name:
+        description: Name of the combined downloadable artifact
+        required: false
+        type: string
+        default: slc-unofficial-jars
+      retention_days:
+        description: Number of days to retain the combined artifact
+        required: false
+        type: number
+        default: 14
+    outputs:
+      artifact_name:
+        description: Name of the combined artifact containing all runtime JARs
+        value: ${{ jobs.aggregate.outputs.artifact_name }}
+      mod_version:
+        description: Mod version read from stonecutter.properties.toml
+        value: ${{ jobs.aggregate.outputs.mod_version }}
 
 permissions:
   contents: read
 
 concurrency:
-  group: build-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: build-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref_type != 'tag' }}
 
 jobs:
-  representative:
-    name: ${{ matrix.target }} (${{ matrix.os }})
-    if: ${{ github.event_name != 'workflow_dispatch' || !inputs.full_matrix }}
-    runs-on: ${{ matrix.os }}
-    timeout-minutes: 45
-    strategy:
-      fail-fast: false
-      max-parallel: 4
-      matrix:
-        include:
-          - os: ubuntu-latest
-            target: 1.20.1-forge
-          - os: windows-latest
-            target: 1.20.4-neoforge
-          - os: ubuntu-latest
-            target: 1.21.1-fabric
-          - os: windows-latest
-            target: 1.21.9-fabric
-          - os: ubuntu-latest
-            target: 1.21.11-neoforge
-          - os: windows-latest
-            target: 26.1.1-neoforge
-          - os: ubuntu-latest
-            target: 26.2-fabric
+  metadata:
+    name: Read project metadata
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      mod_version: ${{ steps.metadata.outputs.mod_version }}
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v6
-
-      - name: Set up Java 21
-        uses: actions/setup-java@v5
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          distribution: temurin
-          java-version: '21'
+          persist-credentials: false
 
-      - name: Set up Gradle
-        # v5 deliberately avoids the additional caching terms introduced in v6.
-        uses: gradle/actions/setup-gradle@v5
+      - name: Read and validate mod version
+        id: metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="$(sed -nE 's/^mod\.version = "([^"]+)"/\1/p' stonecutter.properties.toml)"
+          semver_regex='^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$'
 
-      - name: Make Gradle wrapper executable
-        if: runner.os != 'Windows'
-        run: chmod +x gradlew
+          if [[ -z "$version" || ! "$version" =~ $semver_regex ]]; then
+            echo "Invalid or missing mod.version: '$version'" >&2
+            exit 1
+          fi
 
-      - name: Build ${{ matrix.target }}
-        if: runner.os != 'Windows'
-        run: ./gradlew :${{ matrix.target }}:build --configure-on-demand --stacktrace
+          echo "mod_version=$version" >> "$GITHUB_OUTPUT"
 
-      - name: Build ${{ matrix.target }} on Windows
-        if: runner.os == 'Windows'
-        run: .\gradlew.bat :${{ matrix.target }}:build --configure-on-demand --stacktrace
-
-  full-matrix:
-    name: Full matrix / ${{ matrix.target }}
-    if: ${{ github.event_name == 'workflow_dispatch' && inputs.full_matrix }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 45
+  build:
+    name: Build / ${{ matrix.target }}
+    needs: metadata
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       max-parallel: 4
       matrix:
         target:
-          - 1.20.1-fabric
-          - 1.20.1-forge
-          - 1.20.4-fabric
-          - 1.20.4-neoforge
-          - 1.21.1-fabric
-          - 1.21.1-neoforge
-          - 1.21.2-fabric
-          - 1.21.2-neoforge
-          - 1.21.3-fabric
-          - 1.21.3-neoforge
-          - 1.21.4-fabric
-          - 1.21.4-neoforge
-          - 1.21.5-fabric
-          - 1.21.5-neoforge
-          - 1.21.6-fabric
-          - 1.21.6-neoforge
-          - 1.21.7-fabric
-          - 1.21.7-neoforge
-          - 1.21.8-fabric
-          - 1.21.8-neoforge
-          - 1.21.9-fabric
-          - 1.21.10-fabric
-          - 1.21.10-neoforge
-          - 1.21.11-fabric
-          - 1.21.11-neoforge
-          - 26.1-fabric
-          - 26.1-neoforge
-          - 26.1.1-fabric
-          - 26.1.1-neoforge
-          - 26.1.2-fabric
-          - 26.1.2-neoforge
-          - 26.2-fabric
-          - 26.2-neoforge
+          - '1.20.1-fabric'
+          - '1.20.1-forge'
+          - '1.20.4-fabric'
+          - '1.20.4-neoforge'
+          - '1.21.1-fabric'
+          - '1.21.1-neoforge'
+          - '1.21.2-fabric'
+          - '1.21.2-neoforge'
+          - '1.21.3-fabric'
+          - '1.21.3-neoforge'
+          - '1.21.4-fabric'
+          - '1.21.4-neoforge'
+          - '1.21.5-fabric'
+          - '1.21.5-neoforge'
+          - '1.21.6-fabric'
+          - '1.21.6-neoforge'
+          - '1.21.7-fabric'
+          - '1.21.7-neoforge'
+          - '1.21.8-fabric'
+          - '1.21.8-neoforge'
+          - '1.21.9-fabric'
+          - '1.21.10-fabric'
+          - '1.21.10-neoforge'
+          - '1.21.11-fabric'
+          - '1.21.11-neoforge'
+          - '26.1-fabric'
+          - '26.1-neoforge'
+          - '26.1.1-fabric'
+          - '26.1.1-neoforge'
+          - '26.1.2-fabric'
+          - '26.1.2-neoforge'
+          - '26.2-fabric'
+          - '26.2-neoforge'
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Set up Java 21
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v6.0.0
         with:
           distribution: temurin
           java-version: '21'
 
       - name: Set up Gradle
         # v5 deliberately avoids the additional caching terms introduced in v6.
-        uses: gradle/actions/setup-gradle@v5
+        uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c # v5.0.2
+        with:
+          validate-wrappers: true
+          gradle-home-cache-includes: |
+            caches
+            notifications
+            jdks
 
       - name: Make Gradle wrapper executable
         run: chmod +x gradlew
 
-      - name: Build ${{ matrix.target }}
-        run: ./gradlew :${{ matrix.target }}:build --configure-on-demand --stacktrace
+      - name: Build and check ${{ matrix.target }}
+        env:
+          TARGET: ${{ matrix.target }}
+        run: |
+          ./gradlew ":${TARGET}:build" ":${TARGET}:buildAndCollect" \
+            --configure-on-demand \
+            --stacktrace \
+            --console=plain \
+            -x sourcesJar \
+            -x remapSourcesJar
+
+      - name: Select and validate distributable JAR
+        env:
+          TARGET: ${{ matrix.target }}
+          MOD_VERSION: ${{ needs.metadata.outputs.mod_version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          minecraft="${TARGET%-*}"
+          loader="${TARGET##*-}"
+
+          mapfile -t forbidden < <(
+            find build/libs -type f \
+              \( -name '*-sources.jar' -o -name '*-dev.jar' -o -name '*-plain.jar' -o -name '*-javadoc.jar' \) \
+              -print | sort
+          )
+          if (( ${#forbidden[@]} != 0 )); then
+            printf 'Non-distributable JARs were unexpectedly built:\n%s\n' "${forbidden[*]}" >&2
+            exit 1
+          fi
+
+          mapfile -t jars < <(find build/libs -type f -name '*.jar' -print | sort)
+          if (( ${#jars[@]} != 1 )); then
+            printf 'Expected exactly one runtime JAR for %s, found %d:\n%s\n' \
+              "$TARGET" "${#jars[@]}" "${jars[*]}" >&2
+            exit 1
+          fi
+
+          jar="${jars[0]}"
+          jar_name="$(basename "$jar")"
+          if [[ "$loader" == 'fabric' ]]; then
+            expected_name="slc-unofficial-${loader}-${MOD_VERSION}+${minecraft}.jar"
+          else
+            expected_name="slc_unofficial-${loader}-${MOD_VERSION}+${minecraft}.jar"
+          fi
+          if [[ "$jar_name" != "$expected_name" ]]; then
+            echo "Unexpected filename for $TARGET: $jar_name" >&2
+            exit 1
+          fi
+
+          case "$TARGET" in
+            *-fabric) descriptor='fabric.mod.json' ;;
+            1.20.1-forge|1.20.4-neoforge) descriptor='META-INF/mods.toml' ;;
+            *-neoforge) descriptor='META-INF/neoforge.mods.toml' ;;
+            *) echo "Unknown target: $TARGET" >&2; exit 1 ;;
+          esac
+
+          if ! unzip -Z1 "$jar" | grep -Fx "$descriptor" >/dev/null; then
+            echo "$jar_name does not contain $descriptor" >&2
+            exit 1
+          fi
+
+          mkdir -p dist
+          cp "$jar" dist/
+          sha256sum "dist/$jar_name"
+
+      - name: Upload ${{ matrix.target }} runtime JAR
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: slc-unofficial-part-${{ matrix.target }}
+          path: dist/*.jar
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
+          overwrite: true
+
+  aggregate:
+    name: Collect all runtime JARs
+    needs:
+      - metadata
+      - build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    outputs:
+      artifact_name: ${{ steps.bundle.outputs.artifact_name }}
+      mod_version: ${{ needs.metadata.outputs.mod_version }}
+
+    steps:
+      - name: Download per-target JARs
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: slc-unofficial-part-*
+          path: dist
+          merge-multiple: true
+
+      - name: Validate and checksum bundle
+        id: bundle
+        env:
+          REQUESTED_ARTIFACT_NAME: ${{ inputs.artifact_name }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t jars < <(find dist -maxdepth 1 -type f -name '*.jar' -print | sort)
+
+          if (( ${#jars[@]} != 33 )); then
+            printf 'Expected 33 runtime JARs, found %d:\n%s\n' "${#jars[@]}" "${jars[*]}" >&2
+            exit 1
+          fi
+
+          if find dist -maxdepth 1 -type f \
+              \( -name '*-sources.jar' -o -name '*-dev.jar' -o -name '*-plain.jar' -o -name '*-javadoc.jar' \) \
+              -print -quit | grep -q .; then
+            echo 'The combined artifact contains a non-distributable JAR.' >&2
+            exit 1
+          fi
+
+          (cd dist && sha256sum ./*.jar | LC_ALL=C sort -k2 > SHA256SUMS)
+
+          artifact_name="${REQUESTED_ARTIFACT_NAME:-slc-unofficial-jars}"
+          echo "artifact_name=$artifact_name" >> "$GITHUB_OUTPUT"
+
+          {
+            echo '### Runtime JARs'
+            echo
+            echo "Built and validated ${#jars[@]} Stonecutter targets."
+            echo
+            printf -- "- \`%s\`\n" "${jars[@]##*/}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload combined downloadable artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ${{ steps.bundle.outputs.artifact_name }}
+          path: dist/
+          if-no-files-found: error
+          retention-days: ${{ inputs.retention_days || 14 }}
+          compression-level: 0
+          overwrite: true

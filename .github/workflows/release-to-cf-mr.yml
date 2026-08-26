@@ -1,0 +1,466 @@
+name: Publish to CurseForge and Modrinth
+
+run-name: Publish ${{ inputs.tag }} to CurseForge and Modrinth
+
+on:
+  workflow_call:
+    inputs:
+      tag:
+        description: Existing GitHub Release tag to publish
+        required: true
+        type: string
+      artifact_name:
+        description: Artifact from the current run; blank downloads GitHub Release assets
+        required: false
+        type: string
+        default: ''
+      target:
+        description: Publish only one Minecraft-loader target; blank publishes all targets
+        required: false
+        type: string
+        default: ''
+      modrinth_id:
+        description: Modrinth project ID; blank falls back to MODRINTH_PROJECT_ID
+        required: false
+        type: string
+        default: ''
+      curseforge_id:
+        description: CurseForge project ID; blank falls back to CURSEFORGE_PROJECT_ID
+        required: false
+        type: string
+        default: ''
+      publish_modrinth:
+        description: Publish all variants to Modrinth
+        required: false
+        type: boolean
+        default: true
+      publish_curseforge:
+        description: Publish all variants to CurseForge
+        required: false
+        type: boolean
+        default: true
+    secrets:
+      MODRINTH_TOKEN:
+        description: Modrinth token, preferably stored in the publishing environment
+        required: false
+      CURSEFORGE_TOKEN:
+        description: CurseForge token, preferably stored in the publishing environment
+        required: false
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing GitHub Release tag to publish
+        required: true
+        type: string
+      target:
+        description: Optional single target for a safe retry, such as 1.21.11-neoforge
+        required: false
+        type: string
+        default: ''
+      modrinth_id:
+        description: Optional override for MODRINTH_PROJECT_ID
+        required: false
+        type: string
+        default: ''
+      curseforge_id:
+        description: Optional override for CURSEFORGE_PROJECT_ID
+        required: false
+        type: string
+        default: ''
+      publish_modrinth:
+        description: Publish all variants to Modrinth
+        required: false
+        type: boolean
+        default: true
+      publish_curseforge:
+        description: Publish all variants to CurseForge
+        required: false
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-${{ inputs.tag }}
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    name: Validate release files
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    outputs:
+      artifact_name: ${{ steps.metadata.outputs.artifact_name }}
+      matrix: ${{ steps.metadata.outputs.matrix }}
+      version: ${{ steps.metadata.outputs.version }}
+      version_type: ${{ steps.metadata.outputs.version_type }}
+      modrinth_id: ${{ steps.metadata.outputs.modrinth_id }}
+      curseforge_id: ${{ steps.metadata.outputs.curseforge_id }}
+
+    steps:
+      - name: Download artifact from tag workflow
+        if: ${{ inputs.artifact_name != '' }}
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: ${{ inputs.artifact_name }}
+          path: publish
+
+      - name: Download existing GitHub Release assets
+        if: ${{ inputs.artifact_name == '' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG_NAME: ${{ inputs.tag }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p publish
+          gh release download "$TAG_NAME" \
+            --pattern '*.jar' \
+            --pattern 'SHA256SUMS' \
+            --dir publish
+
+      - name: Validate files and generate publishing matrix
+        id: metadata
+        env:
+          TAG_NAME: ${{ inputs.tag }}
+          SOURCE_ARTIFACT_NAME: ${{ inputs.artifact_name }}
+          TARGET_FILTER: ${{ inputs.target }}
+          MODRINTH_ID_INPUT: ${{ inputs.modrinth_id }}
+          MODRINTH_ID_VARIABLE: ${{ vars.MODRINTH_PROJECT_ID }}
+          CURSEFORGE_ID_INPUT: ${{ inputs.curseforge_id }}
+          CURSEFORGE_ID_VARIABLE: ${{ vars.CURSEFORGE_PROJECT_ID }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag_regex='^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$'
+
+          if [[ ! "$TAG_NAME" =~ $tag_regex ]]; then
+            echo "Release tags must look like v3.0.0; got '$TAG_NAME'." >&2
+            exit 1
+          fi
+          version="${TAG_NAME#v}"
+
+          mapfile -t jars < <(find publish -maxdepth 1 -type f -name '*.jar' -print | sort)
+          if (( ${#jars[@]} != 33 )); then
+            printf 'Expected 33 runtime JARs, found %d:\n%s\n' "${#jars[@]}" "${jars[*]}" >&2
+            exit 1
+          fi
+
+          if find publish -maxdepth 1 -type f \
+              \( -name '*-sources.jar' -o -name '*-dev.jar' -o -name '*-plain.jar' -o -name '*-javadoc.jar' \) \
+              -print -quit | grep -q .; then
+            echo 'A non-distributable JAR reached the publishing workflow.' >&2
+            exit 1
+          fi
+
+          if [[ ! -f publish/SHA256SUMS ]]; then
+            echo 'SHA256SUMS is missing from the release artifact.' >&2
+            exit 1
+          fi
+          (cd publish && sha256sum --check SHA256SUMS)
+
+          matrix_jsonl="$RUNNER_TEMP/publish-matrix.jsonl"
+          : > "$matrix_jsonl"
+          declare -A seen_targets=()
+          expected_targets=(
+            '1.20.1-fabric'
+            '1.20.1-forge'
+            '1.20.4-fabric'
+            '1.20.4-neoforge'
+            '1.21.1-fabric'
+            '1.21.1-neoforge'
+            '1.21.2-fabric'
+            '1.21.2-neoforge'
+            '1.21.3-fabric'
+            '1.21.3-neoforge'
+            '1.21.4-fabric'
+            '1.21.4-neoforge'
+            '1.21.5-fabric'
+            '1.21.5-neoforge'
+            '1.21.6-fabric'
+            '1.21.6-neoforge'
+            '1.21.7-fabric'
+            '1.21.7-neoforge'
+            '1.21.8-fabric'
+            '1.21.8-neoforge'
+            '1.21.9-fabric'
+            '1.21.10-fabric'
+            '1.21.10-neoforge'
+            '1.21.11-fabric'
+            '1.21.11-neoforge'
+            '26.1-fabric'
+            '26.1-neoforge'
+            '26.1.1-fabric'
+            '26.1.1-neoforge'
+            '26.1.2-fabric'
+            '26.1.2-neoforge'
+            '26.2-fabric'
+            '26.2-neoforge'
+          )
+
+          for jar in "${jars[@]}"; do
+            name="$(basename "$jar")"
+            stem="${name%.jar}"
+
+            if [[ ! "$stem" =~ ^(slc-unofficial|slc_unofficial)-(fabric|forge|neoforge)-(.+)\+([0-9]+(\.[0-9]+)+)$ ]]; then
+              echo "Cannot determine loader, version, and Minecraft version from '$name'." >&2
+              exit 1
+            fi
+
+            archive_base="${BASH_REMATCH[1]}"
+            loader="${BASH_REMATCH[2]}"
+            artifact_version="${BASH_REMATCH[3]}"
+            minecraft="${BASH_REMATCH[4]}"
+            target="${minecraft}-${loader}"
+
+            if [[ "$artifact_version" != "$version" ]]; then
+              echo "$name contains version '$artifact_version', expected '$version'." >&2
+              exit 1
+            fi
+            if [[ ( "$loader" == 'fabric' && "$archive_base" != 'slc-unofficial' ) ||
+                  ( "$loader" != 'fabric' && "$archive_base" != 'slc_unofficial' ) ]]; then
+              echo "Unexpected archive base '$archive_base' for loader '$loader'." >&2
+              exit 1
+            fi
+            if [[ -n "${seen_targets[$target]:-}" ]]; then
+              echo "Duplicate target in release assets: $target" >&2
+              exit 1
+            fi
+            seen_targets[$target]=1
+
+            case "$loader" in
+              fabric) loader_label='Fabric' ;;
+              forge) loader_label='Forge' ;;
+              neoforge) loader_label='NeoForge' ;;
+            esac
+
+            case "$minecraft" in
+              1.20.*) java_version='17' ;;
+              1.21.*) java_version='21' ;;
+              26.*) java_version='25' ;;
+              *) echo "Unknown Java requirement for Minecraft $minecraft." >&2; exit 1 ;;
+            esac
+
+            if [[ "$version" == *+* ]]; then
+              publish_version="${version}.mc${minecraft}-${loader}"
+            else
+              publish_version="${version}+mc${minecraft}-${loader}"
+            fi
+
+            jq -cn \
+              --arg file "publish/$name" \
+              --arg target "$target" \
+              --arg minecraft "$minecraft" \
+              --arg loader "$loader" \
+              --arg loader_label "$loader_label" \
+              --arg java "$java_version" \
+              --arg publish_version "$publish_version" \
+              '{file: $file, target: $target, minecraft: $minecraft, loader: $loader, loader_label: $loader_label, java: $java, publish_version: $publish_version}' \
+              >> "$matrix_jsonl"
+          done
+
+          for expected_target in "${expected_targets[@]}"; do
+            if [[ -z "${seen_targets[$expected_target]:-}" ]]; then
+              echo "Required release target is missing: $expected_target" >&2
+              exit 1
+            fi
+          done
+
+          full_matrix="$(jq -sc '{include: .}' "$matrix_jsonl")"
+          if [[ "$(jq '.include | length' <<< "$full_matrix")" -ne 33 ]]; then
+            echo 'Publishing matrix did not contain exactly 33 unique targets.' >&2
+            exit 1
+          fi
+
+          target_filter="${TARGET_FILTER//[[:space:]]/}"
+          if [[ -n "$target_filter" ]]; then
+            if [[ -z "${seen_targets[$target_filter]:-}" ]]; then
+              echo "Requested target is not present in the release: $target_filter" >&2
+              exit 1
+            fi
+            matrix="$(jq -c --arg target "$target_filter" '{include: [.include[] | select(.target == $target)]}' <<< "$full_matrix")"
+          else
+            matrix="$full_matrix"
+          fi
+
+          version_without_metadata="${version%%+*}"
+          prerelease=''
+          if [[ "$version_without_metadata" == *-* ]]; then
+            prerelease="${version_without_metadata#*-}"
+          fi
+          lower_prerelease="${prerelease,,}"
+          if [[ -z "$prerelease" ]]; then
+            version_type='release'
+          elif [[ "$lower_prerelease" == *alpha* || "$lower_prerelease" == *snapshot* ||
+                  "$lower_prerelease" == *dev* || "$lower_prerelease" == *nightly* ]]; then
+            version_type='alpha'
+          else
+            version_type='beta'
+          fi
+
+          modrinth_id="${MODRINTH_ID_INPUT:-$MODRINTH_ID_VARIABLE}"
+          curseforge_id="${CURSEFORGE_ID_INPUT:-$CURSEFORGE_ID_VARIABLE}"
+          modrinth_id="${modrinth_id//[[:space:]]/}"
+          curseforge_id="${curseforge_id//[[:space:]]/}"
+          artifact_name="${SOURCE_ARTIFACT_NAME:-manual-publish-jars-${GITHUB_RUN_ID}}"
+
+          if [[ -z "$modrinth_id" ]]; then
+            echo '::warning::Modrinth publishing is skipped because MODRINTH_PROJECT_ID is empty.'
+          fi
+          if [[ -z "$curseforge_id" ]]; then
+            echo '::warning::CurseForge publishing is skipped because CURSEFORGE_PROJECT_ID is empty.'
+          fi
+
+          {
+            echo "artifact_name=$artifact_name"
+            echo "matrix=$matrix"
+            echo "version=$version"
+            echo "version_type=$version_type"
+            echo "modrinth_id=$modrinth_id"
+            echo "curseforge_id=$curseforge_id"
+          } >> "$GITHUB_OUTPUT"
+
+          {
+            echo "### Publishing $TAG_NAME"
+            echo
+            echo "Validated ${#jars[@]} runtime JARs."
+            echo
+            [[ -n "$target_filter" ]] && echo "- Target: $target_filter" || echo '- Targets: all 33'
+            [[ -n "$modrinth_id" ]] && echo '- Modrinth: configured' || echo '- Modrinth: skipped (project ID is empty)'
+            [[ -n "$curseforge_id" ]] && echo '- CurseForge: configured' || echo '- CurseForge: skipped (project ID is empty)'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Preserve manually downloaded assets for publishing jobs
+        if: ${{ inputs.artifact_name == '' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ${{ steps.metadata.outputs.artifact_name }}
+          path: publish/
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
+          overwrite: true
+
+  modrinth:
+    name: Modrinth / ${{ matrix.target }}
+    needs: prepare
+    if: ${{ inputs.publish_modrinth && needs.prepare.outputs.modrinth_id != '' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    environment: publishing
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix: ${{ fromJSON(needs.prepare.outputs.matrix) }}
+
+    steps:
+      - name: Require Modrinth token
+        env:
+          PUBLISH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+        shell: bash
+        run: |
+          if [[ -z "${PUBLISH_TOKEN:-}" ]]; then
+            echo 'MODRINTH_TOKEN is not configured in the publishing environment or repository secrets.' >&2
+            exit 1
+          fi
+
+      - name: Download verified release artifact
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: ${{ needs.prepare.outputs.artifact_name }}
+          path: publish
+
+      - name: Verify selected JAR
+        env:
+          JAR: ${{ matrix.file }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f "$JAR"
+          (cd publish && sha256sum --check SHA256SUMS)
+
+      - name: Publish ${{ matrix.target }} to Modrinth
+        uses: Kira-NT/mc-publish@52307b03863581dec6b652b83e597aec02ebb075 # v3.3.1
+        with:
+          modrinth-id: ${{ needs.prepare.outputs.modrinth_id }}
+          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+          files: ${{ matrix.file }}
+          name: SodiumLeafCulling-Unofficial ${{ needs.prepare.outputs.version }} - Minecraft ${{ matrix.minecraft }} ${{ matrix.loader_label }}
+          version: ${{ matrix.publish_version }}
+          version-type: ${{ needs.prepare.outputs.version_type }}
+          changelog: |
+            See the full changelog and all loader variants in the GitHub Release:
+            https://github.com/${{ github.repository }}/releases/tag/${{ inputs.tag }}
+          loaders: ${{ matrix.loader }}
+          environment: client
+          game-versions: ${{ matrix.minecraft }}
+          game-version-filter: none
+          java: ${{ matrix.java }}
+          retry-attempts: 2
+          retry-delay: 10000
+          fail-mode: fail
+
+  curseforge:
+    name: CurseForge / ${{ matrix.target }}
+    needs: prepare
+    if: ${{ inputs.publish_curseforge && needs.prepare.outputs.curseforge_id != '' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    environment: publishing
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix: ${{ fromJSON(needs.prepare.outputs.matrix) }}
+
+    steps:
+      - name: Require CurseForge token
+        env:
+          PUBLISH_TOKEN: ${{ secrets.CURSEFORGE_TOKEN }}
+        shell: bash
+        run: |
+          if [[ -z "${PUBLISH_TOKEN:-}" ]]; then
+            echo 'CURSEFORGE_TOKEN is not configured in the publishing environment or repository secrets.' >&2
+            exit 1
+          fi
+
+      - name: Download verified release artifact
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: ${{ needs.prepare.outputs.artifact_name }}
+          path: publish
+
+      - name: Verify selected JAR
+        env:
+          JAR: ${{ matrix.file }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f "$JAR"
+          (cd publish && sha256sum --check SHA256SUMS)
+
+      - name: Publish ${{ matrix.target }} to CurseForge
+        uses: Kira-NT/mc-publish@52307b03863581dec6b652b83e597aec02ebb075 # v3.3.1
+        with:
+          curseforge-id: ${{ needs.prepare.outputs.curseforge_id }}
+          curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
+          files: ${{ matrix.file }}
+          name: SodiumLeafCulling-Unofficial ${{ needs.prepare.outputs.version }} - Minecraft ${{ matrix.minecraft }} ${{ matrix.loader_label }}
+          version: ${{ matrix.publish_version }}
+          version-type: ${{ needs.prepare.outputs.version_type }}
+          changelog: |
+            See the full changelog and all loader variants in the GitHub Release:
+            https://github.com/${{ github.repository }}/releases/tag/${{ inputs.tag }}
+          loaders: ${{ matrix.loader }}
+          environment: client
+          game-versions: ${{ matrix.minecraft }}
+          game-version-filter: none
+          java: ${{ matrix.java }}
+          retry-attempts: 2
+          retry-delay: 10000
+          fail-mode: fail

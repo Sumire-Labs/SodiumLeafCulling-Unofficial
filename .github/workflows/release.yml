@@ -1,0 +1,173 @@
+name: Release
+
+run-name: Release ${{ github.ref_name }}
+
+on:
+  push:
+    tags:
+      - '*'
+
+permissions: {}
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    name: Validate release tag
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      mod_version: ${{ steps.version.outputs.mod_version }}
+
+    steps:
+      - name: Check out release tag
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Match tag to mod.version
+        id: version
+        env:
+          TAG_NAME: ${{ github.ref_name }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mod_version="$(sed -nE 's/^mod\.version = "([^"]+)"/\1/p' stonecutter.properties.toml)"
+          tag_version="${TAG_NAME#v}"
+          tag_regex='^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$'
+
+          if [[ ! "$TAG_NAME" =~ $tag_regex ]]; then
+            echo "Release tags must look like v3.0.0; got '$TAG_NAME'." >&2
+            exit 1
+          fi
+
+          if [[ "$tag_version" != "$mod_version" ]]; then
+            echo "Tag version '$tag_version' does not match mod.version '$mod_version'." >&2
+            exit 1
+          fi
+
+          echo "mod_version=$mod_version" >> "$GITHUB_OUTPUT"
+
+  build:
+    name: Build release artifacts
+    needs: validate
+    permissions:
+      contents: read
+    uses: ./.github/workflows/build.yml
+    with:
+      artifact_name: slc-unofficial-release-jars
+      retention_days: 30
+
+  github_release:
+    name: Create GitHub Release
+    needs:
+      - validate
+      - build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    outputs:
+      release_url: ${{ steps.release.outputs.release_url }}
+
+    steps:
+      - name: Confirm the built version
+        env:
+          EXPECTED_VERSION: ${{ needs.validate.outputs.mod_version }}
+          BUILT_VERSION: ${{ needs.build.outputs.mod_version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$BUILT_VERSION" != "$EXPECTED_VERSION" ]]; then
+            echo "Built version '$BUILT_VERSION' does not match validated version '$EXPECTED_VERSION'." >&2
+            exit 1
+          fi
+
+      - name: Download verified build artifact
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: ${{ needs.build.outputs.artifact_name }}
+          path: release-assets
+
+      - name: Verify release assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t jars < <(find release-assets -maxdepth 1 -type f -name '*.jar' -print | sort)
+
+          if (( ${#jars[@]} != 33 )); then
+            printf 'Expected 33 runtime JARs, found %d:\n%s\n' "${#jars[@]}" "${jars[*]}" >&2
+            exit 1
+          fi
+
+          if find release-assets -maxdepth 1 -type f \
+              \( -name '*-sources.jar' -o -name '*-dev.jar' -o -name '*-plain.jar' -o -name '*-javadoc.jar' \) \
+              -print -quit | grep -q .; then
+            echo 'A non-distributable JAR reached the release job.' >&2
+            exit 1
+          fi
+
+          if [[ ! -f release-assets/SHA256SUMS ]]; then
+            echo 'SHA256SUMS is missing from the release artifact.' >&2
+            exit 1
+          fi
+
+          (cd release-assets && sha256sum --check SHA256SUMS)
+
+      - name: Create or update GitHub Release
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG_NAME: ${{ github.ref_name }}
+          MOD_VERSION: ${{ needs.build.outputs.mod_version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t assets < <(find release-assets -maxdepth 1 -type f -name '*.jar' -print | sort)
+          assets+=(release-assets/SHA256SUMS)
+
+          if gh release view "$TAG_NAME" >/dev/null 2>&1; then
+            echo "Release $TAG_NAME already exists; replacing its build assets."
+            gh release upload "$TAG_NAME" "${assets[@]}" --clobber
+          else
+            release_flags=(
+              --verify-tag
+              --generate-notes
+              --title "SodiumLeafCulling-Unofficial $MOD_VERSION"
+            )
+
+            version_without_metadata="${MOD_VERSION%%+*}"
+            if [[ "$version_without_metadata" == *-* ]]; then
+              release_flags+=(--prerelease)
+            fi
+
+            gh release create "$TAG_NAME" "${assets[@]}" "${release_flags[@]}"
+          fi
+
+          release_url="$(gh release view "$TAG_NAME" --json url --jq .url)"
+          echo "release_url=$release_url" >> "$GITHUB_OUTPUT"
+          echo "GitHub Release: $release_url" >> "$GITHUB_STEP_SUMMARY"
+
+  publish:
+    name: Publish to CurseForge and Modrinth
+    needs:
+      - build
+      - github_release
+    permissions:
+      contents: read
+    uses: ./.github/workflows/release-to-cf-mr.yml
+    with:
+      tag: ${{ github.ref_name }}
+      artifact_name: ${{ needs.build.outputs.artifact_name }}
+      modrinth_id: ${{ vars.MODRINTH_PROJECT_ID }}
+      curseforge_id: ${{ vars.CURSEFORGE_PROJECT_ID }}
+      publish_modrinth: true
+      publish_curseforge: true
+    secrets:
+      MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+      CURSEFORGE_TOKEN: ${{ secrets.CURSEFORGE_TOKEN }}
