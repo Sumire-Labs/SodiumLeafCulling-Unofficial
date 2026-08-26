@@ -28,6 +28,35 @@ repositories {
 }
 
 val sodiumNestedPath = sc.properties.getOrNull<String>("deps.sodium_nested_path")
+val sodiumMaven = sc.properties.getOrNull<String>("deps.sodium_maven")
+val sodiumShell = configurations.create("sodiumShell") {
+    isCanBeConsumed = false
+    isCanBeResolved = true
+    isTransitive = false
+}
+val strippedSodiumShell = sodiumMaven?.let { version ->
+    tasks.register<Jar>("stripSodiumShell") {
+        archiveBaseName.set("sodium-neoforge-service")
+        archiveVersion.set(version.replace('+', '-'))
+        destinationDirectory.set(layout.buildDirectory.dir("sodium-shell-lib"))
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+        from({ sodiumShell.map(::zipTree) })
+        exclude(
+            "META-INF/MANIFEST.MF",
+            "META-INF/neoforge.mods.toml",
+            "META-INF/jarjar/**",
+            "META-INF/services/net.neoforged.neoforgespi.locating.IModFileCandidateLocator",
+        )
+        manifest {
+            attributes(
+                "FMLModType" to "LIBRARY",
+                "Automatic-Module-Name" to "sodium_service",
+            )
+        }
+    }
+}
+
 if (sodiumNestedPath != null) {
     dependencies.registerTransform(ExtractNestedModJar::class) {
         from.attribute(
@@ -44,16 +73,17 @@ if (sodiumNestedPath != null) {
 
 dependencies {
     val embeddium = sc.properties.getOrNull<String>("deps.embeddium")
-    val sodiumMaven = sc.properties.getOrNull<String>("deps.sodium_maven")
 
     when {
         embeddium != null -> implementation("maven.modrinth:embeddium:$embeddium")
         sodiumMaven != null -> {
-            // Sodium 0.8+ publishes a lightweight outer mod that embeds its
-            // implementation jar. Compile against the implementation, but run
-            // with the outer distribution so NeoForge sees the intended layout.
-            compileOnly("net.caffeinemc:sodium-neoforge-mod:$sodiumMaven")
-            runtimeOnly("net.caffeinemc:sodium-neoforge:$sodiumMaven")
+            // The published shell claims the sodium mod id and embeds the real
+            // mod. That layout is correct for a launcher, but shadows the direct
+            // implementation on ModDevGradle's development classpath. Run with
+            // the implementation plus a metadata-free service shell instead.
+            implementation("net.caffeinemc:sodium-neoforge-mod:$sodiumMaven")
+            add(sodiumShell.name, "net.caffeinemc:sodium-neoforge:$sodiumMaven")
+            runtimeOnly(files(strippedSodiumShell))
         }
         sodiumNestedPath != null -> {
             val sodium = "maven.modrinth:sodium:${project.property("deps.sodium")}"
@@ -75,9 +105,21 @@ dependencies {
 
     sc.properties.getOrNull<String>("deps.forgified_api_base")?.let {
         compileOnly("org.sinytra.forgified-fabric-api:fabric-api-base:$it")
+        if (sodiumMaven != null) {
+            runtimeOnly("org.sinytra.forgified-fabric-api:fabric-api-base:$it")
+        }
     }
     sc.properties.getOrNull<String>("deps.forgified_renderer_api")?.let {
         compileOnly("org.sinytra.forgified-fabric-api:fabric-renderer-api-v1:$it")
+        if (sodiumMaven != null) {
+            runtimeOnly("org.sinytra.forgified-fabric-api:fabric-renderer-api-v1:$it")
+        }
+    }
+    sc.properties.getOrNull<String>("deps.forgified_rendering_data_attachment")?.let {
+        runtimeOnly("org.sinytra.forgified-fabric-api:fabric-rendering-data-attachment-v1:$it")
+    }
+    sc.properties.getOrNull<String>("deps.forgified_block_view_api")?.let {
+        runtimeOnly("org.sinytra.forgified-fabric-api:fabric-block-view-api-v2:$it")
     }
     sc.properties.getOrNull<String>("deps.fabric_renderer_api")?.let {
         // Sodium bundles the corresponding Forgified module at runtime. The
@@ -133,6 +175,7 @@ tasks {
     }
 
     processResources {
+        val logoPath = "assets/${project.property("mod.namespace")}/textures/mod_logo.png"
         val values = mapOf(
             "id" to project.property("mod.id"),
             "namespace" to project.property("mod.namespace"),
@@ -147,6 +190,7 @@ tasks {
             "renderer" to project.property("mod.renderer_compat"),
             "java" to "JAVA_${requiredJava.majorVersion}",
             "java_version" to requiredJava.majorVersion,
+            "icon_line" to if (sc.current.parsed >= "26.1") "iconFile=\"$logoPath\"" else "",
         )
 
         inputs.properties(values)
@@ -164,6 +208,7 @@ tasks {
                 "fabric.mod.json",
                 "mixins.sodiumleafculling.forge.json",
                 "META-INF/neoforge.mods.toml",
+                "pack.mcmeta",
             )
         } else {
             filesMatching("META-INF/neoforge.mods.toml") { expand(values) }
@@ -172,6 +217,7 @@ tasks {
                 "mixins.sodiumleafculling.forge.json",
                 "META-INF/mods.toml",
                 "META-INF/neoforge-legacy.mods.toml",
+                "pack.mcmeta",
             )
         }
     }

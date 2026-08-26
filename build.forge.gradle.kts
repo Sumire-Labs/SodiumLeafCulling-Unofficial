@@ -95,12 +95,14 @@ tasks {
             "github" to project.property("mod.github"),
             "minecraft" to project.property("mod.mc_compat"),
             "renderer" to project.property("mod.renderer_compat"),
+            "pack_format" to project.property("mod.pack_format"),
             "java" to "JAVA_${requiredJava.majorVersion}",
             "java_version" to requiredJava.majorVersion,
         )
 
         inputs.properties(values)
         filesMatching("META-INF/mods.toml") { expand(values) }
+        filesMatching("pack.mcmeta") { expand(values) }
         filesMatching("mixins.sodiumleafculling.forge.json") { expand(values) }
         exclude(
             "fabric.mod.json",

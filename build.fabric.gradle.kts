@@ -106,6 +106,7 @@ tasks {
             "META-INF/mods.toml",
             "META-INF/neoforge-legacy.mods.toml",
             "META-INF/neoforge.mods.toml",
+            "pack.mcmeta",
         )
     }
 

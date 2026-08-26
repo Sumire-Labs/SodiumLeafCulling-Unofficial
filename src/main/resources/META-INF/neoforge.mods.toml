@@ -10,6 +10,7 @@ version="${version}"
 displayName="${name}"
 authors="${author}, ${contributor}"
 logoFile="assets/${namespace}/textures/mod_logo.png"
+${icon_line}
 displayURL="https://github.com/${github}"
 description='''${description}'''
 

@@ -51,14 +51,18 @@ bash ./gradlew :1.21.11-fabric:build --configure-on-demand
 ```
 
 Replace `1.21.11-fabric` with any entry represented in the support table. To
-build every registered target and collect the distributable jars, run:
+build every registered target, run the checks, and collect only the
+distributable jars (without sources jars), run:
 
 ```powershell
-.\gradlew.bat buildAndCollect --configure-on-demand
+.\gradlew.bat build buildAndCollect --configure-on-demand -x sourcesJar -x remapSourcesJar
 ```
 
-The distributable and sources jars are collected under
-`build/libs/<mod-version>`.
+The distributable jars are collected under `build/libs/<mod-version>`. The two
+`-x` options prevent new sources jars from being built, but do not remove a
+sources jar left in that collection directory by an older run; use a fresh
+collection directory when checking runtime-only output. Omit the exclusions
+only when sources jars are also wanted locally.
 
 Use `tasks` to inspect all available Gradle tasks and `projects` to list the
 generated target projects:
@@ -68,24 +72,86 @@ generated target projects:
 .\gradlew.bat projects
 ```
 
+## Build and release automation
+
+The three workflows under `.github/workflows` share one verified set of
+runtime jars:
+
+1. **Build all versions** runs on branch pushes, pull requests, and manual
+   dispatches. It builds all 33 Minecraft/loader targets in separate jobs,
+   rejects sources/dev/plain jars, and exposes the combined
+   `slc-unofficial-jars` artifact on the Actions run for 14 days.
+2. **Release** runs for a pushed canonical `v` tag. The tag (for example
+   `v3.0.0`) must match `mod.version` (for example `3.0.0`). It rebuilds all
+   targets once, creates a GitHub Release with generated notes, and attaches
+   all 33 runtime jars plus `SHA256SUMS`.
+3. **Publish to CurseForge and Modrinth** is called only after the GitHub
+   Release succeeds. It publishes each target as its own platform version so
+   its Minecraft version and loader metadata remain accurate. A manual run can
+   select one platform and one exact target when retrying a partial failure.
+
+Configure these GitHub repository variables before enabling platform uploads:
+
+- `MODRINTH_PROJECT_ID`
+- `CURSEFORGE_PROJECT_ID`
+
+Configure `MODRINTH_TOKEN` and `CURSEFORGE_TOKEN` as secrets in a GitHub
+Environment named `publishing` (repository secrets also work). For unattended
+publishing, restrict that environment to trusted `v*` tags without required
+reviewers, and protect creation or modification of `v*` tags with a repository
+ruleset. GitHub approvals apply to individual matrix deployments, so enabling
+required reviewers can require repeated approval waves while the two-at-a-time
+publisher advances. A platform is skipped when its project-ID variable is
+empty; if an ID exists but its token is missing, that platform job fails
+instead of silently pretending to publish.
+
+For a partial retry, dispatch **Publish to CurseForge and Modrinth**, choose the
+failed platform, and enter its exact target such as `1.21.11-neoforge`. Leaving
+the target blank republishes all 33 entries and will be rejected if some are
+already present. If the `publishing` environment permits only tags, run the
+retry on the tag ref instead of the default branch, for example:
+
+```sh
+gh workflow run release-to-cf-mr.yml --ref v3.0.0 \
+  -f tag=v3.0.0 -f target=1.21.11-neoforge \
+  -f publish_modrinth=true -f publish_curseforge=false
+```
+
+To create version `3.0.0` after changing and validating `mod.version`:
+
+```sh
+git tag v3.0.0
+git push origin v3.0.0
+```
+
+All workflow actions are pinned to immutable commit SHAs. The publishing
+workflow uses `mc-publish` 3.3.1 and does not rebuild source code or receive
+either platform token until its dedicated `publishing` jobs start.
+
 ## Updating versions and dependencies
 
 Project metadata and dependency pins are centralized in
 [`stonecutter.properties.toml`](stonecutter.properties.toml). Global pins such
 as Fabric Loader, MixinSquared, and MixinExtras live at the top of that file;
 Minecraft- and loader-specific pins live in the corresponding version table.
-The per-loader `mod.renderer_compat` values also keep runtime Sodium or
-Embeddium versions on the API generation that each mixin was verified against.
+The per-loader `mod.renderer_compat` values declare the minimum runtime Sodium
+or Embeddium version for the API generation that each mixin was verified
+against. Build dependencies remain pinned separately under `deps.sodium` or
+`deps.embeddium` so builds stay reproducible while newer compatible renderer
+releases are accepted at runtime.
 All targets currently use mod version `3.0.0` because the new IDs and build
 layout are intentionally not release-compatible with earlier artifacts.
 
 When adding or updating a Minecraft target:
 
 1. Update its dependency table in `stonecutter.properties.toml`.
-2. Add or adjust the target registration in `settings.gradle.kts`.
-3. Build the affected Fabric, Forge, or NeoForge project directly.
-4. Run `buildAndCollect`, or dispatch the **Build** workflow with
-   `full_matrix` enabled before merging a broad dependency update.
+2. Add or adjust the target registration in `settings.gradle.kts` and the
+   support table above.
+3. Keep the fixed target lists and expected JAR counts in `build.yml` and
+   `release-to-cf-mr.yml` synchronized with Stonecutter.
+4. Build the affected Fabric, Forge, or NeoForge project directly.
+5. Run `build buildAndCollect` with the sources exclusions shown above, or
+   dispatch **Build all versions** before merging a broad dependency update.
 
 Forge 1.20.1 uses `mixins.sodiumleafculling.forge.json` so its production SRG
 refmap is loaded; Fabric and NeoForge use `mixins.sodiumleafculling.json`.
