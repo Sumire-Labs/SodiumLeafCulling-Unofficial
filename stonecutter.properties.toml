@@ -19,6 +19,167 @@ deps.mixinsquared = "0.3.3"
 deps.mixinextras = "0.5.4"
 loomx.loom_version = "1.17.19"
 
+["1.16.3"]
+mod.mc_releases = ["1.16.3"]
+
+[fabric."1.16.3"]
+mod.mc_compat = "1.16.3"
+mod.renderer_compat = ">=0.2.0"
+deps.fabric_api = "0.25.0+build.415-1.16"
+deps.sodium = "mc1.16.5-0.2.0"
+
+["1.16.4"]
+mod.mc_releases = ["1.16.4"]
+
+[fabric."1.16.4"]
+mod.mc_compat = "1.16.4"
+mod.renderer_compat = ">=0.2.0"
+deps.fabric_api = "0.29.3+1.16"
+deps.sodium = "mc1.16.5-0.2.0"
+
+["1.16.5"]
+mod.mc_releases = ["1.16.5"]
+
+[fabric."1.16.5"]
+mod.mc_compat = "1.16.5"
+mod.renderer_compat = ">=0.2.0"
+deps.fabric_api = "0.42.0+1.16"
+deps.sodium = "mc1.16.5-0.2.0"
+deps.indium = "1.0.0+mc1.16.5"
+
+[forge."1.16.5"]
+mod.mc_compat = "[1.16.5]"
+mod.renderer_compat = "[0.3.18+mc1.16.5,)"
+mod.loader_compat = "[36,)"
+mod.pack_format = 6
+deps.forge = "1.16.5-36.2.42"
+deps.embeddium = "0.3.18+mc1.16.5"
+
+["1.17"]
+mod.mc_releases = ["1.17"]
+
+[fabric."1.17"]
+mod.mc_compat = "1.17"
+mod.renderer_compat = ">=0.3.4"
+deps.fabric_api = "0.36.0+1.17"
+deps.sodium = "mc1.17.1-0.3.4"
+
+["1.17.1"]
+mod.mc_releases = ["1.17.1"]
+
+[fabric."1.17.1"]
+mod.mc_compat = "1.17.1"
+mod.renderer_compat = ">=0.3.4"
+deps.fabric_api = "0.46.1+1.17"
+deps.sodium = "mc1.17.1-0.3.4"
+deps.indium = "1.0.1+mc1.17.1"
+
+["1.18"]
+mod.mc_releases = ["1.18"]
+
+[fabric."1.18"]
+mod.mc_compat = "1.18"
+mod.renderer_compat = ">=0.4.0-alpha5"
+deps.fabric_api = "0.44.0+1.18"
+deps.sodium = "mc1.18-0.4.0-alpha5"
+deps.indium = "1.0.2-alpha3+mc1.18.1"
+
+["1.18.1"]
+mod.mc_releases = ["1.18.1"]
+
+[fabric."1.18.1"]
+mod.mc_compat = "1.18.1"
+mod.renderer_compat = ">=0.4.0-alpha6"
+deps.fabric_api = "0.46.6+1.18"
+deps.sodium = "mc1.18.1-0.4.0-alpha6"
+deps.indium = "1.0.2-alpha3+mc1.18.1"
+
+["1.18.2"]
+mod.mc_releases = ["1.18.2"]
+
+[fabric."1.18.2"]
+mod.mc_compat = "1.18.2"
+mod.renderer_compat = ">=0.4.1"
+deps.fabric_api = "0.77.0+1.18.2"
+deps.sodium = "mc1.18.2-0.4.1"
+deps.indium = "1.0.7+mc1.18.2"
+
+[forge."1.18.2"]
+mod.mc_compat = "[1.18.2]"
+mod.renderer_compat = "[0.3.18+mc1.18.2,)"
+mod.loader_compat = "[40,)"
+mod.pack_format = 8
+deps.forge = "1.18.2-40.2.26"
+deps.embeddium = "0.3.18+mc1.18.2"
+
+["1.19"]
+mod.mc_releases = ["1.19"]
+
+[fabric."1.19"]
+mod.mc_compat = "1.19"
+mod.renderer_compat = ">=0.4.4"
+deps.fabric_api = "0.58.0+1.19"
+deps.sodium = "mc1.19.2-0.4.4"
+deps.indium = "1.0.7+mc1.19"
+
+["1.19.1"]
+mod.mc_releases = ["1.19.1"]
+
+[fabric."1.19.1"]
+mod.mc_compat = "1.19.1"
+mod.renderer_compat = ">=0.4.4"
+deps.fabric_api = "0.58.5+1.19.1"
+deps.sodium = "mc1.19.2-0.4.4"
+deps.indium = "1.0.7+mc1.19"
+
+["1.19.2"]
+mod.mc_releases = ["1.19.2"]
+
+[fabric."1.19.2"]
+mod.mc_compat = "1.19.2"
+mod.renderer_compat = ">=0.4.4"
+deps.fabric_api = "0.77.0+1.19.2"
+deps.sodium = "mc1.19.2-0.4.4"
+deps.indium = "1.0.9+mc1.19.2"
+
+[forge."1.19.2"]
+mod.mc_compat = "[1.19.2]"
+mod.renderer_compat = "[0.3.18.1+mc1.19.2,)"
+mod.loader_compat = "[43,)"
+mod.pack_format = 9
+deps.forge = "1.19.2-43.4.0"
+deps.embeddium = "0.3.18.1+mc1.19.2"
+
+["1.19.3"]
+mod.mc_releases = ["1.19.3"]
+
+[fabric."1.19.3"]
+mod.mc_compat = "1.19.3"
+mod.renderer_compat = ">=0.4.9"
+deps.fabric_api = "0.76.1+1.19.3"
+deps.sodium = "mc1.19.3-0.4.9"
+deps.indium = "1.0.14+mc1.19.3"
+
+["1.19.4"]
+mod.mc_releases = ["1.19.4"]
+
+[fabric."1.19.4"]
+mod.mc_compat = "1.19.4"
+mod.renderer_compat = ">=0.4.10"
+deps.fabric_api = "0.87.2+1.19.4"
+deps.sodium = "mc1.19.4-0.4.10"
+deps.indium = "1.0.19+mc1.19.4"
+
+["1.20"]
+mod.mc_releases = ["1.20"]
+
+[fabric."1.20"]
+mod.mc_compat = "1.20"
+mod.renderer_compat = ">=0.4.10"
+deps.fabric_api = "0.83.0+1.20"
+deps.sodium = "mc1.20-0.4.10"
+deps.indium = "1.0.18+mc1.20"
+
 ["1.20.1"]
 mod.mc_releases = ["1.20.1"]
 
@@ -32,9 +193,54 @@ deps.indium = "1.0.36+mc1.20.1"
 [forge."1.20.1"]
 mod.mc_compat = "[1.20.1]"
 mod.renderer_compat = "[0.3.31+mc1.20.1,)"
+mod.loader_compat = "[47,)"
 mod.pack_format = 15
 deps.forge = "1.20.1-47.4.23"
 deps.embeddium = "0.3.31+mc1.20.1"
+
+["1.20.2"]
+mod.mc_releases = ["1.20.2"]
+
+[fabric."1.20.2"]
+mod.mc_compat = "1.20.2"
+mod.renderer_compat = ">=0.5.5"
+deps.fabric_api = "0.91.6+1.20.2"
+deps.sodium = "mc1.20.2-0.5.5"
+deps.indium = "1.0.28+mc1.20.4"
+
+[forge."1.20.2"]
+mod.mc_compat = "[1.20.2]"
+mod.renderer_compat = "[0.2.10+mc1.20.2,)"
+mod.loader_compat = "[48,)"
+mod.pack_format = 18
+deps.forge = "1.20.2-48.1.0"
+deps.embeddium = "0.2.10+mc1.20.2"
+
+[neoforge."1.20.2"]
+mod.mc_compat = "[1.20.2]"
+mod.renderer_compat = "[0.2.12+mc1.20.2,)"
+deps.neo_loader = "20.2.93"
+deps.neoform = "1.20.2-20241215.201144"
+deps.fml = "net.neoforged.fancymodloader:language-java:1.0.16"
+deps.embeddium = "0.2.12+mc1.20.2"
+
+["1.20.3"]
+mod.mc_releases = ["1.20.3"]
+
+[fabric."1.20.3"]
+mod.mc_compat = "1.20.3"
+mod.renderer_compat = ">=0.5.8"
+deps.fabric_api = "0.91.1+1.20.3"
+deps.sodium = "mc1.20.4-0.5.8"
+deps.indium = "1.0.31+mc1.20.4"
+
+[neoforge."1.20.3"]
+mod.mc_compat = "[1.20.3]"
+mod.renderer_compat = "[0.2.12+mc1.20.3,)"
+deps.neo_loader = "20.3.8-beta"
+deps.neoform = "1.20.3-20241215.201103"
+deps.fml = "net.neoforged.fancymodloader:language-java:1.0.16"
+deps.embeddium = "0.2.12+mc1.20.3"
 
 ["1.20.4"]
 mod.mc_releases = ["1.20.4"]
@@ -51,6 +257,55 @@ mod.mc_compat = "[1.20.4]"
 mod.renderer_compat = "[0.3.25+mc1.20.4,)"
 deps.neo_loader = "20.4.251"
 deps.embeddium = "0.3.25+mc1.20.4"
+
+["1.20.5"]
+mod.mc_releases = ["1.20.5"]
+
+[fabric."1.20.5"]
+mod.mc_compat = "1.20.5"
+mod.renderer_compat = ">=0.5.8"
+deps.fabric_api = "0.97.8+1.20.5"
+deps.sodium = "mc1.20.6-0.5.8"
+deps.indium = "1.0.31+mc1.20.4"
+
+[neoforge."1.20.5"]
+mod.mc_compat = "[1.20.5]"
+mod.renderer_compat = "[0.3.14+mc1.20.5,)"
+deps.neo_loader = "20.5.21-beta"
+deps.neoform = "1.20.5-20241215.200814"
+deps.fml = "net.neoforged.fancymodloader:loader:3.0.18"
+deps.embeddium = "0.3.14+mc1.20.5"
+
+["1.20.6"]
+mod.mc_releases = ["1.20.6"]
+
+[fabric."1.20.6"]
+mod.mc_compat = "1.20.6"
+mod.renderer_compat = ">=0.5.11"
+deps.fabric_api = "0.100.8+1.20.6"
+deps.sodium = "mc1.20.6-0.5.11"
+deps.indium = "1.0.34+mc1.20.1"
+
+[neoforge."1.20.6"]
+mod.mc_compat = "[1.20.6]"
+mod.renderer_compat = "[0.3.20+mc1.20.6,)"
+deps.neo_loader = "20.6.141"
+deps.embeddium = "0.3.20+mc1.20.6"
+
+["1.21"]
+mod.mc_releases = ["1.21"]
+
+[fabric."1.21"]
+mod.mc_compat = "1.21"
+mod.renderer_compat = ">=0.6.13"
+deps.fabric_api = "0.102.0+1.21"
+deps.sodium = "mc1.21.1-0.6.13-fabric"
+
+[neoforge."1.21"]
+mod.mc_compat = "[1.21]"
+mod.renderer_compat = "[1.0.7+mc1.21,)"
+deps.neo_loader = "21.0.167"
+deps.embeddium = "1.0.7+mc1.21"
 
 ["1.21.1"]
 mod.mc_releases = ["1.21.1"]

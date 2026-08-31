@@ -83,10 +83,38 @@ jobs:
       max-parallel: 4
       matrix:
         target:
+          - '1.16.3-fabric'
+          - '1.16.4-fabric'
+          - '1.16.5-fabric'
+          - '1.16.5-forge'
+          - '1.17-fabric'
+          - '1.17.1-fabric'
+          - '1.18-fabric'
+          - '1.18.1-fabric'
+          - '1.18.2-fabric'
+          - '1.18.2-forge'
+          - '1.19-fabric'
+          - '1.19.1-fabric'
+          - '1.19.2-fabric'
+          - '1.19.2-forge'
+          - '1.19.3-fabric'
+          - '1.19.4-fabric'
+          - '1.20-fabric'
           - '1.20.1-fabric'
           - '1.20.1-forge'
+          - '1.20.2-fabric'
+          - '1.20.2-forge'
+          - '1.20.2-neoforge'
+          - '1.20.3-fabric'
+          - '1.20.3-neoforge'
           - '1.20.4-fabric'
           - '1.20.4-neoforge'
+          - '1.20.5-fabric'
+          - '1.20.5-neoforge'
+          - '1.20.6-fabric'
+          - '1.20.6-neoforge'
+          - '1.21-fabric'
+          - '1.21-neoforge'
           - '1.21.1-fabric'
           - '1.21.1-neoforge'
           - '1.21.2-fabric'
@@ -194,7 +222,7 @@ jobs:
 
           case "$TARGET" in
             *-fabric) descriptor='fabric.mod.json' ;;
-            1.20.1-forge|1.20.4-neoforge) descriptor='META-INF/mods.toml' ;;
+            *-forge|1.20.2-neoforge|1.20.3-neoforge|1.20.4-neoforge) descriptor='META-INF/mods.toml' ;;
             *-neoforge) descriptor='META-INF/neoforge.mods.toml' ;;
             *) echo "Unknown target: $TARGET" >&2; exit 1 ;;
           esac
@@ -246,8 +274,8 @@ jobs:
           set -euo pipefail
           mapfile -t jars < <(find dist -maxdepth 1 -type f -name '*.jar' -print | sort)
 
-          if (( ${#jars[@]} != 33 )); then
-            printf 'Expected 33 runtime JARs, found %d:\n%s\n' "${#jars[@]}" "${jars[*]}" >&2
+          if (( ${#jars[@]} != 61 )); then
+            printf 'Expected 61 runtime JARs, found %d:\n%s\n' "${#jars[@]}" "${jars[*]}" >&2
             exit 1
           fi
 

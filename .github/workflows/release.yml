@@ -94,8 +94,8 @@ jobs:
           set -euo pipefail
           mapfile -t jars < <(find release-assets -maxdepth 1 -type f -name '*.jar' -print | sort)
 
-          if (( ${#jars[@]} != 33 )); then
-            printf 'Expected 33 runtime JARs, found %d:\n%s\n' "${#jars[@]}" "${jars[*]}" >&2
+          if (( ${#jars[@]} != 61 )); then
+            printf 'Expected 61 runtime JARs, found %d:\n%s\n' "${#jars[@]}" "${jars[*]}" >&2
             exit 1
           fi
 

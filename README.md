@@ -8,8 +8,20 @@ Fabric, Forge, and NeoForge builds.
 
 | Minecraft | Fabric | Forge | NeoForge |
 | --- | :---: | :---: | :---: |
+| 1.16.3–1.16.4 | Yes | — | — |
+| 1.16.5 | Yes | Yes | — |
+| 1.17–1.17.1 | Yes | — | — |
+| 1.18–1.18.1 | Yes | — | — |
+| 1.18.2 | Yes | Yes | — |
+| 1.19–1.19.1 | Yes | — | — |
+| 1.19.2 | Yes | Yes | — |
+| 1.19.3–1.20 | Yes | — | — |
 | 1.20.1 | Yes | Yes | — |
+| 1.20.2 | Yes | Yes | Yes |
+| 1.20.3 | Yes | — | Yes |
 | 1.20.4 | Yes | — | Yes |
+| 1.20.5–1.20.6 | Yes | — | Yes |
+| 1.21 | Yes | — | Yes |
 | 1.21.1–1.21.8 | Yes | — | Yes |
 | 1.21.9 | Yes | — | — |
 | 1.21.10–1.21.11 | Yes | — | Yes |
@@ -29,8 +41,10 @@ repository pins the Gradle daemon to Java 21 and can provision it through
 Foojay when necessary. Compilation toolchains are also selected per Minecraft
 version and downloaded automatically:
 
-- Minecraft 1.20.x: Java 17
-- Minecraft 1.21.x: Java 21
+- Minecraft 1.16.x: Java 8
+- Minecraft 1.17.x: Java 16
+- Minecraft 1.18.x–1.20.4: Java 17
+- Minecraft 1.20.5–1.21.x: Java 21
 - Minecraft 26.x: Java 25
 
 Foojay can provision the daemon and compilation toolchains after Gradle starts,
@@ -78,13 +92,13 @@ The three workflows under `.github/workflows` share one verified set of
 runtime jars:
 
 1. **Build all versions** runs on branch pushes, pull requests, and manual
-   dispatches. It builds all 33 Minecraft/loader targets in separate jobs,
+   dispatches. It builds all 61 Minecraft/loader targets in separate jobs,
    rejects sources/dev/plain jars, and exposes the combined
    `slc-unofficial-jars` artifact on the Actions run for 14 days.
 2. **Release** runs for any pushed tag. The tag identifies the GitHub Release,
    while `mod.version` in the tagged commit determines the JAR and platform
    version. It rebuilds all targets once, creates a GitHub Release with
-   generated notes, and attaches all 33 runtime jars plus `SHA256SUMS`.
+   generated notes, and attaches all 61 runtime jars plus `SHA256SUMS`.
 3. **Publish to CurseForge and Modrinth** is called only after the GitHub
    Release succeeds. It publishes each target as its own platform version so
    its Minecraft version and loader metadata remain accurate. A manual run can
@@ -107,7 +121,7 @@ missing, that platform job fails instead of silently pretending to publish.
 
 For a partial retry, dispatch **Publish to CurseForge and Modrinth**, choose the
 failed platform, and enter its exact target such as `1.21.11-neoforge`. Leaving
-the target blank republishes all 33 entries and will be rejected if some are
+the target blank republishes all 61 entries and will be rejected if some are
 already present. If the `publishing` environment permits only tags, run the
 retry on the tag ref instead of the default branch, for example:
 

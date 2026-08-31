@@ -28,7 +28,7 @@ ordering="NONE"
 side="CLIENT"
 
 [[dependencies."${id}"]]
-modId="sodium"
+modId="${renderer_id}"
 type="required"
 versionRange="${renderer}"
 ordering="AFTER"

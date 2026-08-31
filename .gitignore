@@ -38,6 +38,9 @@ bin/
 
 run/
 
+# Compatibility builds copy the tracked root wrapper at task execution time.
+*-build/gradle/wrapper/gradle-wrapper.jar
+
 # java
 
 hs_err_*.log

@@ -1,0 +1,17 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "toni.sodiumleafculling.mixins",
+  "compatibilityLevel": "JAVA_8",
+  "refmap": "mixins.sodiumleafculling.refmap.json",
+  "client": [
+    "AbstractBlockRenderContextAccessor",
+    "BlockOcclusionCacheMixin",
+    "BlockRendererMixin",
+    "PerformanceSettingsMixin",
+    "SodiumGameOptionPagesMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

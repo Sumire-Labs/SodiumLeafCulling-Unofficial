@@ -9,7 +9,10 @@ base.archivesName = "${project.property("mod.id")}-forge"
 
 val modId = project.property("mod.id").toString()
 
-val requiredJava = JavaVersion.VERSION_17
+val requiredJava = when {
+    sc.current.parsed >= "1.18" -> JavaVersion.VERSION_17
+    else -> JavaVersion.VERSION_1_8
+}
 
 repositories {
     exclusiveContent {
@@ -68,7 +71,7 @@ java {
 
     toolchain {
         vendor = JvmVendorSpec.ADOPTIUM
-        languageVersion = JavaLanguageVersion.of(requiredJava.majorVersion)
+        languageVersion = JavaLanguageVersion.of(if (requiredJava < JavaVersion.VERSION_21) 21 else requiredJava.majorVersion.toInt())
     }
 }
 
@@ -95,6 +98,7 @@ tasks {
             "github" to project.property("mod.github"),
             "minecraft" to project.property("mod.mc_compat"),
             "renderer" to project.property("mod.renderer_compat"),
+            "loader" to project.property("mod.loader_compat"),
             "pack_format" to project.property("mod.pack_format"),
             "java" to "JAVA_${requiredJava.majorVersion}",
             "java_version" to requiredJava.majorVersion,

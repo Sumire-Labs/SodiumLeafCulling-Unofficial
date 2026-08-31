@@ -1,0 +1,87 @@
+plugins {
+    id 'net.minecraftforge.gradle' version '6.0.54'
+    id 'org.spongepowered.mixin' version '0.7-SNAPSHOT'
+    id 'java'
+}
+
+group = 'toni'
+version = '3.0.0+1.20.2'
+base.archivesName = 'slc_unofficial-forge'
+
+def workspace = rootProject.projectDir.parentFile
+def generatedSources = new File(workspace, 'versions/1.20.2-forge/build/generated/stonecutter/main/java')
+
+repositories {
+    maven {
+        name = 'Modrinth'
+        url = 'https://api.modrinth.com/maven'
+    }
+}
+
+minecraft {
+    mappings channel: 'official', version: '1.20.2'
+}
+
+sourceSets {
+    main {
+        java.srcDirs = [generatedSources]
+        resources.srcDirs = [new File(workspace, 'src/main/resources')]
+    }
+}
+
+dependencies {
+    minecraft 'net.minecraftforge:forge:1.20.2-48.1.0'
+    implementation fg.deobf('maven.modrinth:embeddium:0.2.10+mc1.20.2')
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+    annotationProcessor 'io.github.llamalad7:mixinextras-common:0.5.4'
+    compileOnly 'io.github.llamalad7:mixinextras-common:0.5.4'
+    implementation 'io.github.llamalad7:mixinextras-forge:0.5.4'
+}
+
+mixin {
+    add sourceSets.main, 'mixins.sodiumleafculling.refmap.json'
+    config 'mixins.sodiumleafculling.forge.json'
+}
+
+java {
+    withSourcesJar()
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+    toolchain {
+        vendor = JvmVendorSpec.ADOPTIUM
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = 17
+}
+
+tasks.named('sourcesJar') {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+processResources {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    def values = [
+        id: 'slc_unofficial', namespace: 'sodiumleafculling', name: 'SodiumLeafCulling-Unofficial',
+        version: '3.0.0', description: 'Smart leaf culling for Sodium and Embeddium.',
+        author: 'toni', contributor: 's12kuma01', license: 'MIT',
+        github: 'Sumire-Labs/SodiumLeafCulling-Unofficial', minecraft: '[1.20.2]',
+        renderer: '[0.2.10+mc1.20.2,)', loader: '[48,)', pack_format: 18,
+        java: 'JAVA_17', java_version: '17'
+    ]
+
+    inputs.properties values
+    filesMatching('META-INF/mods.toml') { expand values }
+    filesMatching('pack.mcmeta') { expand values }
+    filesMatching('mixins.sodiumleafculling.forge.json') { expand values }
+    exclude 'fabric.mod.json', 'mixins.sodiumleafculling.json', 'META-INF/neoforge-legacy.mods.toml', 'META-INF/neoforge.mods.toml'
+}
+
+jar {
+    manifest { attributes 'MixinConfigs': 'mixins.sodiumleafculling.forge.json' }
+    from(new File(workspace, 'LICENSE.md')) { rename 'LICENSE\\.md', 'LICENSE.md_slc_unofficial' }
+    finalizedBy 'reobfJar'
+}

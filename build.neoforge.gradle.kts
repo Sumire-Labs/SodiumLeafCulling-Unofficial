@@ -73,6 +73,17 @@ if (sodiumNestedPath != null) {
 
 dependencies {
     val embeddium = sc.properties.getOrNull<String>("deps.embeddium")
+    val neoForm = sc.properties.getOrNull<String>("deps.neoform")
+
+    if (neoForm != null) {
+        compileOnly("net.neoforged:neoforge:${project.property("deps.neo_loader")}:universal") {
+            isTransitive = false
+        }
+        compileOnly("org.spongepowered:mixin:0.8.5")
+        compileOnly(project.property("deps.fml") as String) {
+            isTransitive = false
+        }
+    }
 
     when {
         embeddium != null -> implementation("maven.modrinth:embeddium:$embeddium")
@@ -133,7 +144,11 @@ dependencies {
 }
 
 neoForge {
-    version = project.property("deps.neo_loader") as String
+    sc.properties.getOrNull<String>("deps.neoform")?.let {
+        neoFormVersion = it
+    } ?: run {
+        version = project.property("deps.neo_loader") as String
+    }
 
     mods {
         register(project.property("mod.id") as String) {
@@ -160,7 +175,7 @@ java {
 
     toolchain {
         vendor = JvmVendorSpec.ADOPTIUM
-        languageVersion = JavaLanguageVersion.of(requiredJava.majorVersion)
+        languageVersion = JavaLanguageVersion.of(if (requiredJava < JavaVersion.VERSION_21) 21 else requiredJava.majorVersion.toInt())
     }
 }
 
@@ -188,6 +203,7 @@ tasks {
             "github" to project.property("mod.github"),
             "minecraft" to project.property("mod.mc_compat"),
             "renderer" to project.property("mod.renderer_compat"),
+            "renderer_id" to if (sc.properties.getOrNull<String>("deps.embeddium") != null) "embeddium" else "sodium",
             "java" to "JAVA_${requiredJava.majorVersion}",
             "java_version" to requiredJava.majorVersion,
             "icon_line" to if (sc.current.parsed >= "26.1") "iconFile=\"$logoPath\"" else "",
@@ -196,9 +212,9 @@ tasks {
         inputs.properties(values)
         filesMatching("mixins.sodiumleafculling.json") { expand(values) }
 
-        if (sc.current.version == "1.20.4") {
-            // Exclude the Forge descriptor before renaming the NeoForge 1.20.4
-            // descriptor to the legacy file name expected by that loader.
+        if (sc.current.parsed < "1.20.5") {
+            // Exclude the Forge descriptor before renaming the NeoForge
+            // 1.20.2-1.20.4 descriptor to the legacy loader file name.
             filesMatching("META-INF/mods.toml") { exclude() }
             filesMatching("META-INF/neoforge-legacy.mods.toml") {
                 expand(values)

@@ -1,5 +1,5 @@
 modLoader="javafml"
-loaderVersion="[47,)"
+loaderVersion="${loader}"
 license="${license}"
 showAsResourcePack=false
 issueTrackerURL="https://github.com/${github}/issues"
@@ -32,7 +32,7 @@ versionRange="${renderer}"
 ordering="AFTER"
 side="CLIENT"
 
-# Xenon already includes equivalent leaf-culling functionality. Forge 1.20.1
+# Xenon already includes equivalent leaf-culling functionality. Legacy Forge
 # has no dedicated incompatible dependency type, so an optional dependency
 # with an intentionally impossible version requirement declares the conflict.
 [[dependencies."${id}"]]

@@ -11,11 +11,13 @@ import net.caffeinemc.mods.sodium.client.world.LevelSlice;
 //?} elif sodium_caffeine {
 /*import net.caffeinemc.mods.sodium.client.render.frapi.render.AbstractBlockRenderContext;
 import net.caffeinemc.mods.sodium.client.world.LevelSlice;
+*///?} elif embeddium_modern {
+/*import org.embeddedt.embeddium.impl.Embeddium;
 *///?} else {
 /*import me.jellysquid.mods.sodium.client.SodiumClientMod;
 *///?}
 
-@Mixin(value = /*? if sodium_caffeine {*/AbstractBlockRenderContext.class/*?} else {*//*SodiumClientMod.class*//*?}*/, remap = false, priority = 100)
+@Mixin(value = /*? if sodium_caffeine {*/AbstractBlockRenderContext.class/*?} elif embeddium_modern {*//*Embeddium.class*//*?} else {*//*SodiumClientMod.class*//*?}*/, remap = false, priority = 100)
 public interface AbstractBlockRenderContextAccessor {
     //? if sodium_caffeine {
     @Accessor

@@ -1,0 +1,85 @@
+plugins {
+    id 'java'
+    id 'net.neoforged.gradle.userdev' version '7.0.192'
+}
+
+group = 'toni'
+version = '3.0.0+1.20.5'
+base.archivesName = 'slc_unofficial-neoforge'
+
+def workspace = rootProject.projectDir.parentFile
+def generatedSources = new File(workspace, 'versions/1.20.5-neoforge/build/generated/stonecutter/main/java')
+
+repositories {
+    mavenCentral()
+    ivy {
+        name = 'EmbeddiumNeoForge'
+        url = 'https://cdn.modrinth.com/data/sk9rgfiA/versions/fITh7c6G'
+        patternLayout {
+            artifact '[module]-[revision].[ext]'
+        }
+        metadataSources {
+            artifact()
+        }
+        content {
+            includeGroup 'modrinth.direct'
+        }
+    }
+}
+
+sourceSets {
+    main {
+        java.srcDirs = [generatedSources]
+        resources.srcDirs = [new File(workspace, 'src/main/resources')]
+    }
+}
+
+dependencies {
+    implementation 'net.neoforged:neoforge:20.5.21-beta'
+    // Modrinth has Fabric and NeoForge files with the same version number.
+    // Its Maven endpoint selects the Fabric file, so pin the NeoForge file's
+    // version directory and let Ivy resolve the loader-specific artifact.
+    implementation 'modrinth.direct:embeddium:0.3.14+mc1.20.5'
+    annotationProcessor 'io.github.llamalad7:mixinextras-common:0.5.4'
+    compileOnly 'io.github.llamalad7:mixinextras-common:0.5.4'
+}
+
+java {
+    withSourcesJar()
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+    toolchain {
+        vendor = JvmVendorSpec.ADOPTIUM
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = 21
+}
+
+tasks.named('sourcesJar') {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+processResources {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    def values = [
+        id: 'slc_unofficial', namespace: 'sodiumleafculling', name: 'SodiumLeafCulling-Unofficial',
+        version: '3.0.0', description: 'Smart leaf culling for Sodium and Embeddium.',
+        author: 'toni', contributor: 's12kuma01', license: 'MIT',
+        github: 'Sumire-Labs/SodiumLeafCulling-Unofficial', minecraft: '[1.20.5]',
+        renderer: '[0.3.14+mc1.20.5,)', renderer_id: 'embeddium',
+        java: 'JAVA_21', java_version: '21', icon_line: ''
+    ]
+
+    inputs.properties values
+    filesMatching('mixins.sodiumleafculling.json') { expand values }
+    filesMatching('META-INF/neoforge.mods.toml') { expand values }
+    exclude 'fabric.mod.json', 'mixins.sodiumleafculling.forge.json', 'META-INF/mods.toml', 'META-INF/neoforge-legacy.mods.toml', 'pack.mcmeta'
+}
+
+jar {
+    from(new File(workspace, 'LICENSE.md')) { rename 'LICENSE\\.md', 'LICENSE.md_slc_unofficial' }
+}
