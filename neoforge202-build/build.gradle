@@ -1,0 +1,72 @@
+plugins {
+    id 'java'
+    // Match the official 1.20.2 NeoForge MDK; newer NeoGradle releases use a
+    // metadata schema that is incompatible with this early NeoForge loader.
+    id 'net.neoforged.gradle.userdev' version '7.0.116'
+}
+
+group = 'toni'
+version = '3.0.0+1.20.2'
+base.archivesName = 'slc_unofficial-neoforge'
+
+def workspace = rootProject.projectDir.parentFile
+def generatedSources = new File(workspace, 'versions/1.20.2-neoforge/build/generated/stonecutter/main/java')
+def generatedResources = new File(workspace, 'versions/1.20.2-neoforge/build/resources/main')
+
+repositories {
+    mavenCentral()
+    maven {
+        name = 'Modrinth'
+        url = 'https://api.modrinth.com/maven'
+    }
+}
+
+sourceSets {
+    main {
+        java.srcDirs = [generatedSources]
+        resources.srcDirs = [generatedResources, 'src/main/resources']
+    }
+}
+
+dependencies {
+    implementation 'net.neoforged:neoforge:20.2.93'
+    // Pin the NeoForge file ID: the human-readable version is shared with the
+    // Forge upload and Modrinth Maven otherwise resolves the wrong artifact.
+    implementation 'maven.modrinth:sk9rgfiA:8QyTfW8d'
+    annotationProcessor 'io.github.llamalad7:mixinextras-common:0.5.4'
+    compileOnly 'io.github.llamalad7:mixinextras-common:0.5.4'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+    toolchain {
+        vendor = JvmVendorSpec.ADOPTIUM
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = 17
+}
+
+processResources {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+runs {
+    configureEach {
+        modSource project.sourceSets.main
+    }
+    client { }
+}
+
+afterEvaluate {
+    tasks.named('runClient', JavaExec) {
+        workingDir new File(workspace, 'run/1.20.2-neoforge')
+        javaLauncher = javaToolchains.launcherFor {
+            languageVersion = JavaLanguageVersion.of(17)
+        }
+    }
+}

@@ -12,11 +12,11 @@ import toni.sodiumleafculling.LeafCulling;
 import toni.sodiumleafculling.LeafCullingQuality;
 
 //? if fabric_legacy_renderer {
-import me.jellysquid.mods.sodium.client.render.chunk.tasks.ChunkRenderRebuildTask;
+/*import me.jellysquid.mods.sodium.client.render.chunk.tasks.ChunkRenderRebuildTask;
 import me.jellysquid.mods.sodium.client.render.chunk.compile.ChunkBuildBuffers;
 import me.jellysquid.mods.sodium.client.world.WorldSlice;
 import net.minecraft.client.renderer.RenderType;
-//?} elif sodium_modern_renderer {
+*///?} elif sodium_modern_renderer {
 import net.caffeinemc.mods.sodium.client.render.chunk.compile.pipeline.BlockRenderer;
 //?} elif sodium_frapi_chunk_layer {
 /*import net.caffeinemc.mods.sodium.client.render.chunk.compile.pipeline.BlockRenderer;
@@ -58,31 +58,31 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 *///?}
 
-@Mixin(value = /*? if fabric_legacy_renderer {*/ChunkRenderRebuildTask.class/*?} else {*//*BlockRenderer.class*//*?}*/, remap = false, priority = 100)
+@Mixin(value = /*? if fabric_legacy_renderer {*//*ChunkRenderRebuildTask.class*//*?} else {*/BlockRenderer.class/*?}*/, remap = false, priority = 100)
 public abstract class BlockRendererMixin {
 
     //? if fabric_legacy_renderer {
-    @Redirect(
+    /*@Redirect(
         method = "performBuild",
         at = @At(
             value = "INVOKE",
-            target = /*? if legacy_model_buffers {*/"Lme/jellysquid/mods/sodium/client/render/chunk/compile/ChunkBuildBuffers;get(Lnet/minecraft/client/renderer/RenderType;)Lme/jellysquid/mods/sodium/client/render/chunk/compile/buffers/ChunkModelBuffers;"/*?} else {*//*"Lme/jellysquid/mods/sodium/client/render/chunk/compile/ChunkBuildBuffers;get(Lnet/minecraft/client/renderer/RenderType;)Lme/jellysquid/mods/sodium/client/render/chunk/compile/buffers/ChunkModelBuilder;"*//*?}*/,
+            target = /^? if legacy_model_buffers {^//^"Lme/jellysquid/mods/sodium/client/render/chunk/compile/ChunkBuildBuffers;get(Lnet/minecraft/client/renderer/RenderType;)Lme/jellysquid/mods/sodium/client/render/chunk/compile/buffers/ChunkModelBuffers;"^//^?} else {^/"Lme/jellysquid/mods/sodium/client/render/chunk/compile/ChunkBuildBuffers;get(Lnet/minecraft/client/renderer/RenderType;)Lme/jellysquid/mods/sodium/client/render/chunk/compile/buffers/ChunkModelBuilder;"/^?}^/,
             ordinal = 0
         )
     )
-    private /*? if legacy_model_buffers {*/ChunkModelBuffers/*?} else {*//*ChunkModelBuilder*//*?}*/ sodiumleafculling$useSolidLayer(
+    private /^? if legacy_model_buffers {^//^ChunkModelBuffers^//^?} else {^/ChunkModelBuilder/^?}^/ sodiumleafculling$useSolidLayer(
         ChunkBuildBuffers buffers,
         RenderType layer,
         @Local WorldSlice slice,
         @Local BlockState state,
-        @Local BlockPos.MutableBlockPos pos
+        @Local(ordinal = 0) BlockPos.MutableBlockPos pos
     ) {
         if (state.getBlock() instanceof LeavesBlock && LeafCulling.getQuality().isSolid() && LeafCulling.surroundedByLeaves(slice, pos))
             return buffers.get(RenderType.solid());
 
         return buffers.get(layer);
     }
-    //?} elif sodium_chunk_layer {
+    *///?} elif sodium_chunk_layer {
     /*@Redirect(
         method = "renderModel",
         at = @At(
@@ -167,12 +167,34 @@ public abstract class BlockRendererMixin {
 
         return original;
     }
-    *///?} elif embeddium || embeddium_modern {
+    *///?} elif embeddium {
     /*@Redirect(
         method = "renderModel",
         at = @At(
             value = "INVOKE",
             target = "Lme/jellysquid/mods/sodium/client/render/chunk/terrain/material/DefaultMaterials;forRenderLayer(Lnet/minecraft/client/renderer/RenderType;)Lme/jellysquid/mods/sodium/client/render/chunk/terrain/material/Material;"
+        )
+    )
+    private Material sodiumleafculling$useSolidMaterial(
+        RenderType renderLayer,
+        @Local(argsOnly = true) BlockRenderContext ctx
+    ) {
+        Material original = DefaultMaterials.forRenderLayer(renderLayer);
+        if (!(ctx.state().getBlock() instanceof LeavesBlock))
+            return original;
+
+        LeafCullingQuality quality = LeafCulling.getQuality();
+        if (quality.isSolid() && LeafCulling.surroundedByLeaves(ctx.localSlice(), ctx.pos()))
+            return DefaultMaterials.SOLID;
+
+        return original;
+    }
+    *///?} elif embeddium_modern {
+    /*@Redirect(
+        method = "renderModel",
+        at = @At(
+            value = "INVOKE",
+            target = "Lorg/embeddedt/embeddium/impl/render/chunk/terrain/material/DefaultMaterials;forRenderLayer(Lnet/minecraft/client/renderer/RenderType;)Lorg/embeddedt/embeddium/impl/render/chunk/terrain/material/Material;"
         )
     )
     private Material sodiumleafculling$useSolidMaterial(

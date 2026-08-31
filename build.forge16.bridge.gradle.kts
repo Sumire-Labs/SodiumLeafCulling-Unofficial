@@ -5,6 +5,13 @@ plugins {
 val nestedBuild = rootProject.layout.projectDirectory.dir("forge16-build")
 val nestedWrapperJar = nestedBuild.file("gradle/wrapper/gradle-wrapper.jar")
 
+// Stonecutter exposes the shared source set on every node. This bridge builds
+// that source with ForgeGradle in the nested build instead of compiling it on
+// the dependency-free bridge classpath.
+tasks.withType<JavaCompile>().configureEach {
+    enabled = false
+}
+
 val prepareForge16Wrapper by tasks.registering(Copy::class) {
     from(rootProject.layout.projectDirectory.file("gradle/wrapper/gradle-wrapper.jar"))
     into(nestedBuild.dir("gradle/wrapper"))

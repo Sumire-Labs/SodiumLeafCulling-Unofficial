@@ -71,13 +71,14 @@ processResources {
         author: 'toni', contributor: 's12kuma01', license: 'MIT',
         github: 'Sumire-Labs/SodiumLeafCulling-Unofficial', minecraft: '[1.20.5]',
         renderer: '[0.3.14+mc1.20.5,)', renderer_id: 'embeddium',
-        java: 'JAVA_21', java_version: '21', icon_line: ''
+        java: 'JAVA_21', java_version: '21', icon_line: '', pack_format: '32'
     ]
 
     inputs.properties values
     filesMatching('mixins.sodiumleafculling.json') { expand values }
     filesMatching('META-INF/neoforge.mods.toml') { expand values }
-    exclude 'fabric.mod.json', 'mixins.sodiumleafculling.forge.json', 'META-INF/mods.toml', 'META-INF/neoforge-legacy.mods.toml', 'pack.mcmeta'
+    filesMatching('pack.mcmeta') { expand values }
+    exclude 'fabric.mod.json', 'mixins.sodiumleafculling.forge.json', 'META-INF/mods.toml', 'META-INF/neoforge-early.mods.toml', 'META-INF/neoforge-legacy.mods.toml'
 }
 
 jar {

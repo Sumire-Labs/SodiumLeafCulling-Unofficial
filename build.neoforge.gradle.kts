@@ -75,7 +75,7 @@ dependencies {
     val embeddium = sc.properties.getOrNull<String>("deps.embeddium")
     val neoForm = sc.properties.getOrNull<String>("deps.neoform")
 
-    if (neoForm != null) {
+    if (neoForm != null && sc.current.version == "1.20.5") {
         compileOnly("net.neoforged:neoforge:${project.property("deps.neo_loader")}:universal") {
             isTransitive = false
         }
@@ -144,7 +144,7 @@ dependencies {
 }
 
 neoForge {
-    sc.properties.getOrNull<String>("deps.neoform")?.let {
+    sc.properties.getOrNull<String>("deps.neoform")?.takeIf { sc.current.version == "1.20.5" }?.let {
         neoFormVersion = it
     } ?: run {
         version = project.property("deps.neo_loader") as String
@@ -212,7 +212,20 @@ tasks {
         inputs.properties(values)
         filesMatching("mixins.sodiumleafculling.json") { expand(values) }
 
-        if (sc.current.parsed < "1.20.5") {
+        if (sc.current.parsed <= "1.20.3") {
+            filesMatching("META-INF/mods.toml") { exclude() }
+            filesMatching("META-INF/neoforge-early.mods.toml") {
+                expand(values)
+                path = "META-INF/mods.toml"
+            }
+            exclude(
+                "fabric.mod.json",
+                "mixins.sodiumleafculling.forge.json",
+                "META-INF/neoforge-legacy.mods.toml",
+                "META-INF/neoforge.mods.toml",
+                "pack.mcmeta",
+            )
+        } else if (sc.current.parsed < "1.20.5") {
             // Exclude the Forge descriptor before renaming the NeoForge
             // 1.20.2-1.20.4 descriptor to the legacy loader file name.
             filesMatching("META-INF/mods.toml") { exclude() }
@@ -223,6 +236,7 @@ tasks {
             exclude(
                 "fabric.mod.json",
                 "mixins.sodiumleafculling.forge.json",
+                "META-INF/neoforge-early.mods.toml",
                 "META-INF/neoforge.mods.toml",
                 "pack.mcmeta",
             )
@@ -232,6 +246,7 @@ tasks {
                 "fabric.mod.json",
                 "mixins.sodiumleafculling.forge.json",
                 "META-INF/mods.toml",
+                "META-INF/neoforge-early.mods.toml",
                 "META-INF/neoforge-legacy.mods.toml",
                 "pack.mcmeta",
             )

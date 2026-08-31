@@ -25,6 +25,17 @@ repositories {
     }
 }
 
+// Forge 1.18.2 resolves Log4j API 2.19.0 from CoreMods while Minecraft still
+// supplies Log4j Core 2.17.1. Keep the development runtime on a matching pair.
+if (sc.current.version == "1.18.2") {
+    configurations.configureEach {
+        resolutionStrategy.force(
+            "org.apache.logging.log4j:log4j-api:2.17.1",
+            "org.apache.logging.log4j:log4j-core:2.17.1",
+        )
+    }
+}
+
 dependencies {
     add("modImplementation", "maven.modrinth:embeddium:${project.property("deps.embeddium")}")
 

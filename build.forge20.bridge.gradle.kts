@@ -5,6 +5,10 @@ plugins {
 val nestedBuild = rootProject.layout.projectDirectory.dir("forge20-build")
 val nestedWrapperJar = nestedBuild.file("gradle/wrapper/gradle-wrapper.jar")
 
+tasks.withType<JavaCompile>().configureEach {
+    enabled = false
+}
+
 val prepareForge20Wrapper by tasks.registering(Copy::class) {
     from(rootProject.layout.projectDirectory.file("gradle/wrapper/gradle-wrapper.jar"))
     into(nestedBuild.dir("gradle/wrapper"))

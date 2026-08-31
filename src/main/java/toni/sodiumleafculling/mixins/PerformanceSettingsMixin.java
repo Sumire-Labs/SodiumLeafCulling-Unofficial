@@ -5,8 +5,8 @@ import org.spongepowered.asm.mixin.Unique;
 import toni.sodiumleafculling.LeafCullingQuality;
 import toni.sodiumleafculling.PerformanceSettingsAccessor;
 //? if embeddium_modern {
-import org.embeddedt.embeddium.impl.gui.EmbeddiumOptions;
-//?} elif sodium_modern_config {
+/*import org.embeddedt.embeddium.impl.gui.EmbeddiumOptions;
+*///?} elif sodium_modern_config {
 import net.caffeinemc.mods.sodium.client.gui.SodiumOptions;
 //?} elif sodium_caffeine {
 /*import net.caffeinemc.mods.sodium.client.gui.SodiumGameOptions;
@@ -14,7 +14,7 @@ import net.caffeinemc.mods.sodium.client.gui.SodiumOptions;
 /*import me.jellysquid.mods.sodium.client.gui.SodiumGameOptions;
 *///?}
 
-@Mixin(value = /*? if embeddium_modern {*/EmbeddiumOptions.PerformanceSettings.class/*?} elif sodium_modern_config {*//*SodiumOptions.PerformanceSettings.class*//*?} elif fabric_legacy_options {*//*SodiumGameOptions.AdvancedSettings.class*//*?} else {*//*SodiumGameOptions.PerformanceSettings.class*//*?}*/, remap = false, priority = 100)
+@Mixin(value = /*? if embeddium_modern {*//*EmbeddiumOptions.PerformanceSettings.class*//*?} elif sodium_modern_config {*/SodiumOptions.PerformanceSettings.class/*?} elif fabric_legacy_options {*//*SodiumGameOptions.AdvancedSettings.class*//*?} else {*//*SodiumGameOptions.PerformanceSettings.class*//*?}*/, remap = false, priority = 100)
 public class PerformanceSettingsMixin implements PerformanceSettingsAccessor {
     @Unique
     public LeafCullingQuality leafCullingQuality = LeafCullingQuality.SOLID_AGGRESSIVE;

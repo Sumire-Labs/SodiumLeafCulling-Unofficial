@@ -1,0 +1,59 @@
+plugins {
+    id 'java'
+    id 'net.neoforged.gradle.userdev' version '7.0.116'
+}
+
+group = 'toni'
+version = '3.0.0+1.20.3'
+base.archivesName = 'slc_unofficial-neoforge'
+
+def workspace = rootProject.projectDir.parentFile
+def generatedSources = new File(workspace, 'versions/1.20.3-neoforge/build/generated/stonecutter/main/java')
+def generatedResources = new File(workspace, 'versions/1.20.3-neoforge/build/resources/main')
+
+repositories {
+    mavenCentral()
+    maven {
+        name = 'Modrinth'
+        url = 'https://api.modrinth.com/maven'
+    }
+}
+
+sourceSets {
+    main {
+        java.srcDirs = [generatedSources]
+        resources.srcDirs = [generatedResources, 'src/main/resources']
+    }
+}
+
+dependencies {
+    implementation 'net.neoforged:neoforge:20.3.8-beta'
+    implementation 'maven.modrinth:sk9rgfiA:N21UWLtA'
+    annotationProcessor 'io.github.llamalad7:mixinextras-common:0.5.4'
+    compileOnly 'io.github.llamalad7:mixinextras-common:0.5.4'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+    toolchain {
+        vendor = JvmVendorSpec.ADOPTIUM
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = 17
+}
+
+processResources {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+runs {
+    configureEach {
+        modSource project.sourceSets.main
+    }
+    client { }
+}

@@ -35,6 +35,12 @@ dependencies {
     modImplementation("net.fabricmc.fabric-api:fabric-api:${project.property("deps.fabric_api")}")
     modImplementation("maven.modrinth:sodium:${project.property("deps.sodium")}")
 
+    // Loom does not expose non-mod JARs nested in legacy Sodium releases to the
+    // development runtime. Production Sodium JARs already bundle this library.
+    sc.properties.getOrNull<String>("deps.sodium_nested_joml")?.let {
+        runtimeOnly("org.joml:joml:$it")
+    }
+
     sc.properties.getOrNull<String>("deps.indium")?.let {
         modImplementation("maven.modrinth:indium:$it")
     }
@@ -97,6 +103,7 @@ tasks {
             "github" to project.property("mod.github"),
             "minecraft" to project.property("mod.mc_compat"),
             "renderer" to project.property("mod.renderer_compat"),
+            "fabric_api_id" to (sc.properties.getOrNull<String>("deps.fabric_api_id") ?: "fabric-api"),
             "java" to "JAVA_${requiredJava.majorVersion}",
             "java_version" to requiredJava.majorVersion,
         )

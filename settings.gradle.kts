@@ -46,9 +46,11 @@ stonecutter {
 
         // Existing legacy targets retained during the build-system migration.
         target("1.20.1", "fabric", "forge")
-        target("1.20.2", "fabric", "neoforge")
+        target("1.20.2", "fabric")
+        version("1.20.2-neoforge", "1.20.2").buildscript("build.neoforge202.bridge.gradle.kts")
         version("1.20.2-forge", "1.20.2").buildscript("build.forge20.bridge.gradle.kts")
-        target("1.20.3", "fabric", "neoforge")
+        target("1.20.3", "fabric")
+        version("1.20.3-neoforge", "1.20.3").buildscript("build.neoforge203.bridge.gradle.kts")
         target("1.20.4", "fabric", "neoforge")
         target("1.20.5", "fabric")
         version("1.20.5-neoforge", "1.20.5").buildscript("build.neoforge205.bridge.gradle.kts")

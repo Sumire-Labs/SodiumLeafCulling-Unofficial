@@ -16,7 +16,7 @@ import toni.sodiumleafculling.LeafCullingQuality;
 
 @Mixin(value = BlockOcclusionCache.class, remap = false)
 public class BlockOcclusionCacheMixin {
-    @Inject(method = "shouldDrawSide", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/BlockState;skipRendering(Lnet/minecraft/block/BlockState;Lnet/minecraft/util/Direction;)Z"), locals = LocalCapture.CAPTURE_FAILHARD, cancellable = true)
+    @Inject(method = "shouldDrawSide", remap = false, at = @At(value = "INVOKE", target = "Lnet/minecraft/block/BlockState;skipRendering(Lnet/minecraft/block/BlockState;Lnet/minecraft/util/Direction;)Z", remap = true), locals = LocalCapture.CAPTURE_FAILHARD, cancellable = true)
     private void inject$shouldDrawSide(BlockState selfState, IBlockReader view, BlockPos selfPos, Direction facing, CallbackInfoReturnable<Boolean> cir, BlockPos.Mutable otherPos, BlockState otherState) {
         if (!(selfState.getBlock() instanceof LeavesBlock))
             return;

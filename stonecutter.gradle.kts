@@ -17,7 +17,7 @@ stonecutter parameters {
 
     val embeddiumModern = current.project == "1.21-neoforge"
     val embeddiumLegacy = loader != "fabric" && current.parsed < "1.21"
-    val fabricLegacyRenderer = (loader == "fabric" && current.parsed < "1.20.2") ||
+    val fabricLegacyRenderer = (loader == "fabric" && current.parsed < "1.20.1") ||
         (loader == "forge" && current.parsed < "1.20")
 
     // Sodium 0.8's public configuration API was backported to 1.21.1, then
