@@ -19,7 +19,7 @@ val neoForge205Build by tasks.registering(JavaExec::class) {
     workingDir(nestedBuild)
     classpath(nestedWrapperJar)
     mainClass.set("org.gradle.wrapper.GradleWrapperMain")
-    args("jar", "--no-daemon", "--max-workers=1")
+    args("-PmodVersion=${project.property("mod.version")}", "jar", "--no-daemon", "--max-workers=1")
 }
 
 tasks.named("build") {

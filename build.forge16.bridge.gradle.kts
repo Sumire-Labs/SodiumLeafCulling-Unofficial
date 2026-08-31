@@ -22,7 +22,7 @@ val forge16Build by tasks.registering(JavaExec::class) {
     workingDir(nestedBuild)
     classpath(nestedWrapperJar)
     mainClass.set("org.gradle.wrapper.GradleWrapperMain")
-    args("reobfJar", "--no-daemon", "--max-workers=1")
+    args("-PmodVersion=${project.property("mod.version")}", "reobfJar", "--no-daemon", "--max-workers=1")
 }
 
 tasks.named("build") {

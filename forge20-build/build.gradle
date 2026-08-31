@@ -5,7 +5,8 @@ plugins {
 }
 
 group = 'toni'
-version = '3.0.0+1.20.2'
+def modVersion = findProperty('modVersion') ?: '3.0.0'
+version = "${modVersion}+1.20.2"
 base.archivesName = 'slc_unofficial-forge'
 
 def workspace = rootProject.projectDir.parentFile
@@ -77,7 +78,7 @@ processResources {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     def values = [
         id: 'slc_unofficial', namespace: 'sodiumleafculling', name: 'SodiumLeafCulling-Unofficial',
-        version: '3.0.0', description: 'Smart leaf culling for Sodium and Embeddium.',
+        version: modVersion, description: 'Smart leaf culling for Sodium and Embeddium.',
         author: 'toni', contributor: 's12kuma01', license: 'MIT',
         github: 'Sumire-Labs/SodiumLeafCulling-Unofficial', minecraft: '[1.20.2]',
         renderer: '[0.2.10+mc1.20.2,)', loader: '[48,)', pack_format: 18,
