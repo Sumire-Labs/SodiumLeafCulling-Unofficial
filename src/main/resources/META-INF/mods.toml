@@ -35,9 +35,16 @@ side="CLIENT"
 # Xenon already includes equivalent leaf-culling functionality. Legacy Forge
 # has no dedicated incompatible dependency type, so an optional dependency
 # with an intentionally impossible version requirement declares the conflict.
+# Explicit publishing aliases avoid resolving the shared "xenon" mod ID to the
+# unrelated Fabric utility mod with the same name.
 [[dependencies."${id}"]]
 modId="xenon"
 mandatory=false
+incompatible=true
 versionRange="[0.0.0-NOT-COMPATIBLE]"
 ordering="NONE"
 side="CLIENT"
+
+[dependencies."${id}".mc-publish]
+modrinth="aWDwN8NN"
+curseforge="564239"
