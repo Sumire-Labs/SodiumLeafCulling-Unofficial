@@ -1,3 +1,7 @@
+# [3.1.1] 
+- Fix Xenon incompatibility metadata to reference the correct Embeddium fork on Modrinth and CurseForge.
+- Correct Xenon's dependency type from optional to incompatible.
+
 # [3.1.0] 
 - expand version support
     - Fabric: 1.16.3～1.20、1.20.2、1.20.3、1.20.5、1.20.6、1.21
