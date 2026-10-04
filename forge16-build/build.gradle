@@ -33,9 +33,9 @@ dependencies {
     minecraft 'net.minecraftforge:forge:1.16.5-36.2.42'
     implementation fg.deobf('maven.modrinth:embeddium:0.3.18+mc1.16.5')
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
-    annotationProcessor 'io.github.llamalad7:mixinextras-common:0.5.4'
-    compileOnly 'io.github.llamalad7:mixinextras-common:0.5.4'
-    implementation 'io.github.llamalad7:mixinextras-forge:0.5.4'
+    annotationProcessor 'io.github.llamalad7:mixinextras-common:0.5.5'
+    compileOnly 'io.github.llamalad7:mixinextras-common:0.5.5'
+    implementation 'io.github.llamalad7:mixinextras-forge:0.5.5'
 }
 
 mixin {

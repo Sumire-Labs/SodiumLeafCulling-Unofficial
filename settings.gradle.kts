@@ -11,8 +11,8 @@ pluginManagement {
 }
 
 plugins {
-    id("dev.kikugie.stonecutter") version "0.9.7"
-    id("dev.kikugie.loom-back-compat") version "0.4.2"
+    id("dev.kikugie.stonecutter") version "0.9.8"
+    id("dev.kikugie.loom-back-compat") version "0.4.3"
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
 
@@ -66,6 +66,7 @@ stonecutter {
         target("26.1.1", "fabric", "neoforge")
         target("26.1.2", "fabric", "neoforge")
         target("26.2", "fabric", "neoforge")
+        target("26.3", "fabric", "neoforge")
 
         vcsVersion = "26.2-fabric"
     }

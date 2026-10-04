@@ -16,6 +16,12 @@ val prepareNeoForge205Wrapper by tasks.registering(Copy::class) {
 
 val neoForge205Build by tasks.registering(JavaExec::class) {
     dependsOn("stonecutterGenerate", prepareNeoForge205Wrapper)
+    // Gradle 8 / legacy loader plugins need their own Java 21 launcher even
+    // when the root build runs on Java 25 for modern Loom.
+    javaLauncher.set(javaToolchains.launcherFor {
+        languageVersion.set(JavaLanguageVersion.of(21))
+        vendor.set(JvmVendorSpec.ADOPTIUM)
+    })
     workingDir(nestedBuild)
     classpath(nestedWrapperJar)
     mainClass.set("org.gradle.wrapper.GradleWrapperMain")
@@ -31,7 +37,7 @@ tasks.register<Copy>("buildAndCollect") {
     description = "Builds NeoForge 1.20.5 with NeoGradle and collects the jars."
     dependsOn(neoForge205Build)
     from(nestedBuild.dir("build/libs"))
-    include("*.jar")
+    include("${project.property("mod.id")}-neoforge-${project.property("mod.version")}+${sc.current.version}.jar")
     exclude("*-sources.jar")
     into(rootProject.layout.buildDirectory.dir("libs/${project.property("mod.version")}"))
 }

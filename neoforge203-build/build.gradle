@@ -30,8 +30,8 @@ sourceSets {
 dependencies {
     implementation 'net.neoforged:neoforge:20.3.8-beta'
     implementation 'maven.modrinth:sk9rgfiA:N21UWLtA'
-    annotationProcessor 'io.github.llamalad7:mixinextras-common:0.5.4'
-    compileOnly 'io.github.llamalad7:mixinextras-common:0.5.4'
+    annotationProcessor 'io.github.llamalad7:mixinextras-common:0.5.5'
+    compileOnly 'io.github.llamalad7:mixinextras-common:0.5.5'
 }
 
 java {
@@ -39,7 +39,7 @@ java {
     targetCompatibility = JavaVersion.VERSION_17
     toolchain {
         vendor = JvmVendorSpec.ADOPTIUM
-        languageVersion = JavaLanguageVersion.of(17)
+        languageVersion = JavaLanguageVersion.of(21)
     }
 }
 

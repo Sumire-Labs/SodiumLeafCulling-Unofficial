@@ -25,7 +25,7 @@ Fabric, Forge, and NeoForge builds.
 | 1.21.1–1.21.8 | Yes | — | Yes |
 | 1.21.9 | Yes | — | — |
 | 1.21.10–1.21.11 | Yes | — | Yes |
-| 26.1, 26.1.1, 26.1.2, 26.2 | Yes | — | Yes |
+| 26.1, 26.1.1, 26.1.2, 26.2, 26.3 | Yes | — | Yes |
 
 NeoForge 1.21.9 is intentionally absent because Sodium does not publish a
 compatible NeoForge artifact for that Minecraft release.
@@ -37,9 +37,9 @@ internal Java package and resource namespace remain `sodiumleafculling`.
 ## Development
 
 Use the checked-in Gradle wrapper. JDK 17 or newer can launch the wrapper; the
-repository pins the Gradle daemon to Java 21 and can provision it through
-Foojay when necessary. Compilation toolchains are also selected per Minecraft
-version and downloaded automatically:
+repository pins the Gradle daemon to Java 25 and can provision it through
+Foojay when necessary. Compilation uses JDK 21 for older targets and JDK 25
+for Minecraft 26.x, targeting the following Java bytecode/runtime versions:
 
 - Minecraft 1.16.x: Java 8
 - Minecraft 1.17.x: Java 16
@@ -92,13 +92,13 @@ The three workflows under `.github/workflows` share one verified set of
 runtime jars:
 
 1. **Build all versions** runs on branch pushes, pull requests, and manual
-   dispatches. It builds all 61 Minecraft/loader targets in separate jobs,
+   dispatches. It builds all 63 Minecraft/loader targets in separate jobs,
    rejects sources/dev/plain jars, and exposes the combined
    `slc-unofficial-jars` artifact on the Actions run for 14 days.
 2. **Release** runs for any pushed tag. The tag identifies the GitHub Release,
    while `mod.version` in the tagged commit determines the JAR and platform
    version. It rebuilds all targets once, creates a GitHub Release with
-   generated notes, and attaches all 61 runtime jars plus `SHA256SUMS`.
+   generated notes, and attaches all 63 runtime jars plus `SHA256SUMS`.
 3. **Publish to CurseForge and Modrinth** is called only after the GitHub
    Release succeeds. It publishes each target as its own platform version so
    its Minecraft version and loader metadata remain accurate. A manual run can
@@ -121,7 +121,7 @@ missing, that platform job fails instead of silently pretending to publish.
 
 For a partial retry, dispatch **Publish to CurseForge and Modrinth**, choose the
 failed platform, and enter its exact target such as `1.21.11-neoforge`. Leaving
-the target blank republishes all 61 entries and will be rejected if some are
+the target blank republishes all 63 entries and will be rejected if some are
 already present. If the `publishing` environment permits only tags, run the
 retry on the tag ref instead of the default branch, for example:
 
@@ -158,8 +158,9 @@ or Embeddium version for the API generation that each mixin was verified
 against. Build dependencies remain pinned separately under `deps.sodium` or
 `deps.embeddium` so builds stay reproducible while newer compatible renderer
 releases are accepted at runtime.
-All targets currently use mod version `3.0.0` because the new IDs and build
-layout are intentionally not release-compatible with earlier artifacts.
+All targets use the shared `mod.version` from `stonecutter.properties.toml`.
+The new IDs and build layout are intentionally not release-compatible with
+artifacts published under the original mod IDs.
 
 When adding or updating a Minecraft target:
 
@@ -183,8 +184,51 @@ terrain buffer instead of being manually rendered alongside the cutout copy.
 The Forge 1.20.1 metadata also declares Xenon incompatible because Xenon already
 includes equivalent leaf-culling functionality.
 
-Build-plugin versions are kept in `settings.gradle.kts`, the loader-specific
-build scripts, and `gradle/wrapper/gradle-wrapper.properties`. Update them
+### Legacy loader builds
+
+Stonecutter selects and preprocesses the shared source for each target; the
+loader's Gradle plugin still builds Minecraft and remaps the resulting mod.
+Most targets use `build.fabric.gradle.kts`, `build.forge.gradle.kts`, or
+`build.neoforge.gradle.kts` directly. Five targets instead use a bridge script
+to launch a separate Gradle 8.14.5 build, isolated from the root Gradle 9 build:
+
+The bridges explicitly launch Java 21, while modern Loom runs on Java 25 in
+the root build. This keeps the legacy Gradle/plugin runtime compatible.
+
+| Directory | Target | Build plugin |
+| --- | --- | --- |
+| `forge16-build` | Forge 1.16.5 | ForgeGradle 6 |
+| `forge20-build` | Forge 1.20.2 | ForgeGradle 6 |
+| `neoforge202-build` | NeoForge 1.20.2 | NeoGradle 7.0.116 |
+| `neoforge203-build` | NeoForge 1.20.3 | NeoGradle 7.0.116 |
+| `neoforge205-build` | NeoForge 1.20.5 | NeoGradle 7.1.39 |
+
+The `build.*.bridge.gradle.kts` files connect these builds to Stonecutter's
+generation, build, and JAR collection tasks. The `20` in `forge20-build`
+therefore means the special Forge 1.20.2 target, rather than all 1.20 releases.
+The 1.20.2/1.20.3 NeoForge bridges share the `legacy-neoforge-resources`
+convention in `buildSrc`, which expands the early loader metadata and Mixin
+templates before the nested builds consume them. Legacy collection selects
+the exact current-version runtime JAR, so old outputs are not collected.
+The early NeoForge 1.20.2/1.20.3 builds pin NeoGradle to the corresponding MDK
+generation because newer releases produce incompatible loader metadata.
+These bridges are project-specific compatibility workarounds, not a
+Stonecutter requirement. They should only be removed after verifying that a
+single replacement toolchain builds and loads the affected legacy targets.
+
+There is also duplication: the bridge scripts repeat orchestration, and
+`forge16-build/src/main/java` maintains a separate Java 8-compatible source
+tree. The other nested builds consume Stonecutter-generated shared sources.
+Consolidating the bridge orchestration and migrating the Forge 1.16.5 source
+would reduce maintenance work, but each requires legacy runtime validation.
+
+Dependency updates select stable releases available for each Minecraft and
+loader combination. Alpha/beta-only loader releases remain necessary for
+some targets, including NeoForge 26.3. Legacy NeoGradle pins remain intentional.
+
+Build-plugin versions are kept in `settings.gradle.kts`, `gradle.properties`
+(the Loom version), the loader-specific build scripts, and
+`gradle/wrapper/gradle-wrapper.properties`. Update them
 deliberately and keep the Gradle, Loom/ModDevGradle, and Java compatibility
 requirements aligned.
 

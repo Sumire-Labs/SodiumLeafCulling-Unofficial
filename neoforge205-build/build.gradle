@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id 'net.neoforged.gradle.userdev' version '7.0.192'
+    id 'net.neoforged.gradle.userdev' version '7.1.39'
 }
 
 group = 'toni'
@@ -41,8 +41,8 @@ dependencies {
     // Its Maven endpoint selects the Fabric file, so pin the NeoForge file's
     // version directory and let Ivy resolve the loader-specific artifact.
     implementation 'modrinth.direct:embeddium:0.3.14+mc1.20.5'
-    annotationProcessor 'io.github.llamalad7:mixinextras-common:0.5.4'
-    compileOnly 'io.github.llamalad7:mixinextras-common:0.5.4'
+    annotationProcessor 'io.github.llamalad7:mixinextras-common:0.5.5'
+    compileOnly 'io.github.llamalad7:mixinextras-common:0.5.5'
 }
 
 java {

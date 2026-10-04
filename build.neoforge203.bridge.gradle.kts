@@ -1,5 +1,6 @@
 plugins {
     base
+    id("legacy-neoforge-resources")
 }
 
 val nestedBuild = rootProject.layout.projectDirectory.dir("neoforge203-build")
@@ -15,7 +16,13 @@ val prepareNeoForge203Wrapper by tasks.registering(Copy::class) {
 }
 
 val neoForge203Build by tasks.registering(JavaExec::class) {
-    dependsOn("stonecutterGenerate", prepareNeoForge203Wrapper)
+    dependsOn("stonecutterGenerate", "processResources", prepareNeoForge203Wrapper)
+    // Gradle 8 / legacy loader plugins need their own Java 21 launcher even
+    // when the root build runs on Java 25 for modern Loom.
+    javaLauncher.set(javaToolchains.launcherFor {
+        languageVersion.set(JavaLanguageVersion.of(21))
+        vendor.set(JvmVendorSpec.ADOPTIUM)
+    })
     workingDir(nestedBuild)
     classpath(nestedWrapperJar)
     mainClass.set("org.gradle.wrapper.GradleWrapperMain")
@@ -30,7 +37,7 @@ tasks.register<Copy>("buildAndCollect") {
     group = "build"
     dependsOn(neoForge203Build)
     from(nestedBuild.dir("build/libs"))
-    include("*.jar")
+    include("${project.property("mod.id")}-neoforge-${project.property("mod.version")}+${sc.current.version}.jar")
     exclude("*-sources.jar")
     into(rootProject.layout.buildDirectory.dir("libs/${project.property("mod.version")}"))
 }

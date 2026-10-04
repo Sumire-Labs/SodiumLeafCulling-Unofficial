@@ -1,8 +1,20 @@
-# [3.1.1] 
+# [Unreleased]
+- Add Minecraft 26.3 support for Fabric and NeoForge, using Sodium 0.9.2.
+- Update Stonecutter, Loom Back Compat, Loom, ModDevGradle, Gradle wrappers,
+  Fabric Loader, MixinSquared, MixinExtras, and available stable dependencies
+  for existing Minecraft targets.
+- Run the root build on Java 25 and legacy Gradle 8 bridges on Java 21.
+- Collect only the current version's runtime JAR from legacy builds, excluding
+  artifacts left over from earlier builds.
+- Expand legacy NeoForge 1.20.2/1.20.3 metadata and Mixin resources before
+  launching their nested builds, using a shared resource convention.
+- Document the purpose and maintenance tradeoffs of legacy loader builds.
+
+# [3.1.1]
 - Fix Xenon incompatibility metadata to reference the correct Embeddium fork on Modrinth and CurseForge.
 - Correct Xenon's dependency type from optional to incompatible.
 
-# [3.1.0] 
+# [3.1.0]
 - expand version support
     - Fabric: 1.16.3～1.20、1.20.2、1.20.3、1.20.5、1.20.6、1.21
     - Forge: 1.16.5、1.18.2、1.19.2、1.20.2

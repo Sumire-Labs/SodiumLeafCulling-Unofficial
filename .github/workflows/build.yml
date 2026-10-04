@@ -144,6 +144,8 @@ jobs:
           - '26.1.2-neoforge'
           - '26.2-fabric'
           - '26.2-neoforge'
+          - '26.3-fabric'
+          - '26.3-neoforge'
 
     steps:
       - name: Check out repository
@@ -151,11 +153,11 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Set up Java 21
+      - name: Set up Java 25
         uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v6.0.0
         with:
           distribution: temurin
-          java-version: '21'
+          java-version: '25'
 
       - name: Set up Gradle
         # v5 deliberately avoids the additional caching terms introduced in v6.
@@ -274,8 +276,8 @@ jobs:
           set -euo pipefail
           mapfile -t jars < <(find dist -maxdepth 1 -type f -name '*.jar' -print | sort)
 
-          if (( ${#jars[@]} != 61 )); then
-            printf 'Expected 61 runtime JARs, found %d:\n%s\n' "${#jars[@]}" "${jars[*]}" >&2
+          if (( ${#jars[@]} != 63 )); then
+            printf 'Expected 63 runtime JARs, found %d:\n%s\n' "${#jars[@]}" "${jars[*]}" >&2
             exit 1
           fi
 
