@@ -1,4 +1,6 @@
 # [3.2.0]
+- Include library locations in NeoGradle's cache keys to prevent restored
+  library lists from referencing removed nested builds or previous checkouts.
 - Migrate to Stonecutter 0.10-alpha.12, including its structured-property API,
   lazy task aggregation and Gradle Property-based version configuration.
 - Disable automatic Gradle project-property exposure and use Stonecutter's

@@ -1,3 +1,5 @@
+import net.neoforged.gradle.common.runtime.tasks.ListLibraries
+
 plugins {
     id("net.neoforged.gradle.userdev") version "7.1.39"
     id("neoforge-resources")
@@ -44,6 +46,19 @@ runs {
 tasks.withType<JavaCompile>().configureEach {
     options.encoding = "UTF-8"
     options.release.set(requiredJava)
+}
+
+// NeoGradle writes absolute paths but hashes library contents without their
+// locations. Include locations in both Gradle's and NeoGradle's cache keys so
+// moving a target cannot restore a libraries.txt from the previous checkout.
+tasks.withType<ListLibraries>().configureEach {
+    inputs.property("libraryLocations", versionJsonLibraries.elements.map { libraries ->
+        libraries.map { it.asFile.absolutePath }.sorted().joinToString("\n")
+    })
+    val extractedLibraries = librariesDirectory
+    inputs.property("extractedLibrariesLocation", providers.provider {
+        extractedLibraries.get().asFile.absolutePath
+    })
 }
 
 tasks.jar {
