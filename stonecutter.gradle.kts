@@ -2,6 +2,10 @@ plugins {
     id("dev.kikugie.stonecutter")
 }
 
+stonecutter flags {
+    this["expose_properties"] = false
+}
+
 stonecutter active "26.2-fabric"
 
 stonecutter parameters {
@@ -45,7 +49,15 @@ stonecutter parameters {
     }
 }
 
-stonecutter tasks {
-    named("build")
-    named("buildAndCollect")
+val versionBuilds = stonecutter.tasks.names("build")
+val versionCollections = stonecutter.tasks.names("buildAndCollect")
+tasks.register("build") {
+    group = "build"
+    description = "Builds all registered targets."
+    dependsOn(versionBuilds.map { it.values })
+}
+tasks.register("buildAndCollect") {
+    group = "build"
+    description = "Builds and collects runtime JARs for all registered targets."
+    dependsOn(versionCollections.map { it.values })
 }

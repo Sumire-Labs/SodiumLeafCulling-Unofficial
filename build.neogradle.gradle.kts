@@ -4,8 +4,8 @@ plugins {
     `maven-publish`
 }
 
-version = "${project.property("mod.version")}+${sc.current.version}"
-base.archivesName = "${project.property("mod.id")}-neoforge"
+version = "${sc.properties["mod.version"]}+${sc.current.version}"
+base.archivesName = "${sc.properties["mod.id"]}-neoforge"
 val requiredJava = if (sc.current.parsed >= "1.20.5") 21 else 17
 
 repositories {
@@ -17,9 +17,9 @@ repositories {
 }
 
 dependencies {
-    implementation("net.neoforged:neoforge:${project.property("deps.neo_loader")}")
-    implementation("maven.modrinth:embeddium:${project.property("deps.embeddium_file")}")
-    val extras = "io.github.llamalad7:mixinextras-common:${project.property("deps.mixinextras")}"
+    implementation("net.neoforged:neoforge:${sc.properties["deps.neo_loader"]}")
+    implementation("maven.modrinth:embeddium:${sc.properties["deps.embeddium_file"]}")
+    val extras = "io.github.llamalad7:mixinextras-common:${sc.properties["deps.mixinextras"]}"
     annotationProcessor(extras)
     compileOnly(extras)
 }
@@ -44,7 +44,6 @@ runs {
 tasks.withType<JavaCompile>().configureEach {
     options.encoding = "UTF-8"
     options.release.set(requiredJava)
-    dependsOn("stonecutterGenerate")
 }
 
 tasks.jar {
@@ -54,5 +53,5 @@ tasks.jar {
 tasks.register<Copy>("buildAndCollect") {
     group = "build"
     from(tasks.jar.flatMap { it.archiveFile })
-    into(rootProject.layout.buildDirectory.dir("libs/${project.property("mod.version")}"))
+    into(rootProject.layout.buildDirectory.dir("libs/${sc.properties["mod.version"]}"))
 }

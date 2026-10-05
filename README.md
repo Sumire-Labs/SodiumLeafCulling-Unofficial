@@ -229,6 +229,22 @@ The prefetch script retries network failures and reuses verified cached jars.
 Build-plugin versions are pinned in `settings.gradle.kts` and the backend
 scripts. Update them deliberately and keep Gradle, Loom/ModDevGradle/NeoGradle,
 and Java compatibility requirements aligned.
+
+### Stonecutter 0.10
+
+The build uses **0.10-alpha.12** from KikuGie's snapshots repository. This is
+a prerelease; keep the plugin version in `settings.gradle.kts` and the API
+dependency in `buildSrc/build.gradle.kts` identical when updating it.
+
+Target metadata is read through `sc.properties` (or `StonecutterBuildExtension`
+in convention plugins). Automatic exposure as Gradle project properties is
+disabled. Optional strings use `getOrNull(name)` without a type parameter;
+typed values use the 0.10 `getAs`/`getAsOrNull` API.
+
+The root `build` and `buildAndCollect` tasks use `stonecutter.tasks.names` to
+depend on target task paths lazily. Source generation is connected through
+Stonecutter's source sets, without depending on its internal task API.
+
 ## License
 
 This project is licensed under the [MIT License](LICENSE.md).

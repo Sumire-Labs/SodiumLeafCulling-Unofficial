@@ -5,10 +5,10 @@ plugins {
     `maven-publish`
 }
 
-version = "${project.property("mod.version")}+${sc.current.version}"
-base.archivesName = "${project.property("mod.id")}-neoforge"
+version = "${sc.properties["mod.version"]}+${sc.current.version}"
+base.archivesName = "${sc.properties["mod.id"]}-neoforge"
 
-val modId = project.property("mod.id").toString()
+val modId = sc.properties["mod.id"]
 
 val requiredJava = when {
     sc.current.parsed >= "26.1" -> JavaVersion.VERSION_25
@@ -28,8 +28,8 @@ repositories {
     strictMaven("https://maven.fabricmc.net/", "FabricMC", "net.fabricmc.fabric-api")
 }
 
-val sodiumNestedPath = sc.properties.getOrNull<String>("deps.sodium_nested_path")
-val sodiumMaven = sc.properties.getOrNull<String>("deps.sodium_maven")
+val sodiumNestedPath = sc.properties.getOrNull("deps.sodium_nested_path")
+val sodiumMaven = sc.properties.getOrNull("deps.sodium_maven")
 val sodiumShell = configurations.create("sodiumShell") {
     isCanBeConsumed = false
     isCanBeResolved = true
@@ -73,9 +73,9 @@ if (sodiumNestedPath != null) {
 }
 
 dependencies {
-    val embeddium = sc.properties.getOrNull<String>("deps.embeddium")
+    val embeddium = sc.properties.getOrNull("deps.embeddium")
     when {
-        embeddium != null -> implementation("maven.modrinth:embeddium:${sc.properties.getOrNull<String>("deps.embeddium_file") ?: embeddium}")
+        embeddium != null -> implementation("maven.modrinth:embeddium:${sc.properties.getOrNull("deps.embeddium_file") ?: embeddium}")
         sodiumMaven != null -> {
             // The published shell claims the sodium mod id and embeds the real
             // mod. That layout is correct for a launcher, but shadows the direct
@@ -86,7 +86,7 @@ dependencies {
             runtimeOnly(files(strippedSodiumShell))
         }
         sodiumNestedPath != null -> {
-            val sodium = "maven.modrinth:sodium:${project.property("deps.sodium")}"
+            val sodium = "maven.modrinth:sodium:${sc.properties["deps.sodium"]}"
             runtimeOnly(sodium)
 
             val outer = configurations.detachedConfiguration(create(sodium)).apply {
@@ -100,43 +100,43 @@ dependencies {
             }.files
             compileOnly(nested)
         }
-        else -> implementation("maven.modrinth:sodium:${project.property("deps.sodium")}")
+        else -> implementation("maven.modrinth:sodium:${sc.properties["deps.sodium"]}")
     }
 
-    sc.properties.getOrNull<String>("deps.forgified_api_base")?.let {
+    sc.properties.getOrNull("deps.forgified_api_base")?.let {
         compileOnly("org.sinytra.forgified-fabric-api:fabric-api-base:$it")
         if (sodiumMaven != null) {
             runtimeOnly("org.sinytra.forgified-fabric-api:fabric-api-base:$it")
         }
     }
-    sc.properties.getOrNull<String>("deps.forgified_renderer_api")?.let {
+    sc.properties.getOrNull("deps.forgified_renderer_api")?.let {
         compileOnly("org.sinytra.forgified-fabric-api:fabric-renderer-api-v1:$it")
         if (sodiumMaven != null) {
             runtimeOnly("org.sinytra.forgified-fabric-api:fabric-renderer-api-v1:$it")
         }
     }
-    sc.properties.getOrNull<String>("deps.forgified_rendering_data_attachment")?.let {
+    sc.properties.getOrNull("deps.forgified_rendering_data_attachment")?.let {
         runtimeOnly("org.sinytra.forgified-fabric-api:fabric-rendering-data-attachment-v1:$it")
     }
-    sc.properties.getOrNull<String>("deps.forgified_block_view_api")?.let {
+    sc.properties.getOrNull("deps.forgified_block_view_api")?.let {
         runtimeOnly("org.sinytra.forgified-fabric-api:fabric-block-view-api-v2:$it")
     }
-    sc.properties.getOrNull<String>("deps.fabric_renderer_api")?.let {
+    sc.properties.getOrNull("deps.fabric_renderer_api")?.let {
         // Sodium bundles the corresponding Forgified module at runtime. The
         // published Fabric API module exposes the same public API for javac.
         compileOnly("net.fabricmc.fabric-api:fabric-renderer-api-v1:$it")
     }
 
-    val mixinExtras = "io.github.llamalad7:mixinextras-common:${project.property("deps.mixinextras")}"
+    val mixinExtras = "io.github.llamalad7:mixinextras-common:${sc.properties["deps.mixinextras"]}"
     annotationProcessor(mixinExtras)
     compileOnly(mixinExtras)
 }
 
 neoForge {
-    version = project.property("deps.neo_loader") as String
+    version = sc.properties["deps.neo_loader"]
 
     mods {
-        register(project.property("mod.id") as String) {
+        register(sc.properties["mod.id"]) {
             sourceSet(sourceSets.main.get())
         }
     }
@@ -166,7 +166,7 @@ java {
 
 tasks {
     named("createMinecraftArtifacts") {
-        dependsOn("stonecutterGenerate")
+        dependsOn(sourceSets.main.get().allSource)
     }
 
     withType<JavaCompile>().configureEach {
@@ -183,17 +183,17 @@ tasks {
     register<Copy>("buildAndCollect") {
         group = "build"
         description = "Builds and collects the NeoForge jars for this target."
-        inputs.property("version", project.property("mod.version"))
+        inputs.property("version", sc.properties["mod.version"])
         from(jar.flatMap { it.archiveFile })
-        into(rootProject.layout.buildDirectory.dir("libs/${project.property("mod.version")}"))
+        into(rootProject.layout.buildDirectory.dir("libs/${sc.properties["mod.version"]}"))
     }
 }
 
 publishing {
     publications {
         create<MavenPublication>("mavenJava") {
-            groupId = project.property("mod.group").toString()
-            artifactId = "${project.property("mod.id")}-neoforge"
+            groupId = sc.properties["mod.group"]
+            artifactId = "${sc.properties["mod.id"]}-neoforge"
             version = project.version.toString()
             from(components["java"])
         }

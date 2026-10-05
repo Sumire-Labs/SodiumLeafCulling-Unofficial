@@ -7,6 +7,7 @@ pluginManagement {
         maven("https://maven.minecraftforge.net/") { name = "MinecraftForge" }
         maven("https://repo.spongepowered.org/repository/maven-public/") { name = "Sponge" }
         maven("https://maven.kikugie.dev/releases") { name = "KikuGie Releases" }
+        maven("https://maven.kikugie.dev/snapshots") { name = "KikuGie Snapshots" }
         maven("https://maven.taumc.org/releases") { name = "TauMC" }
         maven("https://repo.codemc.io/repository/relativitymc/") { name = "RelativityMC" }
     }
@@ -17,7 +18,7 @@ pluginManagement {
 }
 
 plugins {
-    id("dev.kikugie.stonecutter") version "0.9.8"
+    id("dev.kikugie.stonecutter") version "0.10-alpha.12"
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
 
@@ -35,7 +36,7 @@ stonecutter {
                 if (selectedTargets == null || name in selectedTargets || name == defaultTarget) {
                     val script = buildscript ?: if (loader == "fabric" && version.startsWith("26."))
                         "build.fabric.unobfuscated.gradle.kts" else "build.$loader.gradle.kts"
-                    version(name, version).buildscript(script)
+                    version(name, version).buildscript.set(script)
                 }
             }
         }
@@ -86,7 +87,7 @@ stonecutter {
         selectedTargets?.let { targets ->
             require(knownTargets.containsAll(targets)) { "Unknown build targets: ${targets - knownTargets}" }
         }
-        vcsVersion = defaultTarget
+        vcsVersion.set(defaultTarget)
     }
 }
 

@@ -9,10 +9,10 @@ plugins {
     `maven-publish`
 }
 
-version = "${project.property("mod.version")}+${sc.current.version}"
-base.archivesName = "${project.property("mod.id")}-forge"
+version = "${sc.properties["mod.version"]}+${sc.current.version}"
+base.archivesName = "${sc.properties["mod.id"]}-forge"
 
-val modId = project.property("mod.id").toString()
+val modId = sc.properties["mod.id"]
 val veryLegacy = sc.current.parsed < "1.17"
 val legacyExtras = configurations.create("legacyMixinExtras")
 if (veryLegacy) apply(plugin = "com.gradleup.shadow")
@@ -45,13 +45,13 @@ if (sc.current.version == "1.18.2") {
 }
 
 dependencies {
-    val rendererFile = sc.properties.getOrNull<String>("deps.embeddium_file")
-        ?: project.property("deps.embeddium").toString()
+    val rendererFile = sc.properties.getOrNull("deps.embeddium_file")
+        ?: sc.properties["deps.embeddium"]
     add("modImplementation", "maven.modrinth:embeddium:$rendererFile")
 
     annotationProcessor("org.spongepowered:mixin:0.8.5:processor")
 
-    val mixinExtrasVersion = project.property("deps.mixinextras").toString()
+    val mixinExtrasVersion = sc.properties["deps.mixinextras"]
     val mixinExtrasCommon = "io.github.llamalad7:mixinextras-common:$mixinExtrasVersion"
     annotationProcessor(mixinExtrasCommon)
     compileOnly(mixinExtrasCommon)
@@ -67,7 +67,7 @@ dependencies {
 
 legacyForge {
     enable {
-        forgeVersion = project.property("deps.forge") as String
+        forgeVersion = sc.properties["deps.forge"]
         if (sc.current.parsed < "1.17") isUseMojangClassNames = true
         isObfuscateJar = !veryLegacy
         isDisableRecompilation = false
@@ -75,7 +75,7 @@ legacyForge {
     validateAccessTransformers = true
 
     mods {
-        register(project.property("mod.id") as String) {
+        register(sc.properties["mod.id"]) {
             sourceSet(sourceSets.main.get())
         }
     }
@@ -120,7 +120,7 @@ val productionJar = if (veryLegacy) {
 
 tasks {
     named<CreateMinecraftArtifacts>("createMinecraftArtifacts") {
-        dependsOn("stonecutterGenerate")
+        dependsOn(sourceSets.main.get().allSource)
         additionalRepositories.add("https://maven.minecraftforge.net/")
     }
 
@@ -131,19 +131,19 @@ tasks {
 
     processResources {
         val values = mapOf(
-            "id" to project.property("mod.id"),
-            "namespace" to project.property("mod.namespace"),
-            "name" to project.property("mod.name"),
-            "version" to project.property("mod.version"),
-            "description" to project.property("mod.description"),
-            "author" to project.property("mod.author"),
-            "contributor" to project.property("mod.contributor"),
-            "license" to project.property("mod.license"),
-            "github" to project.property("mod.github"),
-            "minecraft" to project.property("mod.mc_compat"),
-            "renderer" to project.property("mod.renderer_compat"),
-            "loader" to project.property("mod.loader_compat"),
-            "pack_format" to project.property("mod.pack_format"),
+            "id" to sc.properties["mod.id"],
+            "namespace" to sc.properties["mod.namespace"],
+            "name" to sc.properties["mod.name"],
+            "version" to sc.properties["mod.version"],
+            "description" to sc.properties["mod.description"],
+            "author" to sc.properties["mod.author"],
+            "contributor" to sc.properties["mod.contributor"],
+            "license" to sc.properties["mod.license"],
+            "github" to sc.properties["mod.github"],
+            "minecraft" to sc.properties["mod.mc_compat"],
+            "renderer" to sc.properties["mod.renderer_compat"],
+            "loader" to sc.properties["mod.loader_compat"],
+            "pack_format" to sc.properties["mod.pack_format"],
             "java" to "JAVA_${requiredJava.majorVersion}",
             "java_version" to requiredJava.majorVersion,
             "plugin_line" to if (veryLegacy) "\"plugin\": \"toni.sodiumleafculling.LeafCullingMixinPlugin\"," else "",
@@ -175,17 +175,17 @@ tasks {
     register<Copy>("buildAndCollect") {
         group = "build"
         description = "Builds and collects the Forge jars for this target."
-        inputs.property("version", project.property("mod.version"))
+        inputs.property("version", sc.properties["mod.version"])
         from(productionJar.flatMap { it.archiveFile })
-        into(rootProject.layout.buildDirectory.dir("libs/${project.property("mod.version")}"))
+        into(rootProject.layout.buildDirectory.dir("libs/${sc.properties["mod.version"]}"))
     }
 }
 
 publishing {
     publications {
         create<MavenPublication>("mavenJava") {
-            groupId = project.property("mod.group").toString()
-            artifactId = "${project.property("mod.id")}-forge"
+            groupId = sc.properties["mod.group"]
+            artifactId = "${sc.properties["mod.id"]}-forge"
             version = project.version.toString()
             from(components["java"])
         }

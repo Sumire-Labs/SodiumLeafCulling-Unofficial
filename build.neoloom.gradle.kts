@@ -36,8 +36,8 @@ plugins {
     `maven-publish`
 }
 
-version = "${project.property("mod.version")}+${sc.current.version}"
-base.archivesName = "${project.property("mod.id")}-forge"
+version = "${sc.properties["mod.version"]}+${sc.current.version}"
+base.archivesName = "${sc.properties["mod.id"]}-forge"
 
 repositories {
     maven("https://maven.minecraftforge.net/")
@@ -50,10 +50,10 @@ repositories {
 dependencies {
     minecraft("com.mojang:minecraft:${sc.current.version}")
     mappings(loom.officialMojangMappings())
-    add("forgeUserdev", "net.minecraftforge:forge:${project.property("deps.forge")}:userdev")
-    modImplementation("maven.modrinth:embeddium:${project.property("deps.embeddium_file")}")
+    add("forgeUserdev", "net.minecraftforge:forge:${sc.properties["deps.forge"]}:userdev")
+    modImplementation("maven.modrinth:embeddium:${sc.properties["deps.embeddium_file"]}")
     annotationProcessor("org.spongepowered:mixin:0.8.5:processor")
-    val extras = project.property("deps.mixinextras")
+    val extras = sc.properties["deps.mixinextras"]
     annotationProcessor("io.github.llamalad7:mixinextras-common:$extras")
     compileOnly("io.github.llamalad7:mixinextras-common:$extras")
     include("io.github.llamalad7:mixinextras-forge:$extras")
@@ -87,13 +87,13 @@ tasks.withType<JavaCompile>().configureEach {
 
 tasks.processResources {
     val values = mapOf(
-        "id" to project.property("mod.id"), "namespace" to project.property("mod.namespace"),
-        "name" to project.property("mod.name"), "version" to project.property("mod.version"),
-        "description" to project.property("mod.description"), "author" to project.property("mod.author"),
-        "contributor" to project.property("mod.contributor"), "license" to project.property("mod.license"),
-        "github" to project.property("mod.github"), "minecraft" to project.property("mod.mc_compat"),
-        "renderer" to project.property("mod.renderer_compat"), "loader" to project.property("mod.loader_compat"),
-        "pack_format" to project.property("mod.pack_format"), "java" to "JAVA_17", "java_version" to 17,
+        "id" to sc.properties["mod.id"], "namespace" to sc.properties["mod.namespace"],
+        "name" to sc.properties["mod.name"], "version" to sc.properties["mod.version"],
+        "description" to sc.properties["mod.description"], "author" to sc.properties["mod.author"],
+        "contributor" to sc.properties["mod.contributor"], "license" to sc.properties["mod.license"],
+        "github" to sc.properties["mod.github"], "minecraft" to sc.properties["mod.mc_compat"],
+        "renderer" to sc.properties["mod.renderer_compat"], "loader" to sc.properties["mod.loader_compat"],
+        "pack_format" to sc.properties["mod.pack_format"], "java" to "JAVA_17", "java_version" to 17,
         "plugin_line" to "",
     )
     inputs.properties(values)
@@ -110,5 +110,5 @@ tasks.jar {
 tasks.register<Copy>("buildAndCollect") {
     group = "build"
     from(tasks.remapJar.flatMap { it.archiveFile })
-    into(rootProject.layout.buildDirectory.dir("libs/${project.property("mod.version")}"))
+    into(rootProject.layout.buildDirectory.dir("libs/${sc.properties["mod.version"]}"))
 }

@@ -1,4 +1,11 @@
 # [Unreleased]
+- Migrate to Stonecutter 0.10-alpha.12, including its structured-property API,
+  lazy task aggregation and Gradle Property-based version configuration.
+- Disable automatic Gradle project-property exposure and use Stonecutter's
+  metadata API in all backends and the shared NeoForge resource convention.
+- Connect source generation through source sets rather than internal task names.
+
+# [0.4.0]
 - Consolidate all targets into the root Gradle build using shared Fabric Loom,
   TauMC ModDevGradle, NeoGradle and NeoLoom backends; remove nested wrappers
   and the duplicated Forge 1.16.5 source tree.
