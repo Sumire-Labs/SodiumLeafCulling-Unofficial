@@ -172,16 +172,27 @@ jobs:
       - name: Make Gradle wrapper executable
         run: chmod +x gradlew
 
+      - name: Prefetch verified Minecraft JARs
+        if: endsWith(matrix.target, '-fabric')
+        env:
+          TARGET: ${{ matrix.target }}
+        run: bash scripts/prefetch-minecraft.sh "$TARGET"
+
       - name: Build and check ${{ matrix.target }}
         env:
           TARGET: ${{ matrix.target }}
         run: |
+          exclusions=(-x sourcesJar)
+          case "$TARGET" in
+            26.*-fabric) ;;
+            *-fabric|1.20.2-forge) exclusions+=(-x remapSourcesJar) ;;
+          esac
           ./gradlew ":${TARGET}:build" ":${TARGET}:buildAndCollect" \
+            "-Pbuild_targets=${TARGET}" \
             --configure-on-demand \
             --stacktrace \
             --console=plain \
-            -x sourcesJar \
-            -x remapSourcesJar
+            "${exclusions[@]}"
 
       - name: Select and validate distributable JAR
         env:

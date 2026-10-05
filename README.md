@@ -184,54 +184,51 @@ terrain buffer instead of being manually rendered alongside the cutout copy.
 The Forge 1.20.1 metadata also declares Xenon incompatible because Xenon already
 includes equivalent leaf-culling functionality.
 
-### Legacy loader builds
+### Build backends
 
-Stonecutter selects and preprocesses the shared source for each target; the
-loader's Gradle plugin still builds Minecraft and remaps the resulting mod.
-Most targets use `build.fabric.gradle.kts`, `build.forge.gradle.kts`, or
-`build.neoforge.gradle.kts` directly. Five targets instead use a bridge script
-to launch a separate Gradle 8.14.5 build, isolated from the root Gradle 9 build:
+All 63 targets run inside the root Gradle 9 build and consume the shared
+Stonecutter source tree. Loader/toolchain families share their scripts:
 
-The bridges explicitly launch Java 21, while modern Loom runs on Java 25 in
-the root build. This keeps the legacy Gradle/plugin runtime compatible.
+| Script | Targets / backend |
+| --- | --- |
+| `build.fabric.gradle.kts` | Fabric through 1.21.x / Fabric Loom remap |
+| `build.fabric.unobfuscated.gradle.kts` | Fabric 26.x / Fabric Loom without remapping |
+| `build.forge.gradle.kts` | Forge 1.16.5–1.20.1 / TauMC ModDevGradle |
+| `build.neoloom.gradle.kts` | Forge 1.20.2 / NeoLoom |
+| `build.neoforge.gradle.kts` | NeoForge 1.20.4, 1.20.6 and newer / TauMC ModDevGradle |
+| `build.neogradle.gradle.kts` | NeoForge 1.20.2, 1.20.3, 1.20.5 / NeoGradle |
 
-| Directory | Target | Build plugin |
-| --- | --- | --- |
-| `forge16-build` | Forge 1.16.5 | ForgeGradle 6 |
-| `forge20-build` | Forge 1.20.2 | ForgeGradle 6 |
-| `neoforge202-build` | NeoForge 1.20.2 | NeoGradle 7.0.116 |
-| `neoforge203-build` | NeoForge 1.20.3 | NeoGradle 7.0.116 |
-| `neoforge205-build` | NeoForge 1.20.5 | NeoGradle 7.1.39 |
+Fabric dependency, compiler, metadata and collection settings live in
+`build.fabric-common.gradle.kts`. Both NeoForge backends use the
+`neoforge-resources` convention in `buildSrc` for their metadata and Mixin
+resources. There are no per-version nested Gradle builds or copied Java
+source trees. `buildAndCollect` collects runtime JARs only.
 
-The `build.*.bridge.gradle.kts` files connect these builds to Stonecutter's
-generation, build, and JAR collection tasks. The `20` in `forge20-build`
-therefore means the special Forge 1.20.2 target, rather than all 1.20 releases.
-The 1.20.2/1.20.3 NeoForge bridges share the `legacy-neoforge-resources`
-convention in `buildSrc`, which expands the early loader metadata and Mixin
-templates before the nested builds consume them. Legacy collection selects
-the exact current-version runtime JAR, so old outputs are not collected.
-The early NeoForge 1.20.2/1.20.3 builds pin NeoGradle to the corresponding MDK
-generation because newer releases produce incompatible loader metadata.
-These bridges are project-specific compatibility workarounds, not a
-Stonecutter requirement. They should only be removed after verifying that a
-single replacement toolchain builds and loads the affected legacy targets.
+Forge 1.16.5 uses TauMC's Mojang class-name support and compiles the shared
+source to Java 8. MixinExtras is shaded and relocated because this loader
+predates Jar-in-Jar; a Mixin config plugin initializes that private copy.
+Forge 1.20.2 uses a Minecraft jar processor to correct the SRG member names
+left in NeoLoom 1.18.5's development jar. Production output still goes through
+NeoLoom's normal remapping task.
 
-There is also duplication: the bridge scripts repeat orchestration, and
-`forge16-build/src/main/java` maintains a separate Java 8-compatible source
-tree. The other nested builds consume Stonecutter-generated shared sources.
-Consolidating the bridge orchestration and migrating the Forge 1.16.5 source
-would reduce maintenance work, but each requires legacy runtime validation.
+To configure only selected targets, pass an exact comma-separated list:
 
-Dependency updates select stable releases available for each Minecraft and
-loader combination. Alpha/beta-only loader releases remain necessary for
-some targets, including NeoForge 26.3. Legacy NeoGradle pins remain intentional.
+```powershell
+.\gradlew.bat :1.18.2-fabric:build -Pbuild_targets=1.18.2-fabric
+```
 
-Build-plugin versions are kept in `settings.gradle.kts`, `gradle.properties`
-(the Loom version), the loader-specific build scripts, and
-`gradle/wrapper/gradle-wrapper.properties`. Update them
-deliberately and keep the Gradle, Loom/ModDevGradle, and Java compatibility
-requirements aligned.
+Omitting `build_targets` registers all 63 targets. The active Stonecutter
+version remains registered when filtering, and unknown target names are
+rejected. CI uses this filter for each matrix job.
 
+CI prefetches Fabric's Minecraft client/server jars from Mojang and checks
+their official SHA-1 values before Gradle starts. This avoids the concurrent
+Loom download progress-logger failure observed with Gradle 9.8 on 1.18.2.
+The prefetch script retries network failures and reuses verified cached jars.
+
+Build-plugin versions are pinned in `settings.gradle.kts` and the backend
+scripts. Update them deliberately and keep Gradle, Loom/ModDevGradle/NeoGradle,
+and Java compatibility requirements aligned.
 ## License
 
 This project is licensed under the [MIT License](LICENSE.md).

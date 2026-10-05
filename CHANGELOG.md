@@ -1,4 +1,12 @@
 # [Unreleased]
+- Consolidate all targets into the root Gradle build using shared Fabric Loom,
+  TauMC ModDevGradle, NeoGradle and NeoLoom backends; remove nested wrappers
+  and the duplicated Forge 1.16.5 source tree.
+- Shade and initialize MixinExtras for Forge 1.16.5 and correct Forge 1.20.2
+  development mappings without changing production remapping.
+- Configure only the requested CI target and prefetch SHA-1-verified Mojang
+  jars to avoid Loom's concurrent download progress failure on 1.18.2.
+- Pin loader-specific Embeddium file IDs and share NeoForge resource handling.
 - Add Minecraft 26.3 support for Fabric and NeoForge, using Sodium 0.9.2.
 - Update Stonecutter, Loom Back Compat, Loom, ModDevGradle, Gradle wrappers,
   Fabric Loader, MixinSquared, MixinExtras, and available stable dependencies

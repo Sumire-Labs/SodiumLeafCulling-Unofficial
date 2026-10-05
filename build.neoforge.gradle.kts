@@ -1,6 +1,7 @@
 plugins {
-    id("net.neoforged.moddev") version "2.0.148"
+    id("org.taumc.moddev") version "2.0.147-tau.1"
     id("neoforge-mutex")
+    id("neoforge-resources")
     `maven-publish`
 }
 
@@ -73,20 +74,8 @@ if (sodiumNestedPath != null) {
 
 dependencies {
     val embeddium = sc.properties.getOrNull<String>("deps.embeddium")
-    val neoForm = sc.properties.getOrNull<String>("deps.neoform")
-
-    if (neoForm != null && sc.current.version == "1.20.5") {
-        compileOnly("net.neoforged:neoforge:${project.property("deps.neo_loader")}:universal") {
-            isTransitive = false
-        }
-        compileOnly("org.spongepowered:mixin:0.8.5")
-        compileOnly(project.property("deps.fml") as String) {
-            isTransitive = false
-        }
-    }
-
     when {
-        embeddium != null -> implementation("maven.modrinth:embeddium:$embeddium")
+        embeddium != null -> implementation("maven.modrinth:embeddium:${sc.properties.getOrNull<String>("deps.embeddium_file") ?: embeddium}")
         sodiumMaven != null -> {
             // The published shell claims the sodium mod id and embeds the real
             // mod. That layout is correct for a launcher, but shadows the direct
@@ -144,11 +133,7 @@ dependencies {
 }
 
 neoForge {
-    sc.properties.getOrNull<String>("deps.neoform")?.takeIf { sc.current.version == "1.20.5" }?.let {
-        neoFormVersion = it
-    } ?: run {
-        version = project.property("deps.neo_loader") as String
-    }
+    version = project.property("deps.neo_loader") as String
 
     mods {
         register(project.property("mod.id") as String) {
@@ -189,70 +174,6 @@ tasks {
         options.release.set(requiredJava.majorVersion.toInt())
     }
 
-    processResources {
-        val logoPath = "assets/${project.property("mod.namespace")}/textures/mod_logo.png"
-        val values = mapOf(
-            "id" to project.property("mod.id"),
-            "namespace" to project.property("mod.namespace"),
-            "name" to project.property("mod.name"),
-            "version" to project.property("mod.version"),
-            "description" to project.property("mod.description"),
-            "author" to project.property("mod.author"),
-            "contributor" to project.property("mod.contributor"),
-            "license" to project.property("mod.license"),
-            "github" to project.property("mod.github"),
-            "minecraft" to project.property("mod.mc_compat"),
-            "renderer" to project.property("mod.renderer_compat"),
-            "renderer_id" to if (sc.properties.getOrNull<String>("deps.embeddium") != null) "embeddium" else "sodium",
-            "java" to "JAVA_${requiredJava.majorVersion}",
-            "java_version" to requiredJava.majorVersion,
-            "icon_line" to if (sc.current.parsed >= "26.1") "iconFile=\"$logoPath\"" else "",
-        )
-
-        inputs.properties(values)
-        filesMatching("mixins.sodiumleafculling.json") { expand(values) }
-
-        if (sc.current.parsed <= "1.20.3") {
-            filesMatching("META-INF/mods.toml") { exclude() }
-            filesMatching("META-INF/neoforge-early.mods.toml") {
-                expand(values)
-                path = "META-INF/mods.toml"
-            }
-            exclude(
-                "fabric.mod.json",
-                "mixins.sodiumleafculling.forge.json",
-                "META-INF/neoforge-legacy.mods.toml",
-                "META-INF/neoforge.mods.toml",
-                "pack.mcmeta",
-            )
-        } else if (sc.current.parsed < "1.20.5") {
-            // Exclude the Forge descriptor before renaming the NeoForge
-            // 1.20.2-1.20.4 descriptor to the legacy loader file name.
-            filesMatching("META-INF/mods.toml") { exclude() }
-            filesMatching("META-INF/neoforge-legacy.mods.toml") {
-                expand(values)
-                path = "META-INF/mods.toml"
-            }
-            exclude(
-                "fabric.mod.json",
-                "mixins.sodiumleafculling.forge.json",
-                "META-INF/neoforge-early.mods.toml",
-                "META-INF/neoforge.mods.toml",
-                "pack.mcmeta",
-            )
-        } else {
-            filesMatching("META-INF/neoforge.mods.toml") { expand(values) }
-            exclude(
-                "fabric.mod.json",
-                "mixins.sodiumleafculling.forge.json",
-                "META-INF/mods.toml",
-                "META-INF/neoforge-early.mods.toml",
-                "META-INF/neoforge-legacy.mods.toml",
-                "pack.mcmeta",
-            )
-        }
-    }
-
     jar {
         from(rootProject.file("LICENSE.md")) {
             rename("LICENSE\\.md", "LICENSE.md_$modId")
@@ -263,7 +184,7 @@ tasks {
         group = "build"
         description = "Builds and collects the NeoForge jars for this target."
         inputs.property("version", project.property("mod.version"))
-        from(jar.flatMap { it.archiveFile }, named<Jar>("sourcesJar").flatMap { it.archiveFile })
+        from(jar.flatMap { it.archiveFile })
         into(rootProject.layout.buildDirectory.dir("libs/${project.property("mod.version")}"))
     }
 }

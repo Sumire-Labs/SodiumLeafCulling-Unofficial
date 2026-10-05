@@ -36,7 +36,7 @@ stonecutter parameters {
     constants["legacy_model_buffers"] = fabricLegacyRenderer && current.parsed < "1.17"
     constants["fabric_legacy_options"] = loader == "fabric" && current.parsed < "1.17"
     constants["legacy_component"] = current.parsed < "1.19"
-    constants["string_options"] = loader == "fabric" && current.parsed < "1.17"
+    constants["string_options"] = loader != "neoforge" && current.parsed < "1.17"
 
     replacements {
         string(current.parsed >= "1.21.11") {

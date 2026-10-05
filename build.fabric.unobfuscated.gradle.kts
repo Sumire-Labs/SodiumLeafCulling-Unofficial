@@ -1,5 +1,5 @@
 plugins {
-    id("net.fabricmc.fabric-loom-remap")
+    id("net.fabricmc.fabric-loom")
     `maven-publish`
 }
 apply(from = rootProject.file("build.fabric-common.gradle.kts"))
@@ -21,4 +21,3 @@ loom {
         )
     }
 }
-dependencies { mappings(loom.officialMojangMappings()) }

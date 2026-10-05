@@ -1,6 +1,11 @@
+import net.neoforged.nfrtgradle.CreateMinecraftArtifacts
+import net.neoforged.moddevgradle.legacyforge.dsl.ObfuscationExtension
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
 plugins {
-    id("net.neoforged.moddev.legacyforge") version "2.0.148"
+    id("org.taumc.moddev.legacyforge") version "2.0.147-tau.1"
     id("neoforge-mutex")
+    id("com.gradleup.shadow") version "9.6.1" apply false
     `maven-publish`
 }
 
@@ -8,6 +13,9 @@ version = "${project.property("mod.version")}+${sc.current.version}"
 base.archivesName = "${project.property("mod.id")}-forge"
 
 val modId = project.property("mod.id").toString()
+val veryLegacy = sc.current.parsed < "1.17"
+val legacyExtras = configurations.create("legacyMixinExtras")
+if (veryLegacy) apply(plugin = "com.gradleup.shadow")
 
 val requiredJava = when {
     sc.current.parsed >= "1.18" -> JavaVersion.VERSION_17
@@ -37,7 +45,9 @@ if (sc.current.version == "1.18.2") {
 }
 
 dependencies {
-    add("modImplementation", "maven.modrinth:embeddium:${project.property("deps.embeddium")}")
+    val rendererFile = sc.properties.getOrNull<String>("deps.embeddium_file")
+        ?: project.property("deps.embeddium").toString()
+    add("modImplementation", "maven.modrinth:embeddium:$rendererFile")
 
     annotationProcessor("org.spongepowered:mixin:0.8.5:processor")
 
@@ -46,12 +56,22 @@ dependencies {
     annotationProcessor(mixinExtrasCommon)
     compileOnly(mixinExtrasCommon)
 
-    val mixinExtrasForge = implementation("io.github.llamalad7:mixinextras-forge:$mixinExtrasVersion")!!
-    jarJar(mixinExtrasForge)
+    if (veryLegacy) {
+        add(legacyExtras.name, mixinExtrasCommon)
+        runtimeOnly(mixinExtrasCommon)
+    } else {
+        val mixinExtrasForge = implementation("io.github.llamalad7:mixinextras-forge:$mixinExtrasVersion")!!
+        jarJar(mixinExtrasForge)
+    }
 }
 
 legacyForge {
-    version = project.property("deps.forge") as String
+    enable {
+        forgeVersion = project.property("deps.forge") as String
+        if (sc.current.parsed < "1.17") isUseMojangClassNames = true
+        isObfuscateJar = !veryLegacy
+        isDisableRecompilation = false
+    }
     validateAccessTransformers = true
 
     mods {
@@ -86,9 +106,22 @@ java {
     }
 }
 
+val productionJar = if (veryLegacy) {
+    tasks.named<Jar>("jar") { archiveClassifier.set("thin") }
+    val shaded = tasks.named<ShadowJar>("shadowJar") {
+        configurations = listOf(legacyExtras)
+        archiveClassifier.set("")
+        relocate("com.llamalad7.mixinextras", "toni.sodiumleafculling.shadow.mixinextras")
+    }
+    extensions.getByType<ObfuscationExtension>().reobfuscate(shaded, sourceSets.main.get()).also { artifact ->
+        tasks.named("assemble") { dependsOn(artifact) }
+    }
+} else tasks.named<AbstractArchiveTask>("reobfJar")
+
 tasks {
-    named("createMinecraftArtifacts") {
+    named<CreateMinecraftArtifacts>("createMinecraftArtifacts") {
         dependsOn("stonecutterGenerate")
+        additionalRepositories.add("https://maven.minecraftforge.net/")
     }
 
     withType<JavaCompile>().configureEach {
@@ -113,6 +146,7 @@ tasks {
             "pack_format" to project.property("mod.pack_format"),
             "java" to "JAVA_${requiredJava.majorVersion}",
             "java_version" to requiredJava.majorVersion,
+            "plugin_line" to if (veryLegacy) "\"plugin\": \"toni.sodiumleafculling.LeafCullingMixinPlugin\"," else "",
         )
 
         inputs.properties(values)
@@ -124,6 +158,7 @@ tasks {
             "mixins.sodiumleafculling.json",
             "META-INF/neoforge-legacy.mods.toml",
             "META-INF/neoforge.mods.toml",
+            "META-INF/neoforge-early.mods.toml",
         )
     }
 
@@ -141,7 +176,7 @@ tasks {
         group = "build"
         description = "Builds and collects the Forge jars for this target."
         inputs.property("version", project.property("mod.version"))
-        from(named<Jar>("reobfJar").flatMap { it.archiveFile }, named<Jar>("sourcesJar").flatMap { it.archiveFile })
+        from(productionJar.flatMap { it.archiveFile })
         into(rootProject.layout.buildDirectory.dir("libs/${project.property("mod.version")}"))
     }
 }
