@@ -77,7 +77,11 @@ public abstract class BlockRendererMixin {
         @Local BlockState state,
         @Local(ordinal = 0) BlockPos.MutableBlockPos pos
     ) {
-        if (state.getBlock() instanceof LeavesBlock && LeafCulling.getQuality().isSolid() && LeafCulling.surroundedByLeaves(slice, pos))
+        if (!(state.getBlock() instanceof LeavesBlock))
+            return buffers.get(layer);
+
+        LeafCullingQuality quality = LeafCulling.getQuality();
+        if (quality.isSolid() && LeafCulling.surroundedByLeaves(slice, pos, quality))
             return buffers.get(RenderType.solid());
 
         return buffers.get(layer);
@@ -97,7 +101,7 @@ public abstract class BlockRendererMixin {
 
         AbstractBlockRenderContextAccessor ctx = (AbstractBlockRenderContextAccessor) this;
         LeafCullingQuality quality = LeafCulling.getQuality();
-        if (quality.isSolid() && LeafCulling.surroundedByLeaves(ctx.getSlice(), ctx.getPos()))
+        if (quality.isSolid() && LeafCulling.surroundedByLeaves(ctx.getSlice(), ctx.getPos(), quality))
             return ChunkSectionLayer.SOLID;
 
         return original;
@@ -111,7 +115,7 @@ public abstract class BlockRendererMixin {
         if (!original && state.getBlock() instanceof LeavesBlock) {
             AbstractBlockRenderContextAccessor ctx = (AbstractBlockRenderContextAccessor) this;
             LeafCullingQuality quality = LeafCulling.getQuality();
-            if (quality.isSolid() && LeafCulling.surroundedByLeaves(ctx.getSlice(), ctx.getPos())) {
+            if (quality.isSolid() && LeafCulling.surroundedByLeaves(ctx.getSlice(), ctx.getPos(), quality)) {
                 return true;
             }
         }
@@ -125,7 +129,7 @@ public abstract class BlockRendererMixin {
             return layer;
 
         LeafCullingQuality quality = LeafCulling.getQuality();
-        if (quality.isSolid() && LeafCulling.surroundedByLeaves(ctx.getSlice(), ctx.getPos()))
+        if (quality.isSolid() && LeafCulling.surroundedByLeaves(ctx.getSlice(), ctx.getPos(), quality))
             return ChunkSectionLayer.SOLID;
 
         return layer;
@@ -138,7 +142,7 @@ public abstract class BlockRendererMixin {
             return blendMode;
 
         LeafCullingQuality quality = LeafCulling.getQuality();
-        if (quality.isSolid() && LeafCulling.surroundedByLeaves(ctx.getSlice(), ctx.getPos()))
+        if (quality.isSolid() && LeafCulling.surroundedByLeaves(ctx.getSlice(), ctx.getPos(), quality))
         {
             return BlendMode.SOLID;
         }
@@ -162,7 +166,7 @@ public abstract class BlockRendererMixin {
             return original;
 
         LeafCullingQuality quality = LeafCulling.getQuality();
-        if (quality.isSolid() && LeafCulling.surroundedByLeaves(ctx.world(), ctx.pos()))
+        if (quality.isSolid() && LeafCulling.surroundedByLeaves(ctx.world(), ctx.pos(), quality))
             return DefaultMaterials.SOLID;
 
         return original;
@@ -184,7 +188,7 @@ public abstract class BlockRendererMixin {
             return original;
 
         LeafCullingQuality quality = LeafCulling.getQuality();
-        if (quality.isSolid() && LeafCulling.surroundedByLeaves(ctx.localSlice(), ctx.pos()))
+        if (quality.isSolid() && LeafCulling.surroundedByLeaves(ctx.localSlice(), ctx.pos(), quality))
             return DefaultMaterials.SOLID;
 
         return original;
@@ -206,7 +210,7 @@ public abstract class BlockRendererMixin {
             return original;
 
         LeafCullingQuality quality = LeafCulling.getQuality();
-        if (quality.isSolid() && LeafCulling.surroundedByLeaves(ctx.localSlice(), ctx.pos()))
+        if (quality.isSolid() && LeafCulling.surroundedByLeaves(ctx.localSlice(), ctx.pos(), quality))
             return DefaultMaterials.SOLID;
 
         return original;

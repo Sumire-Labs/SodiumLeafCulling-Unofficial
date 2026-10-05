@@ -18,8 +18,11 @@ import net.caffeinemc.mods.sodium.client.SodiumClientMod;
 /*import me.jellysquid.mods.sodium.client.SodiumClientMod;
 *///?}
 
-public class LeafCulling {
+public final class LeafCulling {
     private static final Direction[] VALUES = Direction.values();
+
+    private LeafCulling() { }
+
     public static Component translatable(String key) {
         //? if legacy_component {
         /*return new TranslatableComponent(key);
@@ -42,13 +45,14 @@ public class LeafCulling {
         return view.getBlockState(pos.relative(facing)).getBlock() instanceof AirBlock;
     }
 
-    public static boolean surroundedByLeaves(BlockGetter view, BlockPos pos) {
-        boolean isAggressiveMode = getQuality() == LeafCullingQuality.SOLID_AGGRESSIVE;
+    public static boolean surroundedByLeaves(BlockGetter view, BlockPos pos, LeafCullingQuality quality) {
+        boolean isAggressiveMode = quality == LeafCullingQuality.SOLID_AGGRESSIVE;
+        BlockPos.MutableBlockPos dirPos = pos.mutable();
         for (Direction dir : VALUES) {
             if (isAggressiveMode && (dir == Direction.DOWN || dir == Direction.UP))
                 continue;
 
-            BlockPos dirPos = pos.relative(dir);
+            dirPos.set(pos).move(dir);
             BlockState blockstate = view.getBlockState(dirPos);
             if (blockstate.getBlock() instanceof LeavesBlock)
                 continue;
@@ -63,17 +67,17 @@ public class LeafCulling {
     }
 
     public static boolean shouldCullSide(BlockGetter view, BlockPos pos, Direction facing, int depth) {
-        if (isFacingAir(view, pos, facing))
-            return false;
+        if (depth <= 0)
+            return !isFacingAir(view, pos, facing);
 
-        boolean cull = true;
         BlockPos.MutableBlockPos checkPos = pos.mutable();
         for (int i = 1; i <= depth; i++) {
             checkPos.move(facing);
             BlockState state = view.getBlockState(checkPos);
-            cull &= state != null && state.getBlock() instanceof LeavesBlock;
+            if (state == null || !(state.getBlock() instanceof LeavesBlock))
+                return false;
         }
 
-        return cull;
+        return true;
     }
 }

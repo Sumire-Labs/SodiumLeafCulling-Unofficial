@@ -90,6 +90,7 @@ tasks {
             "fabric_api_id" to (sc.properties.getOrNull("deps.fabric_api_id") ?: "fabric-api"),
             "java" to "JAVA_${requiredJava.majorVersion}",
             "java_version" to requiredJava.majorVersion,
+            "renderer_context_mixin" to if (sc.current.parsed >= "1.21") "\"AbstractBlockRenderContextAccessor\"," else "",
         )
 
         inputs.properties(values)

@@ -1,5 +1,6 @@
 package toni.sodiumleafculling.mixins;
 
+//? if sodium_caffeine {
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
 import org.spongepowered.asm.mixin.Mixin;
@@ -8,18 +9,13 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 //? if sodium_modern_renderer {
 import net.caffeinemc.mods.sodium.client.render.model.AbstractBlockRenderContext;
 import net.caffeinemc.mods.sodium.client.world.LevelSlice;
-//?} elif sodium_caffeine {
+//?} else {
 /*import net.caffeinemc.mods.sodium.client.render.frapi.render.AbstractBlockRenderContext;
 import net.caffeinemc.mods.sodium.client.world.LevelSlice;
-*///?} elif embeddium_modern {
-/*import org.embeddedt.embeddium.impl.Embeddium;
-*///?} else {
-/*import me.jellysquid.mods.sodium.client.SodiumClientMod;
 *///?}
 
-@Mixin(value = /*? if sodium_caffeine {*/AbstractBlockRenderContext.class/*?} elif embeddium_modern {*//*Embeddium.class*//*?} else {*//*SodiumClientMod.class*//*?}*/, remap = false, priority = 100)
+@Mixin(value = AbstractBlockRenderContext.class, remap = false, priority = 100)
 public interface AbstractBlockRenderContextAccessor {
-    //? if sodium_caffeine {
     @Accessor
     BlockState getState();
 
@@ -28,5 +24,5 @@ public interface AbstractBlockRenderContextAccessor {
 
     @Accessor
     BlockPos getPos();
-    //?}
 }
+//?}

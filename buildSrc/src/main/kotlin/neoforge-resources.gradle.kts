@@ -30,6 +30,8 @@ tasks.named<ProcessResources>("processResources") {
         "renderer_id" to if ("deps.embeddium" in metadata) "embeddium" else "sodium",
         "java" to "JAVA_$javaVersion",
         "java_version" to javaVersion,
+        "renderer_context_mixin" to if ("deps.embeddium" !in metadata &&
+            (numbers[0] >= 26 || numbers[1] >= 21)) "\"AbstractBlockRenderContextAccessor\"," else "",
         "icon_line" to if (javaVersion == 25) "iconFile=\"assets/${metadata["mod.namespace"]}/textures/mod_logo.png\"" else "",
     )
     inputs.properties(values)

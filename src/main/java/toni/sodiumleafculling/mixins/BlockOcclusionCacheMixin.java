@@ -56,10 +56,7 @@ public class BlockOcclusionCacheMixin {
                 BlockPos otherPos = pos.relative(facing);
                 BlockState otherState = level.getBlockState(otherPos);
                 if (otherState.getBlock() instanceof LeavesBlock) {
-                    boolean cullSelf = LeafCulling.surroundedByLeaves(level, pos);
-                    boolean cullOther = LeafCulling.surroundedByLeaves(level, otherPos);
-
-                    if ((!cullSelf && cullOther) || (cullSelf && cullOther)) {
+                    if (LeafCulling.surroundedByLeaves(level, otherPos, quality)) {
                         cir.setReturnValue(false);
                         return;
                     }
@@ -85,15 +82,7 @@ public class BlockOcclusionCacheMixin {
              }
 
              if (otherState.getBlock() instanceof LeavesBlock && quality.isSolid()) {
-                 boolean cullSelf = LeafCulling.surroundedByLeaves(view, selfPos);
-                 boolean cullOther = LeafCulling.surroundedByLeaves(view, otherPos);
-
-                 if (!cullSelf && cullOther) {
-                     cir.setReturnValue(false);
-                     return;
-                 }
-
-                 if (cullSelf && cullOther) {
+                 if (LeafCulling.surroundedByLeaves(view, otherPos, quality)) {
                      cir.setReturnValue(false);
                      return;
                  }

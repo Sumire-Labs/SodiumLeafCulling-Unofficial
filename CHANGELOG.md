@@ -1,3 +1,10 @@
+# [Unreleased]
+- Short-circuit leaf-depth checks, reuse neighbor positions and the selected
+  quality, and remove redundant solid-side checks without changing culling rules.
+- Omit empty renderer-accessor mixins on targets that do not use them and
+  omit the Forge/NeoForge mod entry class from Fabric JARs.
+- Losslessly compress the mod logo while preserving its dimensions and pixels.
+
 # [3.2.0]
 - Include library locations in NeoGradle's cache keys to prevent restored
   library lists from referencing removed nested builds or previous checkouts.

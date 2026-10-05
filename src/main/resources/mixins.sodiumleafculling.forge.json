@@ -6,7 +6,6 @@
   "compatibilityLevel": "${java}",
   "refmap": "mixins.sodiumleafculling.refmap.json",
   "client": [
-    "AbstractBlockRenderContextAccessor",
     "BlockOcclusionCacheMixin",
     "BlockRendererMixin",
     "PerformanceSettingsMixin",
