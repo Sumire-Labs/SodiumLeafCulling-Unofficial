@@ -1,4 +1,4 @@
-package toni.sodiumleafculling;
+package com.sumirelabs.sodiumleafculling;
 
 import net.minecraft.network.chat.Component;
 //? if embeddium_modern {

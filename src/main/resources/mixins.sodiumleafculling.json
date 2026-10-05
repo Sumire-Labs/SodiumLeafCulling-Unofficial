@@ -1,7 +1,7 @@
 {
   "required": true,
   "minVersion": "0.8",
-  "package": "toni.sodiumleafculling.mixins",
+  "package": "com.sumirelabs.sodiumleafculling.mixins",
   "compatibilityLevel": "${java}",
   "client": [
     ${renderer_context_mixin}

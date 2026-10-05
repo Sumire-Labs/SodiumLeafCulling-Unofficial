@@ -18,7 +18,7 @@
   "environment": "client",
   "entrypoints": {
     "mixinsquared": [
-      "toni.${namespace}.LeafCullingMixinCanceller"
+      "com.sumirelabs.${namespace}.LeafCullingMixinCanceller"
     ]
   },
   "mixins": [

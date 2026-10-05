@@ -1,4 +1,4 @@
-package toni.sodiumleafculling;
+package com.sumirelabs.sodiumleafculling;
 
 //? if forge && <1.17 {
 /*import com.llamalad7.mixinextras.MixinExtrasBootstrap;

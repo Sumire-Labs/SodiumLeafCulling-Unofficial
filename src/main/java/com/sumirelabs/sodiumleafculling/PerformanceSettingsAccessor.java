@@ -1,4 +1,4 @@
-package toni.sodiumleafculling;
+package com.sumirelabs.sodiumleafculling;
 
 public interface PerformanceSettingsAccessor {
 

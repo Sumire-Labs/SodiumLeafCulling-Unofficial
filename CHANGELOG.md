@@ -1,4 +1,6 @@
 # [Unreleased]
+- Move Java packages and the Maven group to `com.sumirelabs`, including Mixin
+  entrypoints and the relocated MixinExtras copy for legacy Forge.
 - Short-circuit leaf-depth checks, reuse neighbor positions and the selected
   quality, and remove redundant solid-side checks without changing culling rules.
 - Omit empty renderer-accessor mixins on targets that do not use them and

@@ -1,4 +1,4 @@
-package toni.sodiumleafculling.mixins;
+package com.sumirelabs.sodiumleafculling.mixins;
 
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -8,9 +8,9 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
-import toni.sodiumleafculling.LeafCulling;
-import toni.sodiumleafculling.LeafCullingQuality;
-import toni.sodiumleafculling.PerformanceSettingsAccessor;
+import com.sumirelabs.sodiumleafculling.LeafCulling;
+import com.sumirelabs.sodiumleafculling.LeafCullingQuality;
+import com.sumirelabs.sodiumleafculling.PerformanceSettingsAccessor;
 import java.util.List;
 
 //? if sodium_modern_config {

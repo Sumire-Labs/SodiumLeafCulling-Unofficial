@@ -1,4 +1,4 @@
-package toni.sodiumleafculling;
+package com.sumirelabs.sodiumleafculling;
 
 //? if neoforge {
 /*import net.neoforged.fml.common.Mod;

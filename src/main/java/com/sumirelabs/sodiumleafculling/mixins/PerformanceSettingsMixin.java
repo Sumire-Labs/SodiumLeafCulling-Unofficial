@@ -1,9 +1,9 @@
-package toni.sodiumleafculling.mixins;
+package com.sumirelabs.sodiumleafculling.mixins;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
-import toni.sodiumleafculling.LeafCullingQuality;
-import toni.sodiumleafculling.PerformanceSettingsAccessor;
+import com.sumirelabs.sodiumleafculling.LeafCullingQuality;
+import com.sumirelabs.sodiumleafculling.PerformanceSettingsAccessor;
 //? if embeddium_modern {
 /*import org.embeddedt.embeddium.impl.gui.EmbeddiumOptions;
 *///?} elif sodium_modern_config {

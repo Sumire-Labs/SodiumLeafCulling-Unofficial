@@ -32,7 +32,8 @@ compatible NeoForge artifact for that Minecraft release.
 
 The Fabric mod ID is `slc-unofficial`. Forge and NeoForge use
 `slc_unofficial` because those loaders do not permit hyphens in mod IDs. The
-internal Java package and resource namespace remain `sodiumleafculling`.
+Java package is `com.sumirelabs.sodiumleafculling`; the resource namespace is
+`sodiumleafculling`.
 
 ## Development
 

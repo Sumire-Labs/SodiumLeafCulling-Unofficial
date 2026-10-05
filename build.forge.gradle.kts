@@ -111,7 +111,7 @@ val productionJar = if (veryLegacy) {
     val shaded = tasks.named<ShadowJar>("shadowJar") {
         configurations = listOf(legacyExtras)
         archiveClassifier.set("")
-        relocate("com.llamalad7.mixinextras", "toni.sodiumleafculling.shadow.mixinextras")
+        relocate("com.llamalad7.mixinextras", "com.sumirelabs.sodiumleafculling.shadow.mixinextras")
     }
     extensions.getByType<ObfuscationExtension>().reobfuscate(shaded, sourceSets.main.get()).also { artifact ->
         tasks.named("assemble") { dependsOn(artifact) }
@@ -146,7 +146,7 @@ tasks {
             "pack_format" to sc.properties["mod.pack_format"],
             "java" to "JAVA_${requiredJava.majorVersion}",
             "java_version" to requiredJava.majorVersion,
-            "plugin_line" to if (veryLegacy) "\"plugin\": \"toni.sodiumleafculling.LeafCullingMixinPlugin\"," else "",
+            "plugin_line" to if (veryLegacy) "\"plugin\": \"com.sumirelabs.sodiumleafculling.LeafCullingMixinPlugin\"," else "",
         )
 
         inputs.properties(values)

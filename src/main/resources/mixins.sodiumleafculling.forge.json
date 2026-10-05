@@ -2,7 +2,7 @@
   "required": true,
   "minVersion": "0.8",
   ${plugin_line}
-  "package": "toni.sodiumleafculling.mixins",
+  "package": "com.sumirelabs.sodiumleafculling.mixins",
   "compatibilityLevel": "${java}",
   "refmap": "mixins.sodiumleafculling.refmap.json",
   "client": [

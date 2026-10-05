@@ -1,4 +1,4 @@
-package toni.sodiumleafculling.mixins;
+package com.sumirelabs.sodiumleafculling.mixins;
 
 //? if sodium_caffeine {
 import net.minecraft.core.BlockPos;
