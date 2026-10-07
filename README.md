@@ -26,9 +26,16 @@ Fabric, Forge, and NeoForge builds.
 | 1.21.9 | Yes | — | — |
 | 1.21.10–1.21.11 | Yes | — | Yes |
 | 26.1, 26.1.1, 26.1.2, 26.2, 26.3 | Yes | — | Yes |
+| 26.2-rc-1, 26.2-rc-2, 26.3-rc-1, 26.3-rc-2 | Yes | — | — |
 
 NeoForge 1.21.9 is intentionally absent because Sodium does not publish a
 compatible NeoForge artifact for that Minecraft release.
+
+The four 26.2/26.3 release-candidate targets are Fabric-only. NeoForge's
+published loader builds target the final Minecraft releases. RC downloads and
+filenames use Mojang's `26.2-rc-1` spelling; Fabric dependency predicates use
+the loader's normalized `26.2-rc.1` spelling. The Fabric API 0.152.0 dependency
+also accepts 26.2-rc-2 through its `~26.2-` Minecraft range.
 
 The Fabric mod ID is `slc-unofficial`. Forge and NeoForge use
 `slc_unofficial` because those loaders do not permit hyphens in mod IDs. The
@@ -93,13 +100,13 @@ The three workflows under `.github/workflows` share one verified set of
 runtime jars:
 
 1. **Build all versions** runs on branch pushes, pull requests, and manual
-   dispatches. It builds all 63 Minecraft/loader targets in separate jobs,
+   dispatches. It builds all 67 Minecraft/loader targets in separate jobs,
    rejects sources/dev/plain jars, and exposes the combined
    `slc-unofficial-jars` artifact on the Actions run for 14 days.
 2. **Release** runs for any pushed tag. The tag identifies the GitHub Release,
    while `mod.version` in the tagged commit determines the JAR and platform
    version. It rebuilds all targets once, creates a GitHub Release with
-   generated notes, and attaches all 63 runtime jars plus `SHA256SUMS`.
+   generated notes, and attaches all 67 runtime jars plus `SHA256SUMS`.
 3. **Publish to CurseForge and Modrinth** is called only after the GitHub
    Release succeeds. It publishes each target as its own platform version so
    its Minecraft version and loader metadata remain accurate. A manual run can
@@ -122,7 +129,7 @@ missing, that platform job fails instead of silently pretending to publish.
 
 For a partial retry, dispatch **Publish to CurseForge and Modrinth**, choose the
 failed platform, and enter its exact target such as `1.21.11-neoforge`. Leaving
-the target blank republishes all 63 entries and will be rejected if some are
+the target blank republishes all 67 entries and will be rejected if some are
 already present. If the `publishing` environment permits only tags, run the
 retry on the tag ref instead of the default branch, for example:
 
@@ -187,7 +194,7 @@ includes equivalent leaf-culling functionality.
 
 ### Build backends
 
-All 63 targets run inside the root Gradle 9 build and consume the shared
+All 67 targets run inside the root Gradle 9 build and consume the shared
 Stonecutter source tree. Loader/toolchain families share their scripts:
 
 | Script | Targets / backend |
@@ -218,7 +225,7 @@ To configure only selected targets, pass an exact comma-separated list:
 .\gradlew.bat :1.18.2-fabric:build -Pbuild_targets=1.18.2-fabric
 ```
 
-Omitting `build_targets` registers all 63 targets. The active Stonecutter
+Omitting `build_targets` registers all 67 targets. The active Stonecutter
 version remains registered when filtering, and unknown target names are
 rejected. CI uses this filter for each matrix job.
 

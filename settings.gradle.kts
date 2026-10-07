@@ -83,6 +83,9 @@ stonecutter {
         target("26.1.2", "fabric", "neoforge")
         target("26.2", "fabric", "neoforge")
         target("26.3", "fabric", "neoforge")
+        for (release in listOf("26.2", "26.3")) {
+            for (candidate in 1..2) target("$release-rc-$candidate", "fabric")
+        }
 
         selectedTargets?.let { targets ->
             require(knownTargets.containsAll(targets)) { "Unknown build targets: ${targets - knownTargets}" }

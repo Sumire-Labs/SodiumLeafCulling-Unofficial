@@ -4,7 +4,7 @@ set -euo pipefail
 # Loom 1.18.2's concurrent client/server download progress logger can fail on
 # Gradle 9.8. Fetch and verify the official jars before Loom starts that work.
 target="${1:?Usage: prefetch-minecraft.sh <minecraft>-fabric}"
-if [[ ! "$target" =~ ^([0-9]+\.[0-9]+(\.[0-9]+)?)-fabric$ ]]; then
+if [[ ! "$target" =~ ^([0-9]+\.[0-9]+(\.[0-9]+)?(-rc-[0-9]+)?)-fabric$ ]]; then
   echo "Expected a registered Fabric release target, got: $target" >&2
   exit 1
 fi

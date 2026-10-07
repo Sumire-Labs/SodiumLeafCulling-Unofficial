@@ -9,7 +9,8 @@ stonecutter flags {
 stonecutter active "26.2-fabric"
 
 stonecutter parameters {
-    val (version, loader) = current.project.split('-', limit = 2)
+    val version = current.project.substringBeforeLast('-')
+    val loader = current.project.substringAfterLast('-')
 
     properties {
         tags(version, loader)

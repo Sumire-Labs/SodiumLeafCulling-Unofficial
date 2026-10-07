@@ -157,8 +157,8 @@ jobs:
           fi
 
           mapfile -t jars < <(find publish -maxdepth 1 -type f -name '*.jar' -print | sort)
-          if (( ${#jars[@]} != 63 )); then
-            printf 'Expected 63 runtime JARs, found %d:\n%s\n' "${#jars[@]}" "${jars[*]}" >&2
+          if (( ${#jars[@]} != 67 )); then
+            printf 'Expected 67 runtime JARs, found %d:\n%s\n' "${#jars[@]}" "${jars[*]}" >&2
             exit 1
           fi
 
@@ -242,13 +242,17 @@ jobs:
             '26.2-neoforge'
             '26.3-fabric'
             '26.3-neoforge'
+            '26.2-rc-1-fabric'
+            '26.2-rc-2-fabric'
+            '26.3-rc-1-fabric'
+            '26.3-rc-2-fabric'
           )
 
           for jar in "${jars[@]}"; do
             name="$(basename "$jar")"
             stem="${name%.jar}"
 
-            if [[ ! "$stem" =~ ^(slc-unofficial|slc_unofficial)-(fabric|forge|neoforge)-(.+)\+([0-9]+(\.[0-9]+)+)$ ]]; then
+            if [[ ! "$stem" =~ ^(slc-unofficial|slc_unofficial)-(fabric|forge|neoforge)-(.+)\+([0-9]+(\.[0-9]+)+(-rc-[0-9]+)?)$ ]]; then
               echo "Cannot determine loader, version, and Minecraft version from '$name'." >&2
               exit 1
             fi
@@ -316,8 +320,8 @@ jobs:
           done
 
           full_matrix="$(jq -sc '{include: .}' "$matrix_jsonl")"
-          if [[ "$(jq '.include | length' <<< "$full_matrix")" -ne 63 ]]; then
-            echo 'Publishing matrix did not contain exactly 63 unique targets.' >&2
+          if [[ "$(jq '.include | length' <<< "$full_matrix")" -ne 67 ]]; then
+            echo 'Publishing matrix did not contain exactly 67 unique targets.' >&2
             exit 1
           fi
 
@@ -376,7 +380,7 @@ jobs:
             echo
             echo "Validated ${#jars[@]} runtime JARs."
             echo
-            [[ -n "$target_filter" ]] && echo "- Target: $target_filter" || echo '- Targets: all 63'
+            [[ -n "$target_filter" ]] && echo "- Target: $target_filter" || echo '- Targets: all 67'
             [[ -n "$modrinth_id" ]] && echo '- Modrinth: configured' || echo '- Modrinth: skipped (project ID is empty)'
             [[ -n "$curseforge_id" ]] && echo '- CurseForge: configured' || echo '- CurseForge: skipped (project ID is empty)'
           } >> "$GITHUB_STEP_SUMMARY"
