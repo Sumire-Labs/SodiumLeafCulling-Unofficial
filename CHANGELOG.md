@@ -1,4 +1,4 @@
-# [Unreleased]
+# [3.3.0]
 - Add Fabric support for Minecraft 26.2-rc-1/rc-2 and 26.3-rc-1/rc-2,
   including RC-aware target parsing, CI downloads and publishing filenames.
 - Move Java packages and the Maven group to `com.sumirelabs`, including Mixin
