@@ -44,7 +44,8 @@ public class BlockOcclusionCacheMixin {
     private void inject$shouldDrawSide(Direction facing, CallbackInfoReturnable<Boolean> cir) {
         if (state != null && state.getBlock() instanceof LeavesBlock) {
             if (LeafCulling.isDistant(pos)) {
-                if (level.getBlockState(pos.relative(facing)).getBlock() instanceof LeavesBlock) {
+                BlockPos otherPos = pos.relative(facing);
+                if (LeafCulling.shouldCullDistantSide(level, pos, otherPos, level.getBlockState(otherPos))) {
                     cir.setReturnValue(false);
                 }
                 return;
@@ -79,7 +80,7 @@ public class BlockOcclusionCacheMixin {
     private void inject$shouldDrawSide(BlockState selfState, BlockGetter view, BlockPos selfPos, Direction facing, CallbackInfoReturnable<Boolean> cir, BlockPos.MutableBlockPos otherPos, BlockState otherState) {
          if (selfState.getBlock() instanceof LeavesBlock) {
              if (LeafCulling.isDistant(selfPos)) {
-                 if (otherState.getBlock() instanceof LeavesBlock) {
+                 if (LeafCulling.shouldCullDistantSide(view, selfPos, otherPos, otherState)) {
                      cir.setReturnValue(false);
                  }
                  return;

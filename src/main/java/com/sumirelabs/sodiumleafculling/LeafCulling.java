@@ -50,6 +50,15 @@ public final class LeafCulling {
         return DISTANCE.isDistant(pos.getX(), pos.getY(), pos.getZ());
     }
 
+    public static boolean shouldCullDistantSide(BlockGetter view, BlockPos pos, BlockPos otherPos, BlockState otherState) {
+        if (!(otherState.getBlock() instanceof LeavesBlock)) return false;
+        if (DISTANCE.canCullAdjacent(pos.getX(), pos.getY(), pos.getZ(), otherPos.getX(), otherPos.getY(), otherPos.getZ()))
+            return true;
+        // A neighbor made opaque by the ordinary mode is safe regardless of its distance mesh.
+        LeafCullingQuality quality = getQuality();
+        return quality.isSolid() && surroundedByLeaves(view, otherPos, quality);
+    }
+
     public static boolean isFacingAir(BlockGetter view, BlockPos pos, Direction facing) {
         return view.getBlockState(pos.relative(facing)).getBlock() instanceof AirBlock;
     }

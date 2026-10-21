@@ -1,3 +1,15 @@
+# [4.0.1]
+
+- Restore the original green/cyan leaf icon, resized to 128x128 pixels and
+  optimized as a PNG.
+- Keep leaf faces at distance-mode boundaries and between independently rebuilt
+  terrain sections to prevent visible gaps during near/far transitions.
+- Rebuild terrain only when recorded leaf blocks actually change distance mode.
+  Limit rebuild requests independently of frame rate, deduplicate pending work, and
+  ignore stale worker results to reduce transition-related rebuild spikes.
+- Prioritize nearby leaves returning from Fast mode after rapid movement, and
+  prevent deferred offscreen rebuilds from blocking updates to other sections.
+
 # [4.0.0]
 
 - Avoid duplicate shared/generated sources and resources when running config
