@@ -9,6 +9,6 @@ package com.sumirelabs.sodiumleafculling;
 //? if !fabric {
 /*@Mod(SodiumLeafCulling.MOD_ID)
 public class SodiumLeafCulling {
-    public static final String MOD_ID = "slc_unofficial";
+    public static final String MOD_ID = "seleafculling";
 }
 *///?}

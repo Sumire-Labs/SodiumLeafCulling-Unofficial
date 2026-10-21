@@ -7,6 +7,8 @@
     ${renderer_context_mixin}
     "BlockOcclusionCacheMixin",
     "BlockRendererMixin",
+    "ChunkMeshingTaskMixin",
+    "WorldRendererMixin",
     "PerformanceSettingsMixin",
     "SodiumGameOptionPagesMixin"
   ],

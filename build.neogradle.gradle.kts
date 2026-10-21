@@ -62,7 +62,7 @@ tasks.withType<ListLibraries>().configureEach {
 }
 
 tasks.jar {
-    from(rootProject.file("LICENSE.md")) { rename("LICENSE\\.md", "LICENSE.md_slc_unofficial") }
+    from(rootProject.file("LICENSE.md")) { rename("LICENSE\\.md", "LICENSE.md_seleafculling") }
 }
 
 tasks.register<Copy>("buildAndCollect") {

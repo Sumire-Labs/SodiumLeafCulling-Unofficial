@@ -105,7 +105,7 @@ tasks.processResources {
 }
 tasks.jar {
     manifest.attributes["MixinConfigs"] = "mixins.sodiumleafculling.forge.json"
-    from(rootProject.file("LICENSE.md")) { rename("LICENSE\\.md", "LICENSE.md_slc_unofficial") }
+    from(rootProject.file("LICENSE.md")) { rename("LICENSE\\.md", "LICENSE.md_seleafculling") }
 }
 tasks.register<Copy>("buildAndCollect") {
     group = "build"

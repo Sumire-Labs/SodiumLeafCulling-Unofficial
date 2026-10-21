@@ -8,6 +8,8 @@
   "client": [
     "BlockOcclusionCacheMixin",
     "BlockRendererMixin",
+    "ChunkMeshingTaskMixin",
+    "WorldRendererMixin",
     "PerformanceSettingsMixin",
     "SodiumGameOptionPagesMixin"
   ],

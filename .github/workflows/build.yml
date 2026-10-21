@@ -11,7 +11,7 @@ on:
         description: Name of the combined downloadable artifact
         required: false
         type: string
-        default: slc-unofficial-jars
+        default: seleafculling-jars
       retention_days:
         description: Number of days to retain the combined artifact
         required: false
@@ -23,7 +23,7 @@ on:
         description: Name of the combined downloadable artifact
         required: false
         type: string
-        default: slc-unofficial-jars
+        default: seleafculling-jars
       retention_days:
         description: Number of days to retain the combined artifact
         required: false
@@ -57,6 +57,16 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+
+      - name: Test distance-based leaf culling
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build/distance-tests
+          javac --release 8 -d build/distance-tests \
+            src/main/java/com/sumirelabs/sodiumleafculling/DistanceLeafCulling.java \
+            tests/java/com/sumirelabs/sodiumleafculling/DistanceLeafCullingTest.java
+          java -cp build/distance-tests com.sumirelabs.sodiumleafculling.DistanceLeafCullingTest
 
       - name: Read and validate mod version
         id: metadata
@@ -227,11 +237,7 @@ jobs:
 
           jar="${jars[0]}"
           jar_name="$(basename "$jar")"
-          if [[ "$loader" == 'fabric' ]]; then
-            expected_name="slc-unofficial-${loader}-${MOD_VERSION}+${minecraft}.jar"
-          else
-            expected_name="slc_unofficial-${loader}-${MOD_VERSION}+${minecraft}.jar"
-          fi
+          expected_name="seleafculling-${loader}-${MOD_VERSION}+${minecraft}.jar"
           if [[ "$jar_name" != "$expected_name" ]]; then
             echo "Unexpected filename for $TARGET: $jar_name" >&2
             exit 1
@@ -256,7 +262,7 @@ jobs:
       - name: Upload ${{ matrix.target }} runtime JAR
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: slc-unofficial-part-${{ matrix.target }}
+          name: seleafculling-part-${{ matrix.target }}
           path: dist/*.jar
           if-no-files-found: error
           retention-days: 1
@@ -278,7 +284,7 @@ jobs:
       - name: Download per-target JARs
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          pattern: slc-unofficial-part-*
+          pattern: seleafculling-part-*
           path: dist
           merge-multiple: true
 
@@ -305,7 +311,7 @@ jobs:
 
           (cd dist && sha256sum ./*.jar | LC_ALL=C sort -k2 > SHA256SUMS)
 
-          artifact_name="${REQUESTED_ARTIFACT_NAME:-slc-unofficial-jars}"
+          artifact_name="${REQUESTED_ARTIFACT_NAME:-seleafculling-jars}"
           echo "artifact_name=$artifact_name" >> "$GITHUB_OUTPUT"
 
           {

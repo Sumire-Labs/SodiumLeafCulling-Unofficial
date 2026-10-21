@@ -20,6 +20,7 @@ import net.caffeinemc.mods.sodium.client.SodiumClientMod;
 
 public final class LeafCulling {
     private static final Direction[] VALUES = Direction.values();
+    public static final DistanceLeafCulling DISTANCE = new DistanceLeafCulling();
 
     private LeafCulling() { }
 
@@ -32,13 +33,21 @@ public final class LeafCulling {
     }
 
     public static LeafCullingQuality getQuality() {
+        return settings().sodiumleafculling$getQuality();
+    }
+
+    public static PerformanceSettingsAccessor settings() {
         //? if embeddium_modern {
-        /*return ((PerformanceSettingsAccessor) Embeddium.options().performance).sodiumleafculling$getQuality();
+        /*return (PerformanceSettingsAccessor) Embeddium.options().performance;
         *///?} elif fabric_legacy_options {
-        /*return ((PerformanceSettingsAccessor) SodiumClientMod.options().advanced).sodiumleafculling$getQuality();
+        /*return (PerformanceSettingsAccessor) SodiumClientMod.options().advanced;
         *///?} else {
-        return ((PerformanceSettingsAccessor) SodiumClientMod.options().performance).sodiumleafculling$getQuality();
+        return (PerformanceSettingsAccessor) SodiumClientMod.options().performance;
         //?}
+    }
+
+    public static boolean isDistant(BlockPos pos) {
+        return DISTANCE.isDistant(pos.getX(), pos.getY(), pos.getZ());
     }
 
     public static boolean isFacingAir(BlockGetter view, BlockPos pos, Direction facing) {

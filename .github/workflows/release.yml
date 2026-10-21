@@ -54,7 +54,7 @@ jobs:
       contents: read
     uses: ./.github/workflows/build.yml
     with:
-      artifact_name: slc-unofficial-release-jars
+      artifact_name: seleafculling-release-jars
       retention_days: 30
 
   github_release:
@@ -133,7 +133,7 @@ jobs:
             release_flags=(
               --verify-tag
               --generate-notes
-              --title "SodiumLeafCulling-Unofficial $MOD_VERSION"
+              --title "Sodium/Embeddium LeafCulling $MOD_VERSION"
             )
 
             version_without_metadata="${MOD_VERSION%%+*}"

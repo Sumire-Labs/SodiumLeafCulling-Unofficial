@@ -1,6 +1,10 @@
 ﻿{
   "sodiumleafculling.options.leaf_culling.name": "Leaf Culling Mode",
   "sodiumleafculling.options.leaf_culling.tooltip": "If enabled, leaves behind other leaves will be culled to improve performance. Hollow will aggressively cull faces, and Solid mode will enable fast solid block rendering of leaves behind other leaves.",
+  "sodiumleafculling.options.distance_leaf_culling.name": "Distance-based Leaf Culling",
+  "sodiumleafculling.options.distance_leaf_culling.tooltip": "Render leaves beyond the configured distance as opaque Fast leaves, including when Leaf Culling Mode is None. Nearby leaves keep the selected mode. Disabled by default. Movement updates only affected terrain sections.",
+  "sodiumleafculling.options.leaf_culling_distance.name": "Leaf Culling Distance (blocks)",
+  "sodiumleafculling.options.leaf_culling_distance.tooltip": "Distance from the camera to the center of a leaf block, including height. Leaves at or within this distance keep the selected mode; farther leaves use Fast rendering. Only applies when Distance-based Leaf Culling is enabled. Default: 64 blocks. Camera movement is sampled in one-block increments.",
   "options.leaf_culling.none": "None",
   "options.leaf_culling.hollow": "Hollow",
   "options.leaf_culling.solid": "Solid",

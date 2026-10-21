@@ -1,3 +1,21 @@
+# [4.0.0]
+- Change the project license from MIT to Blue Oak Model License 1.0.0.
+- Rename the mod to Sodium/Embeddium LeafCulling and unify its Fabric, Forge,
+  and NeoForge mod IDs as `seleafculling`. Replace the old mod JAR when updating.
+- Replace the mod icon with the new artwork from `icon.png`, resized to
+  128x128 pixels and losslessly optimized as a PNG.
+- Change the default Leaf Culling Mode from Solid Aggressive to Solid.
+  Existing saved mode selections are preserved.
+- Rewrite the README with updated features, requirements, credits, and
+  the reason for maintaining this fork.
+- Add optional distance-based leaf culling to Sodium and Embeddium settings.
+  Disabled by default, it keeps the selected culling mode within a configurable
+  distance (64 blocks by default) and renders farther leaves as opaque Fast
+  leaves. Camera movement queues affected terrain sections for rebuilding.
+- Fix the performance-options Mixin for Sodium 0.9.3-beta.1 on Minecraft 26.3,
+  accommodating its additional method argument while retaining compatibility
+  with earlier Sodium versions.
+
 # [3.3.0]
 - Add Fabric support for Minecraft 26.2-rc-1/rc-2 and 26.3-rc-1/rc-2,
   including RC-aware target parsing, CI downloads and publishing filenames.

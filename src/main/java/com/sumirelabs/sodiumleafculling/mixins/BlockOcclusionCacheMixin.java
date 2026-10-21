@@ -43,6 +43,12 @@ public class BlockOcclusionCacheMixin {
     @Inject(method = "shouldDrawSide", at = @At("HEAD"), cancellable = true)
     private void inject$shouldDrawSide(Direction facing, CallbackInfoReturnable<Boolean> cir) {
         if (state != null && state.getBlock() instanceof LeavesBlock) {
+            if (LeafCulling.isDistant(pos)) {
+                if (level.getBlockState(pos.relative(facing)).getBlock() instanceof LeavesBlock) {
+                    cir.setReturnValue(false);
+                }
+                return;
+            }
             LeafCullingQuality quality = LeafCulling.getQuality();
             if (quality == LeafCullingQuality.HOLLOW) {
                 boolean skipRendering = LeafCulling.shouldCullSide(level, pos, facing, 2);
@@ -72,6 +78,12 @@ public class BlockOcclusionCacheMixin {
     @Inject(method = "shouldDrawSide", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;skipRendering(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/Direction;)Z"), locals = LocalCapture.CAPTURE_FAILHARD, cancellable = true)
     private void inject$shouldDrawSide(BlockState selfState, BlockGetter view, BlockPos selfPos, Direction facing, CallbackInfoReturnable<Boolean> cir, BlockPos.MutableBlockPos otherPos, BlockState otherState) {
          if (selfState.getBlock() instanceof LeavesBlock) {
+             if (LeafCulling.isDistant(selfPos)) {
+                 if (otherState.getBlock() instanceof LeavesBlock) {
+                     cir.setReturnValue(false);
+                 }
+                 return;
+             }
              LeafCullingQuality quality = LeafCulling.getQuality();
              if (quality == LeafCullingQuality.HOLLOW) {
                  boolean skipRendering = LeafCulling.shouldCullSide(view, selfPos, facing, 2);

@@ -252,7 +252,7 @@ jobs:
             name="$(basename "$jar")"
             stem="${name%.jar}"
 
-            if [[ ! "$stem" =~ ^(slc-unofficial|slc_unofficial)-(fabric|forge|neoforge)-(.+)\+([0-9]+(\.[0-9]+)+(-rc-[0-9]+)?)$ ]]; then
+            if [[ ! "$stem" =~ ^(seleafculling)-(fabric|forge|neoforge)-(.+)\+([0-9]+(\.[0-9]+)+(-rc-[0-9]+)?)$ ]]; then
               echo "Cannot determine loader, version, and Minecraft version from '$name'." >&2
               exit 1
             fi
@@ -267,8 +267,7 @@ jobs:
               echo "$name contains version '$artifact_version', expected '$version'." >&2
               exit 1
             fi
-            if [[ ( "$loader" == 'fabric' && "$archive_base" != 'slc-unofficial' ) ||
-                  ( "$loader" != 'fabric' && "$archive_base" != 'slc_unofficial' ) ]]; then
+            if [[ "$archive_base" != 'seleafculling' ]]; then
               echo "Unexpected archive base '$archive_base' for loader '$loader'." >&2
               exit 1
             fi
@@ -442,7 +441,7 @@ jobs:
           modrinth-id: ${{ needs.prepare.outputs.modrinth_id }}
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
           files: ${{ matrix.file }}
-          name: SodiumLeafCulling-Unofficial ${{ needs.prepare.outputs.version }} - Minecraft ${{ matrix.minecraft }} ${{ matrix.loader_label }}
+          name: Sodium/Embeddium LeafCulling ${{ needs.prepare.outputs.version }} - Minecraft ${{ matrix.minecraft }} ${{ matrix.loader_label }}
           version: ${{ matrix.publish_version }}
           version-type: ${{ needs.prepare.outputs.version_type }}
           changelog: |
@@ -503,7 +502,7 @@ jobs:
           curseforge-id: ${{ needs.prepare.outputs.curseforge_id }}
           curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
           files: ${{ matrix.file }}
-          name: SodiumLeafCulling-Unofficial ${{ needs.prepare.outputs.version }} - Minecraft ${{ matrix.minecraft }} ${{ matrix.loader_label }}
+          name: Sodium/Embeddium LeafCulling ${{ needs.prepare.outputs.version }} - Minecraft ${{ matrix.minecraft }} ${{ matrix.loader_label }}
           version: ${{ matrix.publish_version }}
           version-type: ${{ needs.prepare.outputs.version_type }}
           changelog: |
