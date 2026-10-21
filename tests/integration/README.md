@@ -17,6 +17,13 @@ Replace the target to check other Fabric versions. This verifies:
 - Slider availability follows unapplied toggle changes in both UI generations.
 - Legacy disabled controls reject value edits and retain the distance value.
 
+For the active Stonecutter target (currently `26.2-fabric`), also check the CI
+sequence: a normal `build buildAndCollect` invocation followed by this test in
+a separate Gradle invocation. The smoke-test source sets exclude shared original
+paths so JavaExec can request generated sources without compiling or copying
+both versions. A JVM argument file keeps long classpaths visible to Fabric Loader
+on Windows instead of hiding them in Gradle's classpath-only JAR.
+
 The modern test allocates only the config hook's owner without its vanilla GUI
 constructor, supplies in-memory settings, and invokes the injected hook. This
 exercises real option validation without needing a window or graphics context.

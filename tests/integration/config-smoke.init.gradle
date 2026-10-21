@@ -3,6 +3,16 @@ allprojects {
     afterEvaluate {
         if (!name.endsWith('-fabric') || tasks.findByName('runClient') == null) return
 
+        // JavaExec makes Loom request generated Stonecutter sources even for the
+        // active project. Exclude its shared originals by absolute path, retaining
+        // generated sources/resources and their task dependencies.
+        sourceSets.configureEach { sourceSet ->
+            def sharedJava = rootProject.file("src/${sourceSet.name}/java").toPath()
+            def sharedResources = rootProject.file("src/${sourceSet.name}/resources").toPath()
+            sourceSet.java.exclude { element -> element.file.toPath().startsWith(sharedJava) }
+            sourceSet.resources.exclude { element -> element.file.toPath().startsWith(sharedResources) }
+        }
+
         def client = tasks.named('runClient')
         def compileSmoke = tasks.register('compileConfigSmoke', JavaCompile) {
             source rootProject.file('tests/integration/ConfigRegistrationSmoke.java')
@@ -21,11 +31,16 @@ allprojects {
         }
         def smokeDirectory = rootProject.file("run/config-smoke/${project.name}")
         def launchConfig = rootProject.file(".gradle/loom-cache/projects/${project.name}/launch.cfg")
+        def runtimeClasspath = client.get().classpath
+        def classpathArguments = layout.buildDirectory.file('config-smoke/classpath.args')
         tasks.register('configRegistrationSmoke', JavaExec) {
             group = 'verification'
             description = 'Checks options registration, defaults, and live distance slider availability.'
             dependsOn tasks.named('classes'), tasks.named('configureLaunch'), smokeJar
-            classpath = client.get().classpath
+            // Keep java.class.path visible to Fabric Loader. Gradle's Windows
+            // classpath-only JAR otherwise hides Minecraft when the path is long.
+            classpath = files()
+            inputs.files runtimeClasspath
             javaLauncher = client.get().javaLauncher
             mainClass.set('net.fabricmc.devlaunchinjector.Main')
             workingDir smokeDirectory
@@ -38,6 +53,11 @@ allprojects {
                 '-Dfabric.dli.main=net.fabricmc.loader.impl.launch.knot.KnotClient',
             )
             doFirst {
+                def arguments = classpathArguments.get().asFile
+                arguments.parentFile.mkdirs()
+                def path = runtimeClasspath.asPath.replace('\\', '/').replace('"', '\\"')
+                arguments.setText('-classpath\n"' + path + '"\n', 'UTF-8')
+                jvmArgs '@' + arguments.absolutePath
                 def mods = new File(smokeDirectory, 'mods')
                 mods.mkdirs()
                 java.nio.file.Files.copy(smokeJar.get().archiveFile.get().asFile.toPath(),

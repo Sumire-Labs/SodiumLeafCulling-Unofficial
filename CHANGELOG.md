@@ -1,5 +1,8 @@
 # [4.0.0]
 
+- Avoid duplicate shared/generated sources and resources when running config
+  smoke tests for Stonecutter's active target, including Fabric 26.2. Pass the
+  smoke-test classpath through a JVM argument file for long Windows paths.
 - Implement Embeddium's additional option-name accessor on Forge 1.16.5 to
   fix compilation of the dependent distance slider.
 - Retry transient dependency-download failures in CI, including upstream HTTP
