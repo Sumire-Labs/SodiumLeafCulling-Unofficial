@@ -167,6 +167,9 @@ tasks {
             attributes["MixinConfigs"] = "mixins.sodiumleafculling.forge.json"
         }
 
+    }
+
+    withType<Jar>().configureEach {
         from(rootProject.file("LICENSE.md")) {
             rename("LICENSE\\.md", "LICENSE.md_$modId")
         }

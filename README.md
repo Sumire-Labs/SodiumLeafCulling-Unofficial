@@ -58,4 +58,4 @@ To make SodiumLeafCulling available on a wider range of Minecraft versions and m
 
 ## License
 
-This project is licensed under the [Blue Oak Model License 1.0.0](LICENSE.md).
+This project is licensed under the [MIT License](LICENSE.md).

@@ -1,3 +1,11 @@
+# [4.0.2]
+
+- Restore the MIT License, including the original copyright notices for toni
+  and s12kuma01, in the repository and distributed JARs. Update the README and
+  mod metadata to identify MIT as the license for this release.
+- Include the mod's license in the shaded Forge 1.16.5 distribution as well as
+  the regular JAR.
+
 # [4.0.1]
 
 - Restore the original green/cyan leaf icon, resized to 128x128 pixels and
