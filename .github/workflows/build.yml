@@ -58,6 +58,9 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Test Gradle download retries
+        run: node tests/ci/gradle-retry.test.cjs
+
       - name: Test distance-based leaf culling
         shell: bash
         run: |
@@ -201,7 +204,7 @@ jobs:
             26.*-fabric) ;;
             *-fabric|1.20.2-forge) exclusions+=(-x remapSourcesJar) ;;
           esac
-          ./gradlew ":${TARGET}:build" ":${TARGET}:buildAndCollect" \
+          bash scripts/gradle-ci.sh ":${TARGET}:build" ":${TARGET}:buildAndCollect" \
             "-Pbuild_targets=${TARGET}" \
             --configure-on-demand \
             --stacktrace \
@@ -213,7 +216,7 @@ jobs:
         env:
           TARGET: ${{ matrix.target }}
         run: |
-          ./gradlew ":${TARGET}:configRegistrationSmoke" \
+          bash scripts/gradle-ci.sh ":${TARGET}:configRegistrationSmoke" \
             "-Pbuild_targets=${TARGET}" --configure-on-demand \
             --no-configuration-cache --console=plain \
             --init-script tests/integration/config-smoke.init.gradle

@@ -1,5 +1,9 @@
 # [4.0.0]
 
+- Implement Embeddium's additional option-name accessor on Forge 1.16.5 to
+  fix compilation of the dependent distance slider.
+- Retry transient dependency-download failures in CI, including upstream HTTP
+  502 errors, while preserving immediate failures for compilation errors.
 - Change the project license from MIT to Blue Oak Model License 1.0.0.
 - Rename the mod to Sodium/Embeddium LeafCulling and unify its Fabric, Forge,
   and NeoForge mod IDs as `seleafculling`. Replace the old mod JAR when updating.

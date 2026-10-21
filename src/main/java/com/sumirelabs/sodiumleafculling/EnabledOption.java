@@ -35,6 +35,9 @@ public final class EnabledOption<T> implements Option<T> {
     //?} else {
     public Component getName() { return delegate.getName(); }
     //?}
+    //? if forge && <1.17 {
+    public Component getNewName() { return delegate.getNewName(); }
+    //?}
     public Component getTooltip() { return delegate.getTooltip(); }
     public OptionImpact getImpact() { return delegate.getImpact(); }
     public Control<T> getControl() { return delegate.getControl(); }
