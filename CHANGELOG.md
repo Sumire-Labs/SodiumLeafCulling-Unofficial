@@ -1,4 +1,5 @@
 # [4.0.0]
+
 - Change the project license from MIT to Blue Oak Model License 1.0.0.
 - Rename the mod to Sodium/Embeddium LeafCulling and unify its Fabric, Forge,
   and NeoForge mod IDs as `seleafculling`. Replace the old mod JAR when updating.
@@ -17,6 +18,7 @@
   with earlier Sodium versions.
 
 # [3.3.0]
+
 - Add Fabric support for Minecraft 26.2-rc-1/rc-2 and 26.3-rc-1/rc-2,
   including RC-aware target parsing, CI downloads and publishing filenames.
 - Move Java packages and the Maven group to `com.sumirelabs`, including Mixin
@@ -28,6 +30,7 @@
 - Losslessly compress the mod logo while preserving its dimensions and pixels.
 
 # [3.2.0]
+
 - Include library locations in NeoGradle's cache keys to prevent restored
   library lists from referencing removed nested builds or previous checkouts.
 - Migrate to Stonecutter 0.10-alpha.12, including its structured-property API,
@@ -55,10 +58,12 @@
 - Document the purpose and maintenance tradeoffs of legacy loader builds.
 
 # [3.1.1]
+
 - Fix Xenon incompatibility metadata to reference the correct Embeddium fork on Modrinth and CurseForge.
 - Correct Xenon's dependency type from optional to incompatible.
 
 # [3.1.0]
+
 - expand version support
     - Fabric: 1.16.3～1.20、1.20.2、1.20.3、1.20.5、1.20.6、1.21
     - Forge: 1.16.5、1.18.2、1.19.2、1.20.2
