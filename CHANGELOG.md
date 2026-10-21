@@ -13,6 +13,11 @@
   Disabled by default, it keeps the selected culling mode within a configurable
   distance (64 blocks by default) and renders farther leaves as opaque Fast
   leaves. Camera movement queues affected terrain sections for rebuilding.
+- Disable the distance slider while distance-based culling is off, following
+  unapplied toggle changes in both modern and legacy settings screens.
+- Set the modern distance slider's required value formatter to prevent
+  configuration registration crashes, and add Fabric config registration
+  smoke tests covering both settings API generations.
 - Fix the performance-options Mixin for Sodium 0.9.3-beta.1 on Minecraft 26.3,
   accommodating its additional method argument while retaining compatibility
   with earlier Sodium versions.

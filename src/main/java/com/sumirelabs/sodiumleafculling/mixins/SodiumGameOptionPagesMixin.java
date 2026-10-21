@@ -98,6 +98,10 @@ public class SodiumGameOptionPagesMixin {
                         .setTooltip(LeafCulling.translatable("sodiumleafculling.options.leaf_culling_distance.tooltip"))
                         .setDefaultValue(DistanceLeafCulling.DEFAULT_DISTANCE)
                         .setRange(DistanceLeafCulling.MIN_DISTANCE, DistanceLeafCulling.MAX_DISTANCE, 1)
+                        .setValueFormatter(value -> net.minecraft.network.chat.Component.literal(Integer.toString(value)))
+                        .setEnabledProvider(
+                            state -> state.readBooleanOption(Identifier.fromNamespaceAndPath("sodiumleafculling", "performance.distance_leaf_culling")),
+                            Identifier.fromNamespaceAndPath("sodiumleafculling", "performance.distance_leaf_culling"))
                         .setBinding(
                             value -> ((PerformanceSettingsAccessor) this.sodiumOpts.performance).sodiumleafculling$setDistance(value),
                             () -> ((PerformanceSettingsAccessor) this.sodiumOpts.performance).sodiumleafculling$getDistance())
@@ -115,6 +119,17 @@ public class SodiumGameOptionPagesMixin {
 
     @Inject(method = "performance", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/ImmutableList;copyOf(Ljava/util/Collection;)Lcom/google/common/collect/ImmutableList;"), locals = LocalCapture.CAPTURE_FAILHARD)
     private static void inject$leafcullingoption(CallbackInfoReturnable<OptionPage> cir, List<OptionGroup> groups) {
+        Option<Boolean> distanceCulling = OptionImpl.createBuilder(boolean.class, leafcullingOpts)
+                .setName(LeafCulling.translatable("sodiumleafculling.options.distance_leaf_culling.name"))
+                .setTooltip(LeafCulling.translatable("sodiumleafculling.options.distance_leaf_culling.tooltip"))
+                .setControl(TickBoxControl::new)
+                .setBinding(
+                    (opts, value) -> ((PerformanceSettingsAccessor) opts.performance).sodiumleafculling$setDistanceCullingEnabled(value),
+                    opts -> ((PerformanceSettingsAccessor) opts.performance).sodiumleafculling$isDistanceCullingEnabled())
+                .setImpact(OptionImpact.MEDIUM)
+                .setFlags(OptionFlag.REQUIRES_RENDERER_RELOAD)
+                .build();
+
         groups.add(OptionGroup.createBuilder()
             .add(OptionImpl.createBuilder(LeafCullingQuality.class, leafcullingOpts)
                 .setName(LeafCulling.translatable("sodiumleafculling.options.leaf_culling.name"))
@@ -127,20 +142,11 @@ public class SodiumGameOptionPagesMixin {
                 .setFlags(OptionFlag.REQUIRES_RENDERER_RELOAD)
                 .build()
             )
-            .add(OptionImpl.createBuilder(boolean.class, leafcullingOpts)
-                .setName(LeafCulling.translatable("sodiumleafculling.options.distance_leaf_culling.name"))
-                .setTooltip(LeafCulling.translatable("sodiumleafculling.options.distance_leaf_culling.tooltip"))
-                .setControl(TickBoxControl::new)
-                .setBinding(
-                    (opts, value) -> ((PerformanceSettingsAccessor) opts.performance).sodiumleafculling$setDistanceCullingEnabled(value),
-                    opts -> ((PerformanceSettingsAccessor) opts.performance).sodiumleafculling$isDistanceCullingEnabled())
-                .setImpact(OptionImpact.MEDIUM)
-                .setFlags(OptionFlag.REQUIRES_RENDERER_RELOAD)
-                .build()
-            )
+            .add(distanceCulling)
             .add(OptionImpl.createBuilder(int.class, leafcullingOpts)
                 .setName(LeafCulling.translatable("sodiumleafculling.options.leaf_culling_distance.name"))
                 .setTooltip(LeafCulling.translatable("sodiumleafculling.options.leaf_culling_distance.tooltip"))
+                .setEnabledPredicate(distanceCulling::getValue)
                 .setControl(option -> new SliderControl(option, DistanceLeafCulling.MIN_DISTANCE,
                     DistanceLeafCulling.MAX_DISTANCE, 1, ControlValueFormatter.number()))
                 .setBinding(
@@ -161,6 +167,17 @@ public class SodiumGameOptionPagesMixin {
 
     @Inject(method = "advanced", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/ImmutableList;copyOf(Ljava/util/Collection;)Lcom/google/common/collect/ImmutableList;"), locals = LocalCapture.CAPTURE_FAILHARD)
     private static void inject$leafcullingoption(CallbackInfoReturnable<OptionPage> cir, List<OptionGroup> groups) {
+        Option<Boolean> distanceCulling = OptionImpl.createBuilder(boolean.class, leafcullingOpts)
+                .setName("sodiumleafculling.options.distance_leaf_culling.name")
+                .setTooltip("sodiumleafculling.options.distance_leaf_culling.tooltip")
+                .setControl(TickBoxControl::new)
+                .setBinding(
+                    (opts, value) -> ((PerformanceSettingsAccessor) opts.advanced).sodiumleafculling$setDistanceCullingEnabled(value),
+                    opts -> ((PerformanceSettingsAccessor) opts.advanced).sodiumleafculling$isDistanceCullingEnabled())
+                .setImpact(OptionImpact.MEDIUM)
+                .setFlags(OptionFlag.REQUIRES_RENDERER_RELOAD)
+                .build();
+
         groups.add(OptionGroup.createBuilder()
             .add(OptionImpl.createBuilder(LeafCullingQuality.class, leafcullingOpts)
                 .setName("sodiumleafculling.options.leaf_culling.name")
@@ -173,21 +190,11 @@ public class SodiumGameOptionPagesMixin {
                 .setFlags(OptionFlag.REQUIRES_RENDERER_RELOAD)
                 .build()
             )
-            .add(OptionImpl.createBuilder(boolean.class, leafcullingOpts)
-                .setName("sodiumleafculling.options.distance_leaf_culling.name")
-                .setTooltip("sodiumleafculling.options.distance_leaf_culling.tooltip")
-                .setControl(TickBoxControl::new)
-                .setBinding(
-                    (opts, value) -> ((PerformanceSettingsAccessor) opts.advanced).sodiumleafculling$setDistanceCullingEnabled(value),
-                    opts -> ((PerformanceSettingsAccessor) opts.advanced).sodiumleafculling$isDistanceCullingEnabled())
-                .setImpact(OptionImpact.MEDIUM)
-                .setFlags(OptionFlag.REQUIRES_RENDERER_RELOAD)
-                .build()
-            )
+            .add(distanceCulling)
             .add(OptionImpl.createBuilder(int.class, leafcullingOpts)
                 .setName("sodiumleafculling.options.leaf_culling_distance.name")
                 .setTooltip("sodiumleafculling.options.leaf_culling_distance.tooltip")
-                .setControl(option -> new SliderControl(option, DistanceLeafCulling.MIN_DISTANCE,
+                .setControl(option -> new SliderControl(new com.sumirelabs.sodiumleafculling.EnabledOption<>(option, distanceCulling::getValue), DistanceLeafCulling.MIN_DISTANCE,
                     DistanceLeafCulling.MAX_DISTANCE, 1, ControlValueFormatter.number()))
                 .setBinding(
                     (opts, value) -> ((PerformanceSettingsAccessor) opts.advanced).sodiumleafculling$setDistance(value),
@@ -207,6 +214,17 @@ public class SodiumGameOptionPagesMixin {
 
     @Inject(method = "performance", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/ImmutableList;copyOf(Ljava/util/Collection;)Lcom/google/common/collect/ImmutableList;"), locals = LocalCapture.CAPTURE_FAILHARD)
     private static void inject$leafcullingoption(CallbackInfoReturnable<OptionPage> cir, List<OptionGroup> groups) {
+        Option<Boolean> distanceCulling = OptionImpl.createBuilder(boolean.class, leafcullingOpts)
+                .setName(LeafCulling.translatable("sodiumleafculling.options.distance_leaf_culling.name"))
+                .setTooltip(LeafCulling.translatable("sodiumleafculling.options.distance_leaf_culling.tooltip"))
+                .setControl(TickBoxControl::new)
+                .setBinding(
+                    (opts, value) -> ((PerformanceSettingsAccessor) opts.performance).sodiumleafculling$setDistanceCullingEnabled(value),
+                    opts -> ((PerformanceSettingsAccessor) opts.performance).sodiumleafculling$isDistanceCullingEnabled())
+                .setImpact(OptionImpact.MEDIUM)
+                .setFlags(OptionFlag.REQUIRES_RENDERER_RELOAD)
+                .build();
+
         groups.add(OptionGroup.createBuilder()
             .add(OptionImpl.createBuilder(LeafCullingQuality.class, leafcullingOpts)
                 .setName(LeafCulling.translatable("sodiumleafculling.options.leaf_culling.name"))
@@ -219,21 +237,11 @@ public class SodiumGameOptionPagesMixin {
                 .setFlags(OptionFlag.REQUIRES_RENDERER_RELOAD)
                 .build()
             )
-            .add(OptionImpl.createBuilder(boolean.class, leafcullingOpts)
-                .setName(LeafCulling.translatable("sodiumleafculling.options.distance_leaf_culling.name"))
-                .setTooltip(LeafCulling.translatable("sodiumleafculling.options.distance_leaf_culling.tooltip"))
-                .setControl(TickBoxControl::new)
-                .setBinding(
-                    (opts, value) -> ((PerformanceSettingsAccessor) opts.performance).sodiumleafculling$setDistanceCullingEnabled(value),
-                    opts -> ((PerformanceSettingsAccessor) opts.performance).sodiumleafculling$isDistanceCullingEnabled())
-                .setImpact(OptionImpact.MEDIUM)
-                .setFlags(OptionFlag.REQUIRES_RENDERER_RELOAD)
-                .build()
-            )
+            .add(distanceCulling)
             .add(OptionImpl.createBuilder(int.class, leafcullingOpts)
                 .setName(LeafCulling.translatable("sodiumleafculling.options.leaf_culling_distance.name"))
                 .setTooltip(LeafCulling.translatable("sodiumleafculling.options.leaf_culling_distance.tooltip"))
-                .setControl(option -> new SliderControl(option, DistanceLeafCulling.MIN_DISTANCE,
+                .setControl(option -> new SliderControl(new com.sumirelabs.sodiumleafculling.EnabledOption<>(option, distanceCulling::getValue), DistanceLeafCulling.MIN_DISTANCE,
                     DistanceLeafCulling.MAX_DISTANCE, 1, ControlValueFormatter.number()))
                 .setBinding(
                     (opts, value) -> ((PerformanceSettingsAccessor) opts.performance).sodiumleafculling$setDistance(value),

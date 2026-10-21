@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "id": "seleafculling-config-smoke",
+  "version": "1.0.0",
+  "environment": "client",
+  "entrypoints": {
+    "preLaunch": ["ConfigRegistrationSmoke"]
+  }
+}

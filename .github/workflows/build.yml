@@ -208,6 +208,16 @@ jobs:
             --console=plain \
             "${exclusions[@]}"
 
+      - name: Check config registration and distance slider
+        if: endsWith(matrix.target, '-fabric')
+        env:
+          TARGET: ${{ matrix.target }}
+        run: |
+          ./gradlew ":${TARGET}:configRegistrationSmoke" \
+            "-Pbuild_targets=${TARGET}" --configure-on-demand \
+            --no-configuration-cache --console=plain \
+            --init-script tests/integration/config-smoke.init.gradle
+
       - name: Select and validate distributable JAR
         env:
           TARGET: ${{ matrix.target }}

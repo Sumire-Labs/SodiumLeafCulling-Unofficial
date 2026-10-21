@@ -1,0 +1,48 @@
+// Test-only tasks: run the real options Mixin and renderer builders without opening a game window.
+allprojects {
+    afterEvaluate {
+        if (!name.endsWith('-fabric') || tasks.findByName('runClient') == null) return
+
+        def client = tasks.named('runClient')
+        def compileSmoke = tasks.register('compileConfigSmoke', JavaCompile) {
+            source rootProject.file('tests/integration/ConfigRegistrationSmoke.java')
+            classpath = sourceSets.main.compileClasspath
+            javaCompiler = tasks.named('compileJava', JavaCompile).get().javaCompiler
+            options.release.set(8)
+            options.compilerArgs.add('-Xlint:-options')
+            destinationDirectory.set(layout.buildDirectory.dir('config-smoke/classes'))
+        }
+        def smokeJar = tasks.register('packageConfigSmoke', Jar) {
+            dependsOn compileSmoke
+            archiveFileName.set('config-smoke.jar')
+            destinationDirectory.set(layout.buildDirectory.dir('config-smoke'))
+            from compileSmoke.flatMap { it.destinationDirectory }
+            from(rootProject.file('tests/integration/fabric.mod.json'))
+        }
+        def smokeDirectory = rootProject.file("run/config-smoke/${project.name}")
+        def launchConfig = rootProject.file(".gradle/loom-cache/projects/${project.name}/launch.cfg")
+        tasks.register('configRegistrationSmoke', JavaExec) {
+            group = 'verification'
+            description = 'Checks options registration, defaults, and live distance slider availability.'
+            dependsOn tasks.named('classes'), tasks.named('configureLaunch'), smokeJar
+            classpath = client.get().classpath
+            javaLauncher = client.get().javaLauncher
+            mainClass.set('net.fabricmc.devlaunchinjector.Main')
+            workingDir smokeDirectory
+            jvmArgs(
+                '-Djava.awt.headless=true',
+                '-Dfabric.noGui=true',
+                '-Dsodium.checks.issue2561=false',
+                "-Dfabric.dli.config=${launchConfig.absolutePath}",
+                '-Dfabric.dli.env=client',
+                '-Dfabric.dli.main=net.fabricmc.loader.impl.launch.knot.KnotClient',
+            )
+            doFirst {
+                def mods = new File(smokeDirectory, 'mods')
+                mods.mkdirs()
+                java.nio.file.Files.copy(smokeJar.get().archiveFile.get().asFile.toPath(),
+                    new File(mods, 'config-smoke.jar').toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING)
+            }
+        }
+    }
+}
