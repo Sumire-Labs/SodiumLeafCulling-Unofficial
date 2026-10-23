@@ -9,5 +9,5 @@ repositories {
 }
 
 dependencies {
-    implementation("dev.kikugie:stonecutter:0.10-alpha.12")
+    implementation("dev.kikugie:stonecutter:0.10-beta.1")
 }

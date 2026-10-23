@@ -1,3 +1,8 @@
+# [Unreleased]
+
+- Update Stonecutter from 0.10-alpha.12 to 0.10-beta.1 in both the settings
+  plugin and the buildSrc dependency.
+
 # [4.0.2]
 
 - Restore the MIT License, including the original copyright notices for toni
