@@ -1,7 +1,10 @@
 # [4.1.0]
 
+- Assign IDs to the LeafCulling option group and settings in Embeddium so its
+  video settings screen opens without crashing.
 - Support Sodium 0.8.13 and Embeddium 1.0.15 with the same Minecraft 1.21.1
   NeoForge JAR. LeafCulling selects the installed renderer at startup.
+- Add Simplified Chinese translations based on Lumiko32's upstream contribution.
 - Update Stonecutter from 0.10-alpha.12 to 0.10-beta.1 in both the settings
   plugin and the buildSrc dependency.
 - Use MixinSquared's documented Maven mirror for Fabric builds to avoid

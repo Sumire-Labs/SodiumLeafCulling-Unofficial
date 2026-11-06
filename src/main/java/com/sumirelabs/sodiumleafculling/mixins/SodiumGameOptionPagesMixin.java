@@ -26,6 +26,7 @@ import net.caffeinemc.mods.sodium.api.config.structure.OptionPageBuilder;
 import net.minecraft.resources.Identifier;
 //?} elif embeddium_modern {
 /*import org.embeddedt.embeddium.impl.gui.EmbeddiumGameOptionPages;
+import net.minecraft.resources.ResourceLocation;
 import org.embeddedt.embeddium.impl.gui.EmbeddiumOptions;
 import org.embeddedt.embeddium.api.options.structure.*;
 import org.embeddedt.embeddium.api.options.control.CyclingControl;
@@ -120,6 +121,7 @@ public class SodiumGameOptionPagesMixin {
     @Inject(method = "performance", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/ImmutableList;copyOf(Ljava/util/Collection;)Lcom/google/common/collect/ImmutableList;"), locals = LocalCapture.CAPTURE_FAILHARD)
     private static void inject$leafcullingoption(CallbackInfoReturnable<OptionPage> cir, List<OptionGroup> groups) {
         Option<Boolean> distanceCulling = OptionImpl.createBuilder(boolean.class, leafcullingOpts)
+                .setId(ResourceLocation.fromNamespaceAndPath("seleafculling", "distance_leaf_culling"))
                 .setName(LeafCulling.translatable("sodiumleafculling.options.distance_leaf_culling.name"))
                 .setTooltip(LeafCulling.translatable("sodiumleafculling.options.distance_leaf_culling.tooltip"))
                 .setControl(TickBoxControl::new)
@@ -131,7 +133,9 @@ public class SodiumGameOptionPagesMixin {
                 .build();
 
         groups.add(OptionGroup.createBuilder()
+            .setId(ResourceLocation.fromNamespaceAndPath("seleafculling", "leaf_culling"))
             .add(OptionImpl.createBuilder(LeafCullingQuality.class, leafcullingOpts)
+                .setId(ResourceLocation.fromNamespaceAndPath("seleafculling", "leaf_culling_quality"))
                 .setName(LeafCulling.translatable("sodiumleafculling.options.leaf_culling.name"))
                 .setTooltip(LeafCulling.translatable("sodiumleafculling.options.leaf_culling.tooltip"))
                 .setControl(option -> new CyclingControl<>(option, LeafCullingQuality.class))
@@ -144,6 +148,7 @@ public class SodiumGameOptionPagesMixin {
             )
             .add(distanceCulling)
             .add(OptionImpl.createBuilder(int.class, leafcullingOpts)
+                .setId(ResourceLocation.fromNamespaceAndPath("seleafculling", "leaf_culling_distance"))
                 .setName(LeafCulling.translatable("sodiumleafculling.options.leaf_culling_distance.name"))
                 .setTooltip(LeafCulling.translatable("sodiumleafculling.options.leaf_culling_distance.tooltip"))
                 .setEnabledPredicate(distanceCulling::getValue)

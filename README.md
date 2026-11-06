@@ -54,6 +54,8 @@ Sodium or Embeddium. Install only one renderer.
 
 ## Credits
 
+- [Lumiko32](https://github.com/txnimc/SodiumLeafCulling/pull/13): Original Simplified Chinese translation.
+
 - [Txni](https://github.com/orgs/txnimc): Author of the original [SodiumLeafCulling](https://modrinth.com/mod/sodiumleafculling) and developer of its algorithm.
   - Thank you to Txni for creating SodiumLeafCulling and its algorithm and making them open source.
 - [Stonecutter](https://stonecutter.kikugie.dev/)

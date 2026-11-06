@@ -1,0 +1,12 @@
+{
+  "sodiumleafculling.options.leaf_culling.name": "树叶剔除模式",
+  "sodiumleafculling.options.leaf_culling.tooltip": "剔除被其他树叶遮挡的树叶表面以提高性能。镂空模式会隐藏部分内部表面，实心模式会将部分内部树叶渲染为不透明方块。",
+  "sodiumleafculling.options.distance_leaf_culling.name": "基于距离的树叶剔除",
+  "sodiumleafculling.options.distance_leaf_culling.tooltip": "超出设定距离的树叶使用不透明的快速渲染，包括树叶剔除模式设为不剔除时。附近的树叶保留所选模式。默认关闭。移动时仅更新受影响的区段。",
+  "sodiumleafculling.options.leaf_culling_distance.name": "树叶剔除距离（方块）",
+  "sodiumleafculling.options.leaf_culling_distance.tooltip": "从摄像机到树叶方块中心的距离，包含高度差。范围内的树叶保留所选模式，范围外使用快速渲染。仅在启用基于距离的树叶剔除时生效。默认值：64 方块。摄像机移动以一方块为单位采样。",
+  "options.leaf_culling.none": "不剔除",
+  "options.leaf_culling.hollow": "镂空",
+  "options.leaf_culling.solid": "实心",
+  "options.leaf_culling.solid_aggressive": "激进实心"
+}
