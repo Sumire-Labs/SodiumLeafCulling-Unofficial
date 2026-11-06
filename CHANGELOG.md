@@ -1,7 +1,11 @@
-# [Unreleased]
+# [4.1.0]
 
+- Support Sodium 0.8.13 and Embeddium 1.0.15 with the same Minecraft 1.21.1
+  NeoForge JAR. LeafCulling selects the installed renderer at startup.
 - Update Stonecutter from 0.10-alpha.12 to 0.10-beta.1 in both the settings
   plugin and the buildSrc dependency.
+- Use MixinSquared's documented Maven mirror for Fabric builds to avoid
+  dependency download failures on CI.
 
 # [4.0.2]
 

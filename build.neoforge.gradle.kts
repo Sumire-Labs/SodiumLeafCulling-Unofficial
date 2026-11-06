@@ -6,7 +6,28 @@ plugins {
 }
 
 version = "${sc.properties["mod.version"]}+${sc.current.version}"
-base.archivesName = "${sc.properties["mod.id"]}-neoforge"
+val embeddiumClassesTarget = sc.current.project == "1.21.1-neoforge-embeddium"
+val dualRendererTarget = sc.current.project == "1.21.1-neoforge"
+val archiveName = "${sc.properties["mod.id"]}-neoforge" +
+    if (embeddiumClassesTarget) "-embeddium-classes" else ""
+base.archivesName = archiveName
+
+// Build the Embeddium adapter against its own renderer classpath. Only its
+// relocated classes, not its metadata or dependencies, go into the main JAR.
+val embeddiumClasses = if (dualRendererTarget || embeddiumClassesTarget) {
+    configurations.create("embeddiumClasses") {
+        isCanBeConsumed = embeddiumClassesTarget
+        isCanBeResolved = dualRendererTarget
+        isTransitive = false
+    }
+} else null
+
+if (dualRendererTarget) {
+    dependencies.add("embeddiumClasses", dependencies.project(mapOf(
+        "path" to ":1.21.1-neoforge-embeddium",
+        "configuration" to "embeddiumClasses",
+    )))
+}
 
 val modId = sc.properties["mod.id"]
 
@@ -175,12 +196,25 @@ tasks {
     }
 
     jar {
-        from(rootProject.file("LICENSE.md")) {
-            rename("LICENSE\\.md", "LICENSE.md_$modId")
+        if (embeddiumClassesTarget) {
+            include("com/sumirelabs/sodiumleafculling/embeddium/**")
+            exclude("**/SodiumLeafCulling.class")
+        } else {
+            from(rootProject.file("LICENSE.md")) {
+                rename("LICENSE\\.md", "LICENSE.md_$modId")
+            }
+        }
+        if (dualRendererTarget) {
+            val adapter = checkNotNull(embeddiumClasses)
+            dependsOn(adapter)
+            from({ adapter.map(::zipTree) }) {
+                include("com/sumirelabs/sodiumleafculling/embeddium/**")
+            }
         }
     }
 
     register<Copy>("buildAndCollect") {
+        enabled = !embeddiumClassesTarget
         group = "build"
         description = "Builds and collects the NeoForge jars for this target."
         inputs.property("version", sc.properties["mod.version"])
@@ -189,11 +223,15 @@ tasks {
     }
 }
 
+if (embeddiumClassesTarget) {
+    artifacts.add("embeddiumClasses", tasks.jar)
+}
+
 publishing {
-    publications {
+    if (!embeddiumClassesTarget) publications {
         create<MavenPublication>("mavenJava") {
             groupId = sc.properties["mod.group"]
-            artifactId = "${sc.properties["mod.id"]}-neoforge"
+            artifactId = archiveName
             version = project.version.toString()
             from(components["java"])
         }

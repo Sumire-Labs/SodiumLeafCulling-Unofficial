@@ -7,7 +7,9 @@ plugins {
 
 // Both NeoForge backends consume the same shared metadata and Mixin templates.
 tasks.named<ProcessResources>("processResources") {
-    val metadata = project.extensions.getByType<StonecutterBuildExtension>().properties
+    val stonecutter = project.extensions.getByType<StonecutterBuildExtension>()
+    val metadata = stonecutter.properties
+    val dualRenderer = stonecutter.current.project == "1.21.1-neoforge"
     val gameVersion = metadata["mod.mc_compat"].trim('[', ']')
     val numbers = gameVersion.split('.').map(String::toInt)
     val javaVersion = when {
@@ -28,6 +30,17 @@ tasks.named<ProcessResources>("processResources") {
         "minecraft" to metadata["mod.mc_compat"],
         "renderer" to metadata["mod.renderer_compat"],
         "renderer_id" to if ("deps.embeddium" in metadata) "embeddium" else "sodium",
+        "renderer_dependency_type" to if (dualRenderer) "optional" else "required",
+        "mixin_config" to if (dualRenderer) "mixins.sodiumleafculling.compat.sodium.json" else "mixins.${metadata["mod.namespace"]}.json",
+        "extra_mixin_config" to if (dualRenderer) "[[mixins]]\nconfig=\"mixins.sodiumleafculling.compat.embeddium.json\"" else "",
+        "extra_renderer_dependency" to if (dualRenderer) """
+            [[dependencies."${metadata["mod.id"]}"]]
+            modId="embeddium"
+            type="optional"
+            versionRange="[1.0.15+mc1.21.1,)"
+            ordering="AFTER"
+            side="CLIENT"
+        """.trimIndent() else "",
         "java" to "JAVA_$javaVersion",
         "java_version" to javaVersion,
         "renderer_context_mixin" to if ("deps.embeddium" !in metadata &&
@@ -35,7 +48,20 @@ tasks.named<ProcessResources>("processResources") {
         "icon_line" to if (javaVersion == 25) "iconFile=\"assets/${metadata["mod.namespace"]}/textures/mod_logo.png\"" else "",
     )
     inputs.properties(values)
-    filesMatching("mixins.sodiumleafculling.json") { expand(values) }
+    filesMatching("mixins.sodiumleafculling.json") {
+        if (dualRenderer) exclude() else expand(values)
+    }
+    if (dualRenderer) {
+        for ((renderer, mixinPackage) in mapOf(
+            "sodium" to "com.sumirelabs.sodiumleafculling.mixins",
+            "embeddium" to "com.sumirelabs.sodiumleafculling.embeddium.mixins",
+        )) {
+            from(rootProject.file("src/compat/renderer.mixins.json")) {
+                rename { "mixins.sodiumleafculling.compat.$renderer.json" }
+                expand("mixin_package" to mixinPackage)
+            }
+        }
+    }
     val legacyDescriptor = numbers[0] == 1 && numbers[1] == 20 && numbers[2] <= 4
     val descriptor = when {
         legacyDescriptor && numbers[2] <= 3 -> "META-INF/neoforge-early.mods.toml"

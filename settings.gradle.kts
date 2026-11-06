@@ -33,7 +33,8 @@ stonecutter {
             for (loader in loaders) {
                 val name = "$project-$loader"
                 knownTargets += name
-                if (selectedTargets == null || name in selectedTargets || name == defaultTarget) {
+                if (selectedTargets == null || name in selectedTargets || name == defaultTarget ||
+                    (name == "1.21.1-neoforge-embeddium" && "1.21.1-neoforge" in selectedTargets)) {
                     val script = buildscript ?: if (loader == "fabric" && version.startsWith("26."))
                         "build.fabric.unobfuscated.gradle.kts" else "build.$loader.gradle.kts"
                     version(name, version).buildscript.set(script)
@@ -75,6 +76,7 @@ stonecutter {
         // Every 1.21 patch release for which Sodium publishes the requested loader.
         target("1.21", "fabric", "neoforge")
         for (patch in 1..8) target("1.21.$patch", "fabric", "neoforge")
+        target("1.21.1", "neoforge-embeddium", buildscript = "build.neoforge.gradle.kts")
         target("1.21.9", "fabric") // Sodium has no NeoForge artifact for Minecraft 1.21.9.
         for (patch in 10..11) target("1.21.$patch", "fabric", "neoforge")
 

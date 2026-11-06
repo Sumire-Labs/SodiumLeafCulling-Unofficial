@@ -26,7 +26,8 @@ repositories {
     }
 
     strictMaven("https://api.modrinth.com/maven", "Modrinth", "maven.modrinth")
-    strictMaven("https://maven.bawnorton.com/releases", "Bawnorton", "com.github.bawnorton.mixinsquared")
+    // MixinSquared's documented mirror avoids HTTP 530 from the origin on CI.
+    strictMaven("https://maven.enjarai.dev/mirrors", "MixinSquaredMirror", "com.github.bawnorton.mixinsquared")
 }
 
 dependencies {

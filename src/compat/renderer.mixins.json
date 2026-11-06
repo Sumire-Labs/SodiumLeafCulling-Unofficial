@@ -1,0 +1,10 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "${mixin_package}",
+  "compatibilityLevel": "JAVA_21",
+  "plugin": "com.sumirelabs.sodiumleafculling.RendererMixinPlugin",
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

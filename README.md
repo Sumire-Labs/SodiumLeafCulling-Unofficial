@@ -49,6 +49,9 @@ To make SodiumLeafCulling available on a wider range of Minecraft versions and m
 | 26.1, 26.1.1, 26.1.2, 26.2, 26.3 | Yes | — | Yes |
 | 26.2-rc-1, 26.2-rc-2, 26.3-rc-1, 26.3-rc-2 | Yes | — | — |
 
+On Minecraft 1.21.1 with NeoForge, the same LeafCulling JAR supports either
+Sodium or Embeddium. Install only one renderer.
+
 ## Credits
 
 - [Txni](https://github.com/orgs/txnimc): Author of the original [SodiumLeafCulling](https://modrinth.com/mod/sodiumleafculling) and developer of its algorithm.

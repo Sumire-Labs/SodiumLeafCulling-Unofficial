@@ -268,6 +268,21 @@ jobs:
             exit 1
           fi
 
+          if [[ "$TARGET" == '1.21.1-neoforge' ]]; then
+            entries="$(unzip -Z1 "$jar")"
+            for entry in \
+              mixins.sodiumleafculling.compat.sodium.json \
+              mixins.sodiumleafculling.compat.embeddium.json \
+              com/sumirelabs/sodiumleafculling/RendererMixinPlugin.class \
+              com/sumirelabs/sodiumleafculling/mixins/BlockRendererMixin.class \
+              com/sumirelabs/sodiumleafculling/embeddium/mixins/BlockRendererMixin.class; do
+              if ! grep -Fxq "$entry" <<< "$entries"; then
+                echo "$jar_name is missing the renderer compatibility entry $entry" >&2
+                exit 1
+              fi
+            done
+          fi
+
           mkdir -p dist
           cp "$jar" dist/
           sha256sum "dist/$jar_name"

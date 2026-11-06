@@ -15,7 +15,8 @@ displayURL="https://github.com/${github}"
 description='''${description}'''
 
 [[mixins]]
-config="mixins.${namespace}.json"
+config="${mixin_config}"
+${extra_mixin_config}
 
 [features.${id}]
 javaVersion="[${java_version},)"
@@ -29,7 +30,8 @@ side="CLIENT"
 
 [[dependencies."${id}"]]
 modId="${renderer_id}"
-type="required"
+type="${renderer_dependency_type}"
 versionRange="${renderer}"
 ordering="AFTER"
 side="CLIENT"
+${extra_renderer_dependency}

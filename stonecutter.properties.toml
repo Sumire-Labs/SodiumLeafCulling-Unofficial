@@ -4,7 +4,7 @@ mod.fabric_id = "seleafculling"
 mod.namespace = "sodiumleafculling"
 mod.name = "Sodium/Embeddium LeafCulling"
 mod.group = "com.sumirelabs"
-mod.version = "4.0.2"
+mod.version = "4.1.0"
 mod.author = "SumireLabs(Fork Maintainer), toni(original mod),"
 mod.contributor = "s12kuma01"
 mod.license = "MIT"
@@ -323,6 +323,13 @@ deps.forgified_api_base = "0.4.42+d1308ded19"
 deps.forgified_renderer_api = "3.4.1+9125b6dc19"
 deps.forgified_rendering_data_attachment = "0.3.48+73761d2e19"
 deps.forgified_block_view_api = "1.0.10+9afaaf8c19"
+
+[neoforge_embeddium."1.21.1"]
+mod.mc_compat = "[1.21.1]"
+mod.renderer_compat = "[1.0.15+mc1.21.1,)"
+deps.neo_loader = "21.1.253"
+deps.embeddium = "1.0.15+mc1.21.1"
+deps.embeddium_file = "J7b96IEd"
 
 ["1.21.2"]
 mod.mc_releases = ["1.21.2"]

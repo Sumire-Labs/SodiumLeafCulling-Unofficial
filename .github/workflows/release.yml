@@ -70,6 +70,11 @@ jobs:
       release_url: ${{ steps.release.outputs.release_url }}
 
     steps:
+      - name: Check out release changelog
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
       - name: Confirm the built version
         env:
           EXPECTED_VERSION: ${{ needs.validate.outputs.mod_version }}
@@ -132,9 +137,19 @@ jobs:
           else
             release_flags=(
               --verify-tag
-              --generate-notes
               --title "Sodium/Embeddium LeafCulling $MOD_VERSION"
             )
+
+            awk -v heading="# [$MOD_VERSION]" '
+              $0 == heading { found = 1; next }
+              found && /^# / { exit }
+              found { print }
+            ' CHANGELOG.md > release-notes.md
+            if grep -q '[^[:space:]]' release-notes.md; then
+              release_flags+=(--notes-file release-notes.md)
+            else
+              release_flags+=(--generate-notes)
+            fi
 
             version_without_metadata="${MOD_VERSION%%+*}"
             if [[ "$version_without_metadata" == *-* ]]; then
