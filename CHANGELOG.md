@@ -1,3 +1,13 @@
+# [Unreleased]
+
+- Reuse Solid leaf enclosure checks within each terrain mesh build.
+
+- Move settings to `config/seleafculling.cfg` and import existing renderer
+  settings once. Add a dedicated Leaf Culling page to Sodium and Embeddium.
+- Add an optional Solid mode optimization that skips solid block faces hidden
+  by leaves already classified as enclosed, without scanning their neighbors
+  again. It is disabled by default.
+
 # [4.1.0]
 
 - Assign IDs to the LeafCulling option group and settings in Embeddium so its

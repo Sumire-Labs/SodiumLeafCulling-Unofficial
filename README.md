@@ -10,7 +10,11 @@ An unofficial fork of [Sodium Leaf Culling](https://github.com/txnimc/SodiumLeaf
   - **Solid:** Renders leaves as solid when they are completely enclosed on all six sides. The best visuals, with decent performance.
   - **Solid Aggressive:** Renders leaves as solid when they are completely enclosed horizontally. Better performance than Solid, at the cost of visual quality.
 - **Distance-based culling:** Keeps the selected mode for nearby leaves and renders all distant leaves as solid.
-- **Integrated settings:** Configuration is available through the Sodium/Embeddium settings screen on every supported version.
+- **Integrated settings:** Open the **Leaf Culling** page in Sodium or Embeddium.
+  Settings are stored in `config/seleafculling.cfg`; existing settings are imported once.
+- **Cull block faces behind leaves:** An optional Solid mode optimization removes
+  faces of opaque blocks covered by leaves already classified as enclosed in
+  the same terrain section. It is off by default.
 - **Multiple loaders and Minecraft versions:** Synchronized releases keep every supported version on the same mod release, so new features remain available on older Minecraft versions too.
 
 ## Requirements

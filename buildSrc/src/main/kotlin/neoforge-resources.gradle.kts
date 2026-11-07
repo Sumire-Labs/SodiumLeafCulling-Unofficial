@@ -10,6 +10,8 @@ tasks.named<ProcessResources>("processResources") {
     val stonecutter = project.extensions.getByType<StonecutterBuildExtension>()
     val metadata = stonecutter.properties
     val dualRenderer = stonecutter.current.project == "1.21.1-neoforge"
+    val rootLogo = dualRenderer || stonecutter.current.project == "1.21-neoforge"
+    val logoPath = "assets/${metadata["mod.namespace"]}/textures/mod_logo.png"
     val gameVersion = metadata["mod.mc_compat"].trim('[', ']')
     val numbers = gameVersion.split('.').map(String::toInt)
     val javaVersion = when {
@@ -20,6 +22,7 @@ tasks.named<ProcessResources>("processResources") {
     val values = mapOf(
         "id" to metadata["mod.id"],
         "namespace" to metadata["mod.namespace"],
+        "logo_path" to if (rootLogo) "logo.png" else logoPath,
         "name" to metadata["mod.name"],
         "version" to metadata["mod.version"],
         "description" to metadata["mod.description"],
@@ -48,6 +51,12 @@ tasks.named<ProcessResources>("processResources") {
         "icon_line" to if (javaVersion == 25) "iconFile=\"assets/${metadata["mod.namespace"]}/textures/mod_logo.png\"" else "",
     )
     inputs.properties(values)
+    if (rootLogo) {
+        // Embeddium's custom tab header requests the logo as one root path segment.
+        from(rootProject.file("src/main/resources/$logoPath")) {
+            rename { "logo.png" }
+        }
+    }
     filesMatching("mixins.sodiumleafculling.json") {
         if (dualRenderer) exclude() else expand(values)
     }

@@ -10,19 +10,21 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.AirBlock;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
-//? if embeddium_modern {
-/*import org.embeddedt.embeddium.impl.Embeddium;
-*///?} elif sodium_caffeine {
-import net.caffeinemc.mods.sodium.client.SodiumClientMod;
-//?} else {
-/*import me.jellysquid.mods.sodium.client.SodiumClientMod;
-*///?}
 
 public final class LeafCulling {
     private static final Direction[] VALUES = Direction.values();
     public static final DistanceLeafCulling DISTANCE = new DistanceLeafCulling();
+    private static final ThreadLocal<LeafOcclusionCache> OCCLUSION = ThreadLocal.withInitial(LeafOcclusionCache::new);
 
     private LeafCulling() { }
+
+    public static void beginOcclusionBuild() {
+        OCCLUSION.get().begin();
+    }
+
+    public static void endOcclusionBuild() {
+        OCCLUSION.get().end();
+    }
 
     public static Component translatable(String key) {
         //? if legacy_component {
@@ -36,14 +38,27 @@ public final class LeafCulling {
         return settings().sodiumleafculling$getQuality();
     }
 
-    public static PerformanceSettingsAccessor settings() {
-        //? if embeddium_modern {
-        /*return (PerformanceSettingsAccessor) Embeddium.options().performance;
-        *///?} elif fabric_legacy_options {
-        /*return (PerformanceSettingsAccessor) SodiumClientMod.options().advanced;
-        *///?} else {
-        return (PerformanceSettingsAccessor) SodiumClientMod.options().performance;
-        //?}
+    public static LeafCullingConfig settings() {
+        return LeafCullingConfig.get();
+    }
+
+    public static boolean shouldCullAdjacentBlockFace(BlockGetter view, BlockPos pos, BlockState state,
+                                                       int leafX, int leafY, int leafZ) {
+        // This optional optimization only uses work the leaf renderer already did.
+        // A missing entry leaves the original face intact, rather than scanning again.
+        return sectionInterior(leafX) && sectionInterior(leafY) && sectionInterior(leafZ) &&
+                OCCLUSION.get().knownSolidLeaf(view, leafX, leafY, leafZ) &&
+                state.isSolidRender(/*? if <1.21.2 {*//*view, pos*//*?}*/);
+    }
+
+    static boolean sectionInterior(int coordinate) {
+        int local = coordinate & 15;
+        return local != 0 && local != 15;
+    }
+
+    public static boolean canCullAdjacentBlocks() {
+        LeafCullingConfig config = settings();
+        return config.cullAdjacentBlocks() && config.sodiumleafculling$getQuality() == LeafCullingQuality.SOLID;
     }
 
     public static boolean isDistant(BlockPos pos) {
@@ -63,9 +78,16 @@ public final class LeafCulling {
         return view.getBlockState(pos.relative(facing)).getBlock() instanceof AirBlock;
     }
 
+    /** The caller must have verified that pos contains a leaf block in this view. */
     public static boolean surroundedByLeaves(BlockGetter view, BlockPos pos, LeafCullingQuality quality) {
         boolean isAggressiveMode = quality == LeafCullingQuality.SOLID_AGGRESSIVE;
-        BlockPos.MutableBlockPos dirPos = pos.mutable();
+        LeafOcclusionCache cache = OCCLUSION.get();
+        return cache.active ? cache.surrounded(view, pos, isAggressiveMode) :
+                checkSurrounded(view, pos, isAggressiveMode, pos.mutable());
+    }
+
+    static boolean checkSurrounded(BlockGetter view, BlockPos pos, boolean isAggressiveMode,
+                                   BlockPos.MutableBlockPos dirPos) {
         for (Direction dir : VALUES) {
             if (isAggressiveMode && (dir == Direction.DOWN || dir == Direction.UP))
                 continue;

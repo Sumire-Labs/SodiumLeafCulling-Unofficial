@@ -20,11 +20,13 @@ import net.caffeinemc.mods.sodium.client.render.chunk.compile.tasks.ChunkBuilder
 public class ChunkMeshingTaskMixin {
     @Inject(method = /*? if fabric_legacy_renderer {*//*"performBuild"*//*?} else {*/"execute"/*?}*/, at = @At("HEAD"))
     private void sodiumleafculling$beginBuild(CallbackInfoReturnable<?> cir) {
+        LeafCulling.beginOcclusionBuild();
         LeafCulling.DISTANCE.beginBuild();
     }
 
     @Inject(method = /*? if fabric_legacy_renderer {*//*"performBuild"*//*?} else {*/"execute"/*?}*/, at = @At("RETURN"))
     private void sodiumleafculling$endBuild(CallbackInfoReturnable<?> cir) {
+        LeafCulling.endOcclusionBuild();
         LeafCulling.DISTANCE.endBuild(cir.getReturnValue() != null);
     }
 }

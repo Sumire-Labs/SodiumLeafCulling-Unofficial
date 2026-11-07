@@ -27,7 +27,7 @@ public final class RendererMixinPlugin implements IMixinConfigPlugin {
             return List.of();
         }
         return List.of("BlockOcclusionCacheMixin", "BlockRendererMixin", "ChunkMeshingTaskMixin",
-                "WorldRendererMixin", "PerformanceSettingsMixin", "SodiumGameOptionPagesMixin");
+                "WorldRendererMixin", "RendererOptionsLoadMixin", "SodiumGameOptionPagesMixin");
     }
 
     @Override public String getRefMapperConfig() { return null; }

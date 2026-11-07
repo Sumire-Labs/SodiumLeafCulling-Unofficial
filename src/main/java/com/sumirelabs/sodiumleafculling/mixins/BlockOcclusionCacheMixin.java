@@ -42,6 +42,13 @@ public class BlockOcclusionCacheMixin {
 
     @Inject(method = "shouldDrawSide", at = @At("HEAD"), cancellable = true)
     private void inject$shouldDrawSide(Direction facing, CallbackInfoReturnable<Boolean> cir) {
+        if (state != null && !(state.getBlock() instanceof LeavesBlock) && LeafCulling.canCullAdjacentBlocks()) {
+            if (LeafCulling.shouldCullAdjacentBlockFace(level, pos, state,
+                    pos.getX() + facing.getStepX(), pos.getY() + facing.getStepY(), pos.getZ() + facing.getStepZ())) {
+                cir.setReturnValue(false);
+            }
+            return;
+        }
         if (state != null && state.getBlock() instanceof LeavesBlock) {
             if (LeafCulling.isDistant(pos)) {
                 BlockPos otherPos = pos.relative(facing);
@@ -78,6 +85,13 @@ public class BlockOcclusionCacheMixin {
 
     @Inject(method = "shouldDrawSide", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;skipRendering(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/Direction;)Z"), locals = LocalCapture.CAPTURE_FAILHARD, cancellable = true)
     private void inject$shouldDrawSide(BlockState selfState, BlockGetter view, BlockPos selfPos, Direction facing, CallbackInfoReturnable<Boolean> cir, BlockPos.MutableBlockPos otherPos, BlockState otherState) {
+         if (!(selfState.getBlock() instanceof LeavesBlock) && otherState.getBlock() instanceof LeavesBlock &&
+                 LeafCulling.canCullAdjacentBlocks() &&
+                 LeafCulling.shouldCullAdjacentBlockFace(view, selfPos, selfState,
+                         otherPos.getX(), otherPos.getY(), otherPos.getZ())) {
+             cir.setReturnValue(false);
+             return;
+         }
          if (selfState.getBlock() instanceof LeavesBlock) {
              if (LeafCulling.isDistant(selfPos)) {
                  if (LeafCulling.shouldCullDistantSide(view, selfPos, otherPos, otherState)) {

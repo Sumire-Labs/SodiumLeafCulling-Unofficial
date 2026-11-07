@@ -1,4 +1,7 @@
 ﻿{
+  "sodiumleafculling.options.page": "Leaf Culling",
+  "sodiumleafculling.options.cull_adjacent_blocks.name": "Cull Block Faces Behind Leaves",
+  "sodiumleafculling.options.cull_adjacent_blocks.tooltip": "In Solid mode, skip some faces hidden by leaves already classified as opaque. This can reduce geometry in dense foliage. Disabled by default.",
   "sodiumleafculling.options.leaf_culling.name": "Leaf Culling Mode",
   "sodiumleafculling.options.leaf_culling.tooltip": "If enabled, leaves behind other leaves will be culled to improve performance. Hollow will aggressively cull faces, and Solid mode will enable fast solid block rendering of leaves behind other leaves.",
   "sodiumleafculling.options.distance_leaf_culling.name": "Distance-based Leaf Culling",
