@@ -1,5 +1,8 @@
 package com.sumirelabs.sodiumleafculling;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 //? if fabric {
@@ -18,12 +21,12 @@ import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public final class LeafCullingConfig implements PerformanceSettingsAccessor {
     private static final Logger LOGGER = Logger.getLogger("seleafculling");
+    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private final Path file;
     private volatile LeafCullingQuality quality = LeafCullingQuality.SOLID;
     private volatile boolean distanceCulling;
@@ -46,22 +49,15 @@ public final class LeafCullingConfig implements PerformanceSettingsAccessor {
         *///?}
     }
 
+    @SuppressWarnings("deprecation") // Older Minecraft versions include Gson before parseReader.
     LeafCullingConfig(Path directory) {
-        this.file = directory.resolve("seleafculling.cfg");
+        this.file = directory.resolve("seleafculling.json");
         try {
             if (Files.exists(this.file)) {
-                Properties properties = new Properties();
                 try (Reader reader = Files.newBufferedReader(this.file, StandardCharsets.UTF_8)) {
-                    properties.load(reader);
+                    loadValues(new JsonParser().parse(reader).getAsJsonObject());
                 }
-                loadValues(properties);
             } else {
-                //? if embeddium || embeddium_modern {
-                /*Path embeddium = directory.resolve("embeddium-options.json");
-                migrate(Files.isRegularFile(embeddium) ? embeddium : directory.resolve("sodium-options.json"));
-                *///?} else {
-                migrate(directory.resolve("sodium-options.json"));
-                //?}
                 save();
             }
         } catch (IOException | RuntimeException ex) {
@@ -69,49 +65,36 @@ public final class LeafCullingConfig implements PerformanceSettingsAccessor {
         }
     }
 
-    @SuppressWarnings("deprecation") // Older Minecraft versions include Gson before parseReader.
-    private void migrate(Path legacy) throws IOException {
-        if (!Files.isRegularFile(legacy)) return;
-        try (Reader reader = Files.newBufferedReader(legacy, StandardCharsets.UTF_8)) {
-            JsonObject root = new JsonParser().parse(reader).getAsJsonObject();
-            Properties values = new Properties();
-            // Early Sodium versions kept the leaf settings under advanced.
-            for (String category : new String[]{"advanced", "performance"}) {
-                if (!root.has(category) || !root.get(category).isJsonObject()) continue;
-                JsonObject section = root.getAsJsonObject(category);
-                for (String key : new String[]{"leaf_culling_quality", "distance_leaf_culling", "leaf_culling_distance"}) {
-                    if (section.has(key) && section.get(key).isJsonPrimitive())
-                        values.setProperty(key, section.get(key).getAsString());
-                }
-            }
-            loadValues(values);
-        }
+    private static String readValue(JsonObject values, String key, String fallback) {
+        JsonElement value = values.get(key);
+        return value != null && value.isJsonPrimitive() ? value.getAsString() : fallback;
     }
 
-    private void loadValues(Properties properties) {
+    private void loadValues(JsonObject values) {
         try {
-            quality = LeafCullingQuality.valueOf(properties.getProperty("leaf_culling_quality", "SOLID"));
+            quality = LeafCullingQuality.valueOf(readValue(values, "leaf_culling_quality", "SOLID"));
         } catch (IllegalArgumentException ignored) { }
-        distanceCulling = Boolean.parseBoolean(properties.getProperty("distance_leaf_culling"));
+        distanceCulling = Boolean.parseBoolean(readValue(values, "distance_leaf_culling", "false"));
         try {
             distance = DistanceLeafCulling.clampDistance(Integer.parseInt(
-                    properties.getProperty("leaf_culling_distance", Integer.toString(distance))));
+                    readValue(values, "leaf_culling_distance", Integer.toString(distance))));
         } catch (NumberFormatException ignored) { }
-        cullAdjacentBlocks = Boolean.parseBoolean(properties.getProperty("cull_adjacent_blocks"));
+        cullAdjacentBlocks = Boolean.parseBoolean(readValue(values, "cull_adjacent_blocks", "false"));
     }
 
     public synchronized void save() {
-        Properties values = new Properties();
-        values.setProperty("leaf_culling_quality", quality.name());
-        values.setProperty("distance_leaf_culling", Boolean.toString(distanceCulling));
-        values.setProperty("leaf_culling_distance", Integer.toString(distance));
-        values.setProperty("cull_adjacent_blocks", Boolean.toString(cullAdjacentBlocks));
+        JsonObject values = new JsonObject();
+        values.addProperty("leaf_culling_quality", quality.name());
+        values.addProperty("distance_leaf_culling", distanceCulling);
+        values.addProperty("leaf_culling_distance", distance);
+        values.addProperty("cull_adjacent_blocks", cullAdjacentBlocks);
         Path temporary = null;
         try {
             Files.createDirectories(file.getParent());
             temporary = Files.createTempFile(file.getParent(), "seleafculling-", ".tmp");
             try (Writer writer = Files.newBufferedWriter(temporary, StandardCharsets.UTF_8)) {
-                values.store(writer, "Sodium/Embeddium Leaf Culling");
+                GSON.toJson(values, writer);
+                writer.write('\n');
             }
             try {
                 Files.move(temporary, file, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);

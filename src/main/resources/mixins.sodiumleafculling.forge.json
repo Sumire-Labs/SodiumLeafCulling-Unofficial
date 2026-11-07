@@ -10,7 +10,6 @@
     "BlockRendererMixin",
     "ChunkMeshingTaskMixin",
     "WorldRendererMixin",
-    "RendererOptionsLoadMixin",
     "SodiumGameOptionPagesMixin"
   ],
   "injectors": {

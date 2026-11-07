@@ -114,26 +114,35 @@ public final class ConfigRegistrationSmoke implements PreLaunchEntrypoint {
         ctor.setAccessible(true);
         Path dir = Files.createTempDirectory("seleafculling-config-smoke-");
         Path source = dir.resolve("sodium-options.json");
-        Path independent = dir.resolve("seleafculling.cfg");
+        Path embeddium = dir.resolve("embeddium-options.json");
+        Path oldConfig = dir.resolve("seleafculling.cfg");
+        Path independent = dir.resolve("seleafculling.json");
         byte[] original = ("{\"performance\":{\"leaf_culling_quality\":\"HOLLOW\"," +
                 "\"distance_leaf_culling\":true,\"leaf_culling_distance\":91}}").getBytes(StandardCharsets.UTF_8);
         try {
             Files.write(source, original);
-            Object migrated = ctor.newInstance(dir);
-            check(call(migrated, "sodiumleafculling$getQuality").toString().equals("HOLLOW"), "old mode migrated");
-            check(call(migrated, "sodiumleafculling$isDistanceCullingEnabled").equals(true), "old toggle migrated");
-            check(call(migrated, "sodiumleafculling$getDistance").equals(91), "old distance migrated");
-            check(call(migrated, "cullAdjacentBlocks").equals(false), "new optimization defaults off");
-            call(migrated, "sodiumleafculling$setDistance", 42);
-            call(migrated, "setCullAdjacentBlocks", true);
-            call(migrated, "save");
+            Files.write(embeddium, original);
+            byte[] oldValues = "leaf_culling_quality=HOLLOW\nleaf_culling_distance=91\n"
+                    .getBytes(StandardCharsets.UTF_8);
+            Files.write(oldConfig, oldValues);
+            Object fresh = ctor.newInstance(dir);
+            defaults(fresh);
+            check(call(fresh, "cullAdjacentBlocks").equals(false), "new optimization defaults off");
+            check(Files.isRegularFile(independent), "independent JSON created");
+            call(fresh, "sodiumleafculling$setDistance", 42);
+            call(fresh, "setCullAdjacentBlocks", true);
+            call(fresh, "save");
             Object loaded = ctor.newInstance(dir);
             check(call(loaded, "sodiumleafculling$getDistance").equals(42), "own file takes precedence");
             check(call(loaded, "cullAdjacentBlocks").equals(true), "new optimization persists");
             check(Arrays.equals(Files.readAllBytes(source), original), "renderer settings file preserved");
+            check(Arrays.equals(Files.readAllBytes(embeddium), original), "Embeddium settings file preserved");
+            check(Arrays.equals(Files.readAllBytes(oldConfig), oldValues), "old cfg preserved");
         } finally {
             Files.deleteIfExists(independent);
             Files.deleteIfExists(source);
+            Files.deleteIfExists(embeddium);
+            Files.deleteIfExists(oldConfig);
             Files.deleteIfExists(dir);
         }
     }

@@ -11,7 +11,7 @@ An unofficial fork of [Sodium Leaf Culling](https://github.com/txnimc/SodiumLeaf
   - **Solid Aggressive:** Renders leaves as solid when they are completely enclosed horizontally. Better performance than Solid, at the cost of visual quality.
 - **Distance-based culling:** Keeps the selected mode for nearby leaves and renders all distant leaves as solid.
 - **Integrated settings:** Open the **Leaf Culling** page in Sodium or Embeddium.
-  Settings are stored in `config/seleafculling.cfg`; existing settings are imported once.
+  Settings are stored separately in `config/seleafculling.json`.
 - **Cull block faces behind leaves:** An optional Solid mode optimization removes
   faces of opaque blocks covered by leaves already classified as enclosed in
   the same terrain section. It is off by default.
