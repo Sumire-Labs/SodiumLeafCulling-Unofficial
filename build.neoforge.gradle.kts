@@ -227,6 +227,28 @@ if (embeddiumClassesTarget) {
     artifacts.add("embeddiumClasses", tasks.jar)
 }
 
+if (dualRendererTarget) {
+    val compileRendererMixinSmoke = tasks.register<JavaCompile>("compileRendererMixinSmoke") {
+        dependsOn(tasks.classes)
+        source(rootProject.file("tests/neoforge"))
+        classpath = sourceSets.main.get().compileClasspath + sourceSets.main.get().output
+        javaCompiler.set(tasks.compileJava.flatMap { it.javaCompiler })
+        options.release.set(21)
+        destinationDirectory.set(layout.buildDirectory.dir("renderer-mixin-smoke/classes"))
+    }
+    val checkRendererMixins = tasks.register<JavaExec>("checkRendererMixins") {
+        group = "verification"
+        dependsOn(compileRendererMixinSmoke)
+        classpath = sourceSets.main.get().runtimeClasspath + sourceSets.main.get().compileClasspath +
+            files(compileRendererMixinSmoke.flatMap { it.destinationDirectory })
+        mainClass.set("com.sumirelabs.sodiumleafculling.RendererMixinSelectionSmoke")
+        javaLauncher.set(javaToolchains.launcherFor {
+            languageVersion.set(JavaLanguageVersion.of(21))
+        })
+    }
+    tasks.check { dependsOn(checkRendererMixins) }
+}
+
 publishing {
     if (!embeddiumClassesTarget) publications {
         create<MavenPublication>("mavenJava") {

@@ -1,7 +1,8 @@
 package com.sumirelabs.sodiumleafculling;
 
 //? if dual_renderer {
-/*import java.util.List;
+/*import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.fml.loading.LoadingModList;
@@ -26,8 +27,14 @@ public final class RendererMixinPlugin implements IMixinConfigPlugin {
                 (!hasEmbeddium && mods.getModFileById("sodium") == null)) {
             return List.of();
         }
-        return List.of("BlockOcclusionCacheMixin", "BlockRendererMixin", "ChunkMeshingTaskMixin",
-                "WorldRendererMixin", "SodiumGameOptionPagesMixin");
+        return rendererMixins(hasEmbeddium);
+    }
+
+    static List<String> rendererMixins(boolean embeddium) {
+        List<String> mixins = new ArrayList<>(List.of("BlockOcclusionCacheMixin", "BlockRendererMixin",
+                "ChunkMeshingTaskMixin", "WorldRendererMixin", "SodiumGameOptionPagesMixin"));
+        if (!embeddium) mixins.add("AbstractBlockRenderContextAccessor");
+        return mixins;
     }
 
     @Override public String getRefMapperConfig() { return null; }

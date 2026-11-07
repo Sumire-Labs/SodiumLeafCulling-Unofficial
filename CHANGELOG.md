@@ -1,7 +1,10 @@
-# [Unreleased]
+# [4.2.0]
 
+- Register Sodium's block render context accessor in the Minecraft 1.21.1
+  NeoForge compatibility configuration, fixing crashes when loading a world
+  with Sodium 0.8.13.
+- Use the mod's registered version in Sodium's dedicated settings category.
 - Reuse Solid leaf enclosure checks within each terrain mesh build.
-
 - Store settings in `config/seleafculling.json` and add a dedicated Leaf Culling
   page to Sodium and Embeddium.
 - Add an optional Solid mode optimization that skips solid block faces hidden

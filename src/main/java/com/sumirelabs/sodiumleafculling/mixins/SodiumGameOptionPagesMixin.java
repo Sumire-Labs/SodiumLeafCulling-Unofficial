@@ -54,7 +54,7 @@ public class SodiumGameOptionPagesMixin {
 
     @Inject(method = "registerConfigLate", at = @At("RETURN"))
     private void inject$leafcullingoption(ConfigBuilder builder, CallbackInfo ci) {
-        builder.registerModOptions("seleafculling", "Leaf Culling", "").addPage(sodiumleafculling$createPage(builder));
+        builder.registerModOptions("seleafculling").setName("Leaf Culling").addPage(sodiumleafculling$createPage(builder));
     }
 
     @Unique

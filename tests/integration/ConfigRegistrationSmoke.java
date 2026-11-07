@@ -33,13 +33,18 @@ public final class ConfigRegistrationSmoke implements PreLaunchEntrypoint {
         String root = "net.caffeinemc.mods.sodium.";
         Class<?> targetClass = type(root + "client.gui.SodiumConfigBuilder");
         Object target = allocate(targetClass);
+        Object metadata = type(root + "client.config.ConfigManager$ModMetadata")
+                .getConstructor(String.class, String.class).newInstance("Leaf Culling", "test");
         Object builder = type(root + "client.config.builder.ConfigBuilderImpl")
-                .getConstructor(Function.class, String.class).newInstance((Function<String, Object>) id -> null, "smoke");
+                .getConstructor(Function.class, String.class).newInstance((Function<String, Object>) id -> metadata, "smoke");
         injected(targetClass).invoke(target, builder, callback());
         List<?> registered = (List<?>) field(builder.getClass(), "pendingModConfigBuilders").get(builder);
         check(registered.size() == 1, "Leaf Culling category registered separately");
         check(field(registered.get(0).getClass(), "name").get(registered.get(0)).equals("Leaf Culling"),
                 "category is named Leaf Culling");
+        Method buildModOptions = registered.get(0).getClass().getDeclaredMethod("build");
+        buildModOptions.setAccessible(true);
+        check(buildModOptions.invoke(registered.get(0)) != null, "category metadata passes Sodium validation");
         Object page = declaredPage(targetClass).invoke(null, builder);
         List<?> groups = (List<?>) field(page.getClass(), "groups").get(page);
         List<?> optionsList = (List<?>) call(groups.get(0), "options");
