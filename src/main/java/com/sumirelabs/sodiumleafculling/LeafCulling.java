@@ -3,6 +3,9 @@ package com.sumirelabs.sodiumleafculling;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.world.level.chunk.LevelChunkSection;
 //? if legacy_component {
 /*import net.minecraft.network.chat.TranslatableComponent;
 *///?}
@@ -63,6 +66,16 @@ public final class LeafCulling {
 
     public static boolean isDistant(BlockPos pos) {
         return DISTANCE.isDistant(pos.getX(), pos.getY(), pos.getZ());
+    }
+
+    public static boolean isSectionEmpty(int sectionX, int sectionY, int sectionZ) {
+        ClientLevel world = Minecraft.getInstance().level;
+        if (world == null || !world.hasChunk(sectionX, sectionZ)) return true;
+        LevelChunkSection[] sections = world.getChunk(sectionX, sectionZ).getSections();
+        int index = /*? if >=1.17 {*/world.getSectionIndexFromSectionY(sectionY)/*?} else {*//*sectionY*//*?}*/;
+        if (index < 0 || index >= sections.length) return true;
+        LevelChunkSection section = sections[index];
+        return section == null || section./*? if >=1.17 {*/hasOnlyAir()/*?} else {*//*isEmpty()*//*?}*/;
     }
 
     public static boolean shouldCullDistantSide(BlockGetter view, BlockPos pos, BlockPos otherPos, BlockState otherState) {

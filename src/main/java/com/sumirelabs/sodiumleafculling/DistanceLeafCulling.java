@@ -51,6 +51,21 @@ public final class DistanceLeafCulling {
         }
     }
 
+    /** Record the owning section even when its final leaf has been removed. */
+    public void beginBuild(int sectionX, int sectionY, int sectionZ) {
+        beginBuild();
+        Build current = build.get();
+        if (current != null) current.section(sectionX, sectionY, sectionZ);
+    }
+
+    /** Render-thread notification for sections the renderer can clear without a mesh job. */
+    public void forgetSection(int sectionX, int sectionY, int sectionZ) {
+        long key = key(sectionX, sectionY, sectionZ);
+        if (sections.containsKey(key)) {
+            sections.put(key, new Section(sectionX, sectionY, sectionZ, snapshot, buildSequence.incrementAndGet()));
+        }
+    }
+
     public void endBuild(boolean success) {
         Build current = build.get();
         build.remove();
@@ -101,7 +116,10 @@ public final class DistanceLeafCulling {
                         result.requestSequence = previousResult.requestSequence;
                     }
                 }
-                sections.put(key, result);
+                // Keep a sequence tombstone for a previously tracked section so a
+                // late older leaf mesh cannot restore its stale classification.
+                // Initial non-leaf meshes do not need tracking.
+                if (previousResult != null || !result.isEmpty()) sections.put(key, result);
             }
         }
         if (!enabled) {
@@ -232,7 +250,7 @@ public final class DistanceLeafCulling {
             lastDistant = snapshot.isDistant(x + 0.5, y + 0.5, z + 0.5);
             Section section = section(x >> 4, y >> 4, z >> 4);
             int index = (y & 15) << 8 | (z & 15) << 4 | x & 15;
-            (lastDistant ? section.distantLeaves : section.nearLeaves).set(index);
+            section.record(index, lastDistant);
             return lastDistant;
         }
 
@@ -258,8 +276,8 @@ public final class DistanceLeafCulling {
     private static final class Section {
         final int x, y, z;
         final long sequence;
-        final BitSet nearLeaves = new BitSet();
-        final BitSet distantLeaves = new BitSet();
+        BitSet nearLeaves;
+        BitSet distantLeaves;
         Snapshot built, checked;
         boolean dirty, requested, restoresNear;
         long requestedAt;
@@ -271,6 +289,20 @@ public final class DistanceLeafCulling {
             this.z = z;
             this.built = snapshot;
             this.sequence = sequence;
+        }
+
+        void record(int index, boolean distant) {
+            if (distant) {
+                if (distantLeaves == null) distantLeaves = new BitSet();
+                distantLeaves.set(index);
+            } else {
+                if (nearLeaves == null) nearLeaves = new BitSet();
+                nearLeaves.set(index);
+            }
+        }
+
+        boolean isEmpty() {
+            return nearLeaves == null && distantLeaves == null;
         }
 
         boolean changesAt(Snapshot next) {
@@ -288,6 +320,7 @@ public final class DistanceLeafCulling {
         }
 
         private boolean changes(BitSet leaves, boolean wasDistant, Snapshot next) {
+            if (leaves == null) return false;
             for (int index = leaves.nextSetBit(0); index >= 0; index = leaves.nextSetBit(index + 1)) {
                 double bx = x * 16.0 + (index & 15) + 0.5;
                 double by = y * 16.0 + (index >> 8) + 0.5;

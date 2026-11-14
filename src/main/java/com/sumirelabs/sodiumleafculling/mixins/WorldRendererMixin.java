@@ -32,7 +32,13 @@ public abstract class WorldRendererMixin {
         PerformanceSettingsAccessor settings = LeafCulling.settings();
         LeafCulling.DISTANCE.update(settings.sodiumleafculling$isDistanceCullingEnabled(),
                 settings.sodiumleafculling$getDistance(), pos.x, pos.y, pos.z, renderDistance,
-                System.nanoTime(), (x, y, z) -> scheduleRebuildForChunk(x, y, z, false));
+                System.nanoTime(), (x, y, z) -> {
+                    if (LeafCulling.isSectionEmpty(x, y, z)) {
+                        LeafCulling.DISTANCE.forgetSection(x, y, z);
+                    } else {
+                        scheduleRebuildForChunk(x, y, z, false);
+                    }
+                });
     }
 
     @Inject(method = {"setLevel", "setWorld", "reload"}, at = @At("HEAD"))

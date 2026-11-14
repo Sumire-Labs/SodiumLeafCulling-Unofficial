@@ -1,5 +1,8 @@
 # [Unreleased]
 
+- Stop repeated distance-culling rebuilds after a terrain section loses its
+  last leaf, while preserving cancellation and stale-result handling.
+
 - Match the Minecraft 1.21.1 Sodium development runtime to the NeoForge version
   required by its Forgified Fabric API dependencies.
 - Report a clear client loading error when neither supported renderer is

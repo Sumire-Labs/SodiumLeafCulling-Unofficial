@@ -21,6 +21,10 @@ public final class DistanceLeafCullingTest {
         deferredSectionsDoNotBlockNearbyLeaves();
         nearbyLeavesTakePriorityAfterFastMovement();
         movementDuringRebuildConverges();
+        removedLeavesStopRebuilds();
+        cancelledEmptyBuildKeepsTracking();
+        emptyResultRejectsOlderLeafBuilds();
+        fullyEmptySectionsDoNotNeedMeshJobs();
         negativeSectionCoordinates();
         classificationIsConservative();
         check(DistanceLeafCulling.clampDistance(-10) == 1, "minimum distance");
@@ -230,6 +234,62 @@ public final class DistanceLeafCullingTest {
         check(rebuilds.size() == 1 && rebuilds.get(0).equals("-5,1,1"), "leaf masks preserve negative coordinates and axes");
     }
 
+    private static void removedLeavesStopRebuilds() {
+        DistanceLeafCulling culling = new DistanceLeafCulling();
+        List<String> rebuilds = new ArrayList<>();
+        update(culling, true, 0.5, 0.5, 0.5, 0, rebuilds);
+        build(culling, 80, 0, 0, true);
+        update(culling, true, 0.5, 0.5, 0.5, TICK, rebuilds);
+        culling.beginBuild(5, 0, 0);
+        culling.endBuild(true);
+        for (int i = 1; i <= 4; i++) {
+            update(culling, true, 32.5, 0.5, 0.5, i * 6_000_000_000L, rebuilds);
+        }
+        check(rebuilds.isEmpty(), "the last leaf's removal stops recurring distance rebuilds");
+        build(culling, 80, 0, 0, true);
+        update(culling, true, 0.5, 0.5, 0.5, 25_000_000_000L, rebuilds);
+        check(rebuilds.size() == 1, "new leaves in a cleared section are tracked again");
+    }
+
+    private static void cancelledEmptyBuildKeepsTracking() {
+        DistanceLeafCulling culling = new DistanceLeafCulling();
+        List<String> rebuilds = new ArrayList<>();
+        update(culling, true, 0.5, 0.5, 0.5, 0, rebuilds);
+        build(culling, 80, 0, 0, true);
+        update(culling, true, 0.5, 0.5, 0.5, TICK, rebuilds);
+        culling.beginBuild(5, 0, 0);
+        culling.endBuild(false);
+        update(culling, true, 32.5, 0.5, 0.5, 2 * TICK, rebuilds);
+        check(rebuilds.size() == 1, "a cancelled empty build does not erase the previous mesh");
+    }
+
+    private static void emptyResultRejectsOlderLeafBuilds() throws Exception {
+        DistanceLeafCulling culling = new DistanceLeafCulling();
+        List<String> rebuilds = new ArrayList<>();
+        update(culling, true, 0.5, 0.5, 0.5, 0, rebuilds);
+        build(culling, 80, 0, 0, true);
+        update(culling, true, 0.5, 0.5, 0.5, TICK, rebuilds);
+        CountDownLatch started = new CountDownLatch(1), finish = new CountDownLatch(1);
+        Thread oldWorker = new Thread(() -> {
+            culling.beginBuild(5, 0, 0);
+            culling.isDistant(80, 0, 0);
+            started.countDown();
+            try { finish.await(); } catch (InterruptedException ex) { throw new AssertionError(ex); }
+            culling.endBuild(true);
+        });
+        oldWorker.setDaemon(true);
+        oldWorker.start();
+        check(started.await(5, TimeUnit.SECONDS), "old leaf build started");
+        culling.beginBuild(5, 0, 0);
+        culling.endBuild(true);
+        update(culling, true, 0.5, 0.5, 0.5, 2 * TICK, rebuilds);
+        finish.countDown();
+        oldWorker.join(5000);
+        check(!oldWorker.isAlive(), "old leaf build finished");
+        update(culling, true, 32.5, 0.5, 0.5, 3 * TICK, rebuilds);
+        check(rebuilds.isEmpty(), "a late leaf build cannot replace the cleared section's newer result");
+    }
+
     private static void classificationIsConservative() {
         Random random = new Random(271828);
         Object world = new Object();
@@ -250,6 +310,22 @@ public final class DistanceLeafCullingTest {
                 }
             }
         }
+    }
+
+    private static void fullyEmptySectionsDoNotNeedMeshJobs() {
+        DistanceLeafCulling culling = new DistanceLeafCulling();
+        List<String> rebuilds = new ArrayList<>();
+        update(culling, true, 0.5, 0.5, 0.5, 0, rebuilds);
+        build(culling, 80, 0, 0, true);
+        update(culling, true, 0.5, 0.5, 0.5, TICK, rebuilds);
+        culling.beginBuild(5, 0, 0);
+        culling.isDistant(80, 0, 0);
+        culling.forgetSection(5, 0, 0);
+        culling.endBuild(true);
+        for (int i = 1; i <= 4; i++) {
+            update(culling, true, 32.5, 0.5, 0.5, i * 6_000_000_000L, rebuilds);
+        }
+        check(rebuilds.isEmpty(), "sections cleared without a mesh job stay cleared even after old workers finish");
     }
 
     private static void build(DistanceLeafCulling culling, int x, int y, int z, boolean success) {
