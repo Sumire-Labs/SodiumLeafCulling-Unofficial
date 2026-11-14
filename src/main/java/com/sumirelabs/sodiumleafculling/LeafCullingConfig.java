@@ -2,6 +2,7 @@ package com.sumirelabs.sodiumleafculling;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -23,6 +24,10 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 public final class LeafCullingConfig implements PerformanceSettingsAccessor {
     private static final Logger LOGGER = Logger.getLogger("seleafculling");
@@ -32,6 +37,7 @@ public final class LeafCullingConfig implements PerformanceSettingsAccessor {
     private volatile boolean distanceCulling;
     private volatile int distance = DistanceLeafCulling.DEFAULT_DISTANCE;
     private volatile boolean cullAdjacentBlocks;
+    private volatile Set<String> excludedLeafBlocks = Collections.emptySet();
 
     private static final class Holder {
         private static final LeafCullingConfig INSTANCE = new LeafCullingConfig(configDirectory());
@@ -80,6 +86,16 @@ public final class LeafCullingConfig implements PerformanceSettingsAccessor {
                     readValue(values, "leaf_culling_distance", Integer.toString(distance))));
         } catch (NumberFormatException ignored) { }
         cullAdjacentBlocks = Boolean.parseBoolean(readValue(values, "cull_adjacent_blocks", "false"));
+        JsonElement exclusions = values.get("excluded_leaf_blocks");
+        if (exclusions != null && exclusions.isJsonArray()) {
+            Set<String> ids = new LinkedHashSet<>();
+            for (JsonElement element : exclusions.getAsJsonArray()) {
+                if (element.isJsonPrimitive() && element.getAsJsonPrimitive().isString()) {
+                    ids.add(element.getAsString());
+                }
+            }
+            setExcludedLeafBlocks(ids);
+        }
     }
 
     public synchronized void save() {
@@ -88,6 +104,9 @@ public final class LeafCullingConfig implements PerformanceSettingsAccessor {
         values.addProperty("distance_leaf_culling", distanceCulling);
         values.addProperty("leaf_culling_distance", distance);
         values.addProperty("cull_adjacent_blocks", cullAdjacentBlocks);
+        JsonArray exclusions = new JsonArray();
+        for (String id : excludedLeafBlocks) exclusions.add(id);
+        values.add("excluded_leaf_blocks", exclusions);
         Path temporary = null;
         try {
             Files.createDirectories(file.getParent());
@@ -118,4 +137,12 @@ public final class LeafCullingConfig implements PerformanceSettingsAccessor {
     @Override public void sodiumleafculling$setDistance(int value) { distance = DistanceLeafCulling.clampDistance(value); }
     public boolean cullAdjacentBlocks() { return cullAdjacentBlocks; }
     public void setCullAdjacentBlocks(boolean value) { cullAdjacentBlocks = value; }
+    public Set<String> getExcludedLeafBlocks() { return excludedLeafBlocks; }
+    public void setExcludedLeafBlocks(Collection<String> ids) {
+        Set<String> copy = new LinkedHashSet<>();
+        for (String id : ids) {
+            if (id != null && !id.trim().isEmpty()) copy.add(id.trim());
+        }
+        excludedLeafBlocks = copy.isEmpty() ? Collections.emptySet() : Collections.unmodifiableSet(copy);
+    }
 }

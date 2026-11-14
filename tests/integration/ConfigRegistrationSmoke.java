@@ -133,13 +133,20 @@ public final class ConfigRegistrationSmoke implements PreLaunchEntrypoint {
             Object fresh = ctor.newInstance(dir);
             defaults(fresh);
             check(call(fresh, "cullAdjacentBlocks").equals(false), "new optimization defaults off");
+            check(((Set<?>) call(fresh, "getExcludedLeafBlocks")).isEmpty(), "no models are excluded by default");
             check(Files.isRegularFile(independent), "independent JSON created");
             call(fresh, "sodiumleafculling$setDistance", 42);
             call(fresh, "setCullAdjacentBlocks", true);
+            Set<String> excluded = new LinkedHashSet<>(Arrays.asList(" minecraft:oak_leaves ", "", "example:custom_leaves"));
+            call(fresh, "setExcludedLeafBlocks", excluded);
+            excluded.clear();
             call(fresh, "save");
             Object loaded = ctor.newInstance(dir);
             check(call(loaded, "sodiumleafculling$getDistance").equals(42), "own file takes precedence");
             check(call(loaded, "cullAdjacentBlocks").equals(true), "new optimization persists");
+            check(call(loaded, "getExcludedLeafBlocks").equals(
+                    new LinkedHashSet<>(Arrays.asList("minecraft:oak_leaves", "example:custom_leaves"))),
+                    "model exclusions are copied, normalized, and persisted");
             check(Arrays.equals(Files.readAllBytes(source), original), "renderer settings file preserved");
             check(Arrays.equals(Files.readAllBytes(embeddium), original), "Embeddium settings file preserved");
             check(Arrays.equals(Files.readAllBytes(oldConfig), oldValues), "old cfg preserved");
@@ -232,6 +239,43 @@ public final class ConfigRegistrationSmoke implements PreLaunchEntrypoint {
             callStatic(culling, "endOcclusionBuild");
         }
         System.out.println("SLC_OCCLUSION_CACHE: 48 -> 6 neighbor reads for eight enclosure queries");
+        Object settings = callStatic(type("com.sumirelabs.sodiumleafculling.LeafCullingConfig"), "get");
+        Object originalExclusions = call(settings, "getExcludedLeafBlocks");
+        Object birch = call(blocks.getField("BIRCH_LEAVES").get(null), "defaultBlockState");
+        Object east = type("net.minecraft.core.Direction").getField("EAST").get(null);
+        try {
+            call(settings, "setExcludedLeafBlocks", Collections.singleton("minecraft:oak_leaves"));
+            check(!(boolean) callStatic(culling, "isCullableLeaf", leaf), "excluded oak leaves retain vanilla rendering");
+            check((boolean) callStatic(culling, "isCullableLeaf", birch), "nonexcluded leaves still qualify");
+            check(!(boolean) callStatic(culling, "isCullableLeaf", log), "ordinary blocks do not become leaves");
+            callStatic(culling, "beginOcclusionBuild");
+            try {
+                for (String mode : new String[]{"SOLID", "SOLID_AGGRESSIVE"}) {
+                    Object quality = type("com.sumirelabs.sodiumleafculling.LeafCullingQuality").getField(mode).get(null);
+                    check(!(boolean) callStatic(culling, "surroundedByLeaves", view,
+                            makePos.newInstance(9, 6, 8), quality), "excluded neighbors do not enclose leaves in " + mode);
+                }
+                check(!(boolean) callStatic(culling, "shouldCullSide", view, center, east, 2),
+                        "Hollow does not cull against excluded leaves");
+                Object distance = culling.getField("DISTANCE").get(null);
+                Class<?> scheduler = type("com.sumirelabs.sodiumleafculling.DistanceLeafCulling$RebuildScheduler");
+                Object noRebuild = Proxy.newProxyInstance(LOADER, new Class<?>[]{scheduler}, (p, m, a) -> null);
+                call(distance, "update", true, 1, 0.5, 0.5, 0.5, 8, 0L, noRebuild);
+                call(distance, "beginBuild", 0, 0, 0);
+                try {
+                    check(!(boolean) callStatic(culling, "shouldCullDistantSide", view, center,
+                            makePos.newInstance(9, 6, 8), leaf), "distance Fast culling honors exclusions");
+                } finally {
+                    call(distance, "endBuild", true);
+                    call(distance, "reset");
+                }
+            } finally {
+                callStatic(culling, "endOcclusionBuild");
+            }
+        } finally {
+            call(settings, "setExcludedLeafBlocks", originalExclusions);
+        }
+        System.out.println("SLC_LEAF_EXCLUSIONS: normal, Hollow, Solid, Aggressive, and distance paths verified");
     }
 
     private static Method injected(Class<?> target) {

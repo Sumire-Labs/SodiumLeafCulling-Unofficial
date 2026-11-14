@@ -2,7 +2,6 @@ package com.sumirelabs.sodiumleafculling.mixins;
 
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -77,7 +76,7 @@ public abstract class BlockRendererMixin {
         @Local BlockState state,
         @Local(ordinal = 0) BlockPos.MutableBlockPos pos
     ) {
-        if (!(state.getBlock() instanceof LeavesBlock))
+        if (!LeafCulling.isCullableLeaf(state))
             return buffers.get(layer);
 
         LeafCullingQuality quality = LeafCulling.getQuality();
@@ -96,7 +95,7 @@ public abstract class BlockRendererMixin {
     )
     private ChunkSectionLayer sodiumleafculling$useSolidLayer(BlockState state) {
         ChunkSectionLayer original = ItemBlockRenderTypes.getChunkRenderType(state);
-        if (!(state.getBlock() instanceof LeavesBlock))
+        if (!LeafCulling.isCullableLeaf(state))
             return original;
 
         AbstractBlockRenderContextAccessor ctx = (AbstractBlockRenderContextAccessor) this;
@@ -112,7 +111,7 @@ public abstract class BlockRendererMixin {
     @Redirect(method = "renderModel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/block/ModelBlockRenderer;forceOpaque(ZLnet/minecraft/world/level/block/state/BlockState;)Z"))
     private boolean inject$forceOpaque(boolean cutoutLeaves, BlockState state) {
         boolean original = net.minecraft.client.renderer.block.ModelBlockRenderer.forceOpaque(cutoutLeaves, state);
-        if (!original && state.getBlock() instanceof LeavesBlock) {
+        if (!original && LeafCulling.isCullableLeaf(state)) {
             AbstractBlockRenderContextAccessor ctx = (AbstractBlockRenderContextAccessor) this;
             LeafCullingQuality quality = LeafCulling.getQuality();
             if (LeafCulling.isDistant(ctx.getPos()) || (quality.isSolid() && LeafCulling.surroundedByLeaves(ctx.getSlice(), ctx.getPos(), quality))) {
@@ -125,7 +124,7 @@ public abstract class BlockRendererMixin {
     /*@ModifyVariable(method = "processQuad", at = @At("STORE"))
     private ChunkSectionLayer sodiumleafculling$useSolidLayer(ChunkSectionLayer layer, MutableQuadViewImpl quad) {
         AbstractBlockRenderContextAccessor ctx = (AbstractBlockRenderContextAccessor) this;
-        if (!(ctx.getState().getBlock() instanceof LeavesBlock))
+        if (!LeafCulling.isCullableLeaf(ctx.getState()))
             return layer;
 
         LeafCullingQuality quality = LeafCulling.getQuality();
@@ -138,7 +137,7 @@ public abstract class BlockRendererMixin {
     /*@ModifyVariable(method = "processQuad", at = @At("STORE"))
     private BlendMode inject$processQuad(BlendMode blendMode, MutableQuadViewImpl quad) {
         AbstractBlockRenderContextAccessor ctx = (AbstractBlockRenderContextAccessor) this;
-        if (!(ctx.getState().getBlock() instanceof LeavesBlock))
+        if (!LeafCulling.isCullableLeaf(ctx.getState()))
             return blendMode;
 
         LeafCullingQuality quality = LeafCulling.getQuality();
@@ -162,7 +161,7 @@ public abstract class BlockRendererMixin {
         @Local(argsOnly = true) BlockRenderContext ctx
     ) {
         Material original = DefaultMaterials.forBlockState(state);
-        if (!(state.getBlock() instanceof LeavesBlock))
+        if (!LeafCulling.isCullableLeaf(state))
             return original;
 
         LeafCullingQuality quality = LeafCulling.getQuality();
@@ -184,7 +183,7 @@ public abstract class BlockRendererMixin {
         @Local(argsOnly = true) BlockRenderContext ctx
     ) {
         Material original = DefaultMaterials.forRenderLayer(renderLayer);
-        if (!(ctx.state().getBlock() instanceof LeavesBlock))
+        if (!LeafCulling.isCullableLeaf(ctx.state()))
             return original;
 
         LeafCullingQuality quality = LeafCulling.getQuality();
@@ -206,7 +205,7 @@ public abstract class BlockRendererMixin {
         @Local(argsOnly = true) BlockRenderContext ctx
     ) {
         Material original = DefaultMaterials.forRenderLayer(renderLayer);
-        if (!(ctx.state().getBlock() instanceof LeavesBlock))
+        if (!LeafCulling.isCullableLeaf(ctx.state()))
             return original;
 
         LeafCullingQuality quality = LeafCulling.getQuality();

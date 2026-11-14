@@ -1,5 +1,8 @@
 # [Unreleased]
 
+- Add `excluded_leaf_blocks` to the independent JSON config so resource packs
+  and mods can opt problematic leaf models out of all LeafCulling modes.
+
 - Make the NeoForge renderer Mixin check compatible with Gradle's
   configuration cache.
 

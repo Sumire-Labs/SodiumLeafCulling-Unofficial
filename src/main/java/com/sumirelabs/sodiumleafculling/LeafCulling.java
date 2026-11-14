@@ -13,6 +13,11 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.AirBlock;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
+//? if >=1.19.3 {
+import net.minecraft.core.registries.BuiltInRegistries;
+//?} else {
+/*import net.minecraft.core.Registry;
+*///?}
 
 public final class LeafCulling {
     private static final Direction[] VALUES = Direction.values();
@@ -43,6 +48,15 @@ public final class LeafCulling {
 
     public static LeafCullingConfig settings() {
         return LeafCullingConfig.get();
+    }
+
+    /** Opted-out models must neither be changed nor serve as opaque leaf occluders. */
+    public static boolean isCullableLeaf(BlockState state) {
+        if (!(state.getBlock() instanceof LeavesBlock)) return false;
+        java.util.Set<String> excluded = settings().getExcludedLeafBlocks();
+        if (excluded.isEmpty()) return true;
+        Object id = /*? if >=1.19.3 {*/BuiltInRegistries/*?} else {*//*Registry*//*?}*/.BLOCK.getKey(state.getBlock());
+        return id == null || !excluded.contains(id.toString());
     }
 
     public static boolean shouldCullAdjacentBlockFace(BlockGetter view, BlockPos pos, BlockState state,
@@ -79,7 +93,7 @@ public final class LeafCulling {
     }
 
     public static boolean shouldCullDistantSide(BlockGetter view, BlockPos pos, BlockPos otherPos, BlockState otherState) {
-        if (!(otherState.getBlock() instanceof LeavesBlock)) return false;
+        if (!isCullableLeaf(otherState)) return false;
         if (DISTANCE.canCullAdjacent(pos.getX(), pos.getY(), pos.getZ(), otherPos.getX(), otherPos.getY(), otherPos.getZ()))
             return true;
         // A neighbor made opaque by the ordinary mode is safe regardless of its distance mesh.
@@ -107,8 +121,10 @@ public final class LeafCulling {
 
             dirPos.set(pos).move(dir);
             BlockState blockstate = view.getBlockState(dirPos);
-            if (blockstate.getBlock() instanceof LeavesBlock)
+            if (blockstate.getBlock() instanceof LeavesBlock) {
+                if (!isCullableLeaf(blockstate)) return false;
                 continue;
+            }
 
             if (blockstate.isSolidRender(/*? if <1.21.2 {*//*view, dirPos*//*?}*/))
                 continue;
@@ -127,7 +143,7 @@ public final class LeafCulling {
         for (int i = 1; i <= depth; i++) {
             checkPos.move(facing);
             BlockState state = view.getBlockState(checkPos);
-            if (state == null || !(state.getBlock() instanceof LeavesBlock))
+            if (state == null || !isCullableLeaf(state))
                 return false;
         }
 

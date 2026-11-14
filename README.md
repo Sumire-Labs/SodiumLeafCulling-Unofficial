@@ -12,6 +12,10 @@ An unofficial fork of [Sodium Leaf Culling](https://github.com/txnimc/SodiumLeaf
 - **Distance-based culling:** Keeps the selected mode for nearby leaves and renders all distant leaves as solid.
 - **Integrated settings:** Open the **Leaf Culling** page in Sodium or Embeddium.
   Settings are stored separately in `config/seleafculling.json`.
+  For resource packs with bushy or custom leaf models, add affected block IDs
+  to `"excluded_leaf_blocks": ["minecraft:oak_leaves", "example:custom_leaves"]`.
+  Edit the file with the game closed. Excluded leaves retain normal rendering,
+  including beyond the distance threshold, and do not hide neighboring faces.
 - **Cull block faces behind leaves:** An optional Solid mode optimization removes
   faces of opaque blocks covered by leaves already classified as enclosed in
   the same terrain section. It is off by default.

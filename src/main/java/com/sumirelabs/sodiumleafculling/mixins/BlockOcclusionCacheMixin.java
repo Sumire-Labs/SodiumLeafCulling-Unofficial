@@ -49,7 +49,7 @@ public class BlockOcclusionCacheMixin {
             }
             return;
         }
-        if (state != null && state.getBlock() instanceof LeavesBlock) {
+        if (state != null && LeafCulling.isCullableLeaf(state)) {
             if (LeafCulling.isDistant(pos)) {
                 BlockPos otherPos = pos.relative(facing);
                 if (LeafCulling.shouldCullDistantSide(level, pos, otherPos, level.getBlockState(otherPos))) {
@@ -69,7 +69,7 @@ public class BlockOcclusionCacheMixin {
             if (quality.isSolid()) {
                 BlockPos otherPos = pos.relative(facing);
                 BlockState otherState = level.getBlockState(otherPos);
-                if (otherState.getBlock() instanceof LeavesBlock) {
+                if (LeafCulling.isCullableLeaf(otherState)) {
                     if (LeafCulling.surroundedByLeaves(level, otherPos, quality)) {
                         cir.setReturnValue(false);
                         return;
@@ -85,14 +85,14 @@ public class BlockOcclusionCacheMixin {
 
     @Inject(method = "shouldDrawSide", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;skipRendering(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/Direction;)Z"), locals = LocalCapture.CAPTURE_FAILHARD, cancellable = true)
     private void inject$shouldDrawSide(BlockState selfState, BlockGetter view, BlockPos selfPos, Direction facing, CallbackInfoReturnable<Boolean> cir, BlockPos.MutableBlockPos otherPos, BlockState otherState) {
-         if (!(selfState.getBlock() instanceof LeavesBlock) && otherState.getBlock() instanceof LeavesBlock &&
+         if (!(selfState.getBlock() instanceof LeavesBlock) && LeafCulling.isCullableLeaf(otherState) &&
                  LeafCulling.canCullAdjacentBlocks() &&
                  LeafCulling.shouldCullAdjacentBlockFace(view, selfPos, selfState,
                          otherPos.getX(), otherPos.getY(), otherPos.getZ())) {
              cir.setReturnValue(false);
              return;
          }
-         if (selfState.getBlock() instanceof LeavesBlock) {
+         if (LeafCulling.isCullableLeaf(selfState)) {
              if (LeafCulling.isDistant(selfPos)) {
                  if (LeafCulling.shouldCullDistantSide(view, selfPos, otherPos, otherState)) {
                      cir.setReturnValue(false);
@@ -108,7 +108,7 @@ public class BlockOcclusionCacheMixin {
                  }
              }
 
-             if (otherState.getBlock() instanceof LeavesBlock && quality.isSolid()) {
+             if (LeafCulling.isCullableLeaf(otherState) && quality.isSolid()) {
                  if (LeafCulling.surroundedByLeaves(view, otherPos, quality)) {
                      cir.setReturnValue(false);
                      return;
