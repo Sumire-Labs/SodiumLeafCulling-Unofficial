@@ -1,58 +1,95 @@
-# [Unreleased]
+# Changelog
 
-- Add `excluded_leaf_blocks` to the independent JSON config so resource packs
-  and mods can opt problematic leaf models out of all LeafCulling modes.
+Release history follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
+Version numbers follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+Dates use UTC.
 
-- Make the NeoForge renderer Mixin check compatible with Gradle's
-  configuration cache.
+## [Unreleased]
+
+## [4.3.0] - 2026-11-14
+
+### Added
+
+- Add `excluded_leaf_blocks` to `config/seleafculling.json` to exclude specific
+  leaf blocks from all LeafCulling modes. This provides a workaround for models
+  from resource packs or mods that do not render correctly with culling.
+
+### Fixed
 
 - Stop repeated distance-culling rebuilds after a terrain section loses its
   last leaf, while preserving cancellation and stale-result handling.
-
-- Match the Minecraft 1.21.1 Sodium development runtime to the NeoForge version
-  required by its Forgified Fabric API dependencies.
 - Report a clear client loading error when neither supported renderer is
   installed, or when both are installed, on NeoForge 1.21.1.
-- Check that both renderer Mixin sets are present in the packaged NeoForge
-  1.21.1 JAR.
+- Match the Minecraft 1.21.1 Sodium development runtime to the NeoForge version
+  required by its Forgified Fabric API dependencies.
+- Make the NeoForge renderer Mixin check compatible with Gradle's
+  configuration cache and verify that both renderer Mixin sets are present
+  in the packaged Minecraft 1.21.1 NeoForge JAR.
+- Preserve release notes when reading dated Keep a Changelog headings in CI.
 
-# [4.2.0]
+## [4.2.0] - 2026-11-07
 
-- Register Sodium's block render context accessor in the Minecraft 1.21.1
-  NeoForge compatibility configuration, fixing crashes when loading a world
-  with Sodium 0.8.13.
-- Use the mod's registered version in Sodium's dedicated settings category.
-- Reuse Solid leaf enclosure checks within each terrain mesh build.
+### Added
+
 - Store settings in `config/seleafculling.json` and add a dedicated Leaf Culling
   page to Sodium and Embeddium.
 - Add an optional Solid mode optimization that skips solid block faces hidden
   by leaves already classified as enclosed, without scanning their neighbors
   again. It is disabled by default.
 
-# [4.1.0]
+### Changed
 
-- Assign IDs to the LeafCulling option group and settings in Embeddium so its
-  video settings screen opens without crashing.
+- Use the mod's registered version in Sodium's dedicated settings category.
+- Reuse Solid leaf enclosure checks within each terrain mesh build.
+
+### Fixed
+
+- Register Sodium's block render context accessor in the Minecraft 1.21.1
+  NeoForge compatibility configuration, fixing crashes when loading a world
+  with Sodium 0.8.13.
+
+## [4.1.0] - 2026-11-06
+
+### Added
+
 - Support Sodium 0.8.13 and Embeddium 1.0.15 with the same Minecraft 1.21.1
   NeoForge JAR. LeafCulling selects the installed renderer at startup.
 - Add Simplified Chinese translations based on Lumiko32's upstream contribution.
+
+### Changed
+
 - Update Stonecutter from 0.10-alpha.12 to 0.10-beta.1 in both the settings
   plugin and the buildSrc dependency.
+
+### Fixed
+
+- Assign IDs to the LeafCulling option group and settings in Embeddium so its
+  video settings screen opens without crashing.
 - Use MixinSquared's documented Maven mirror for Fabric builds to avoid
   dependency download failures on CI.
 
-# [4.0.2]
+## [4.0.2] - 2026-10-21
+
+### Changed
 
 - Restore the MIT License, including the original copyright notices for toni
   and s12kuma01, in the repository and distributed JARs. Update the README and
   mod metadata to identify MIT as the license for this release.
+
+### Fixed
+
 - Include the mod's license in the shaded Forge 1.16.5 distribution as well as
   the regular JAR.
 
-# [4.0.1]
+## [4.0.1] - 2026-10-21
+
+### Changed
 
 - Restore the original green/cyan leaf icon, resized to 128x128 pixels and
   optimized as a PNG.
+
+### Fixed
+
 - Keep leaf faces at distance-mode boundaries and between independently rebuilt
   terrain sections to prevent visible gaps during near/far transitions.
 - Rebuild terrain only when recorded leaf blocks actually change distance mode.
@@ -61,15 +98,17 @@
 - Prioritize nearby leaves returning from Fast mode after rapid movement, and
   prevent deferred offscreen rebuilds from blocking updates to other sections.
 
-# [4.0.0]
+## [4.0.0] - 2026-10-21
 
-- Avoid duplicate shared/generated sources and resources when running config
-  smoke tests for Stonecutter's active target, including Fabric 26.2. Pass the
-  smoke-test classpath through a JVM argument file for long Windows paths.
-- Implement Embeddium's additional option-name accessor on Forge 1.16.5 to
-  fix compilation of the dependent distance slider.
-- Retry transient dependency-download failures in CI, including upstream HTTP
-  502 errors, while preserving immediate failures for compilation errors.
+### Added
+
+- Add optional distance-based leaf culling to Sodium and Embeddium settings.
+  Disabled by default, it keeps the selected culling mode within a configurable
+  distance (64 blocks by default) and renders farther leaves as opaque Fast
+  leaves. Camera movement queues affected terrain sections for rebuilding.
+
+### Changed
+
 - Change the project license from MIT to Blue Oak Model License 1.0.0.
 - Rename the mod to Sodium/Embeddium LeafCulling and unify its Fabric, Forge,
   and NeoForge mod IDs as `seleafculling`. Replace the old mod JAR when updating.
@@ -79,10 +118,16 @@
   Existing saved mode selections are preserved.
 - Rewrite the README with updated features, requirements, credits, and
   the reason for maintaining this fork.
-- Add optional distance-based leaf culling to Sodium and Embeddium settings.
-  Disabled by default, it keeps the selected culling mode within a configurable
-  distance (64 blocks by default) and renders farther leaves as opaque Fast
-  leaves. Camera movement queues affected terrain sections for rebuilding.
+
+### Fixed
+
+- Avoid duplicate shared/generated sources and resources when running config
+  smoke tests for Stonecutter's active target, including Fabric 26.2. Pass the
+  smoke-test classpath through a JVM argument file for long Windows paths.
+- Implement Embeddium's additional option-name accessor on Forge 1.16.5 to
+  fix compilation of the dependent distance slider.
+- Retry transient dependency-download failures in CI, including upstream HTTP
+  502 errors, while preserving immediate failures for compilation errors.
 - Disable the distance slider while distance-based culling is off, following
   unapplied toggle changes in both modern and legacy settings screens.
 - Set the modern distance slider's required value formatter to prevent
@@ -92,10 +137,15 @@
   accommodating its additional method argument while retaining compatibility
   with earlier Sodium versions.
 
-# [3.3.0]
+## [3.3.0] - 2026-10-07
+
+### Added
 
 - Add Fabric support for Minecraft 26.2-rc-1/rc-2 and 26.3-rc-1/rc-2,
   including RC-aware target parsing, CI downloads and publishing filenames.
+
+### Changed
+
 - Move Java packages and the Maven group to `com.sumirelabs`, including Mixin
   entrypoints and the relocated MixinExtras copy for legacy Forge.
 - Short-circuit leaf-depth checks, reuse neighbor positions and the selected
@@ -104,10 +154,14 @@
   omit the Forge/NeoForge mod entry class from Fabric JARs.
 - Losslessly compress the mod logo while preserving its dimensions and pixels.
 
-# [3.2.0]
+## [3.2.0] - 2026-10-05
 
-- Include library locations in NeoGradle's cache keys to prevent restored
-  library lists from referencing removed nested builds or previous checkouts.
+### Added
+
+- Add Minecraft 26.3 support for Fabric and NeoForge, using Sodium 0.9.2.
+
+### Changed
+
 - Migrate to Stonecutter 0.10-alpha.12, including its structured-property API,
   lazy task aggregation and Gradle Property-based version configuration.
 - Disable automatic Gradle project-property exposure and use Stonecutter's
@@ -116,39 +170,68 @@
 - Consolidate all targets into the root Gradle build using shared Fabric Loom,
   TauMC ModDevGradle, NeoGradle and NeoLoom backends; remove nested wrappers
   and the duplicated Forge 1.16.5 source tree.
-- Shade and initialize MixinExtras for Forge 1.16.5 and correct Forge 1.20.2
-  development mappings without changing production remapping.
-- Configure only the requested CI target and prefetch SHA-1-verified Mojang
-  jars to avoid Loom's concurrent download progress failure on 1.18.2.
 - Pin loader-specific Embeddium file IDs and share NeoForge resource handling.
-- Add Minecraft 26.3 support for Fabric and NeoForge, using Sodium 0.9.2.
 - Update Stonecutter, Loom Back Compat, Loom, ModDevGradle, Gradle wrappers,
   Fabric Loader, MixinSquared, MixinExtras, and available stable dependencies
   for existing Minecraft targets.
 - Run the root build on Java 25 and legacy Gradle 8 bridges on Java 21.
+- Document the purpose and maintenance tradeoffs of legacy loader builds.
+
+### Fixed
+
+- Include library locations in NeoGradle's cache keys to prevent restored
+  library lists from referencing removed nested builds or previous checkouts.
+- Shade and initialize MixinExtras for Forge 1.16.5 and correct Forge 1.20.2
+  development mappings without changing production remapping.
+- Configure only the requested CI target and prefetch SHA-1-verified Mojang
+  jars to avoid Loom's concurrent download progress failure on 1.18.2.
 - Collect only the current version's runtime JAR from legacy builds, excluding
   artifacts left over from earlier builds.
 - Expand legacy NeoForge 1.20.2/1.20.3 metadata and Mixin resources before
   launching their nested builds, using a shared resource convention.
-- Document the purpose and maintenance tradeoffs of legacy loader builds.
 
-# [3.1.1]
+## [3.1.1] - 2026-09-06
+
+### Fixed
 
 - Fix Xenon incompatibility metadata to reference the correct Embeddium fork on Modrinth and CurseForge.
 - Correct Xenon's dependency type from optional to incompatible.
 
-# [3.1.0]
+## [3.1.0] - 2026-09-02
 
-- expand version support
-    - Fabric: 1.16.3～1.20、1.20.2、1.20.3、1.20.5、1.20.6、1.21
-    - Forge: 1.16.5、1.18.2、1.19.2、1.20.2
-    - NeoForge: 1.20.2、1.20.3、1.20.5、1.20.6、1.21
-- Fix loader-specific metadata, mixins, renderer integration, and runtime dependencies
-- Support multiple generations of the Sodium and Embeddium APIs
+### Added
 
-# [3.0.0]
+- Expand Minecraft version support:
+  - Fabric: 1.16.3 through 1.20, 1.20.2, 1.20.3, 1.20.5, 1.20.6, and 1.21.
+  - Forge: 1.16.5, 1.18.2, 1.19.2, and 1.20.2.
+  - NeoForge: 1.20.2, 1.20.3, 1.20.5, 1.20.6, and 1.21.
+- Support multiple generations of the Sodium and Embeddium APIs.
 
-- rewrote the project from scratch using Stonecutter 9.x.
-- Optimized the rendering path when using Embeddium. Performance has improved slightly.
-- Xenon has been officially marked as incompatible.
-- Support for more versions/loaders
+### Fixed
+
+- Fix loader-specific metadata, mixins, renderer integration, and runtime dependencies.
+
+## [3.0.0] - 2026-08-26
+
+### Added
+
+- Support more Minecraft versions and loaders.
+
+### Changed
+
+- Rewrite the project using Stonecutter 9.x.
+- Optimize the Embeddium rendering path for a small performance improvement.
+- Mark Xenon as incompatible.
+
+[Unreleased]: https://github.com/Sumire-Labs/SodiumLeafCulling-Unofficial/compare/4.3.0...stonecutter
+[4.3.0]: https://github.com/Sumire-Labs/SodiumLeafCulling-Unofficial/compare/4.2.0...4.3.0
+[4.2.0]: https://github.com/Sumire-Labs/SodiumLeafCulling-Unofficial/compare/4.1.0...4.2.0
+[4.1.0]: https://github.com/Sumire-Labs/SodiumLeafCulling-Unofficial/compare/4.0.2...4.1.0
+[4.0.2]: https://github.com/Sumire-Labs/SodiumLeafCulling-Unofficial/compare/4.0.1...4.0.2
+[4.0.1]: https://github.com/Sumire-Labs/SodiumLeafCulling-Unofficial/compare/4.0.0...4.0.1
+[4.0.0]: https://github.com/Sumire-Labs/SodiumLeafCulling-Unofficial/compare/3.3.0...4.0.0
+[3.3.0]: https://github.com/Sumire-Labs/SodiumLeafCulling-Unofficial/compare/3.2.0...3.3.0
+[3.2.0]: https://github.com/Sumire-Labs/SodiumLeafCulling-Unofficial/compare/3.1.1...3.2.0
+[3.1.1]: https://github.com/Sumire-Labs/SodiumLeafCulling-Unofficial/compare/3.1.0...3.1.1
+[3.1.0]: https://github.com/Sumire-Labs/SodiumLeafCulling-Unofficial/compare/3.0.0...3.1.0
+[3.0.0]: https://github.com/Sumire-Labs/SodiumLeafCulling-Unofficial/releases/tag/3.0.0

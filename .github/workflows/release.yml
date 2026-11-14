@@ -140,9 +140,9 @@ jobs:
               --title "Sodium/Embeddium LeafCulling $MOD_VERSION"
             )
 
-            awk -v heading="# [$MOD_VERSION]" '
-              $0 == heading { found = 1; next }
-              found && /^# / { exit }
+            awk -v version="$MOD_VERSION" '
+              ($1 == "#" || $1 == "##") && $2 == "[" version "]" { found = 1; next }
+              found && /^##? / { exit }
               found { print }
             ' CHANGELOG.md > release-notes.md
             if grep -q '[^[:space:]]' release-notes.md; then

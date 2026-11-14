@@ -61,6 +61,9 @@ jobs:
       - name: Test Gradle download retries
         run: node tests/ci/gradle-retry.test.cjs
 
+      - name: Test release note extraction
+        run: node tests/ci/release-notes.test.cjs
+
       - name: Test distance-based leaf culling
         shell: bash
         run: |
