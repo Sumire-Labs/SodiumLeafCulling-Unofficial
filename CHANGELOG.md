@@ -1,3 +1,12 @@
+# [Unreleased]
+
+- Match the Minecraft 1.21.1 Sodium development runtime to the NeoForge version
+  required by its Forgified Fabric API dependencies.
+- Report a clear client loading error when neither supported renderer is
+  installed, or when both are installed, on NeoForge 1.21.1.
+- Check that both renderer Mixin sets are present in the packaged NeoForge
+  1.21.1 JAR.
+
 # [4.2.0]
 
 - Register Sodium's block render context accessor in the Minecraft 1.21.1

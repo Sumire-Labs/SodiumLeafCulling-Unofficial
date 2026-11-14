@@ -316,7 +316,7 @@ deps.sodium = "mc1.21.1-0.8.13-fabric"
 [neoforge."1.21.1"]
 mod.mc_compat = "[1.21.1]"
 mod.renderer_compat = "[0.8.13+mc1.21.1,)"
-deps.neo_loader = "21.1.253"
+deps.neo_loader = "21.1.262"
 deps.sodium = "mc1.21.1-0.8.13-neoforge"
 deps.sodium_maven = "0.8.13+mc1.21.1"
 deps.forgified_api_base = "0.4.42+d1308ded19"

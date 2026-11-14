@@ -37,6 +37,15 @@ public final class RendererMixinPlugin implements IMixinConfigPlugin {
         return mixins;
     }
 
+    static void validateRendererChoice(boolean sodium, boolean embeddium) {
+        if (!sodium && !embeddium) {
+            throw new IllegalStateException("Sodium/Embeddium LeafCulling requires Sodium or Embeddium. Install one renderer.");
+        }
+        if (sodium && embeddium) {
+            throw new IllegalStateException("Sodium and Embeddium cannot be used together. Install only one renderer.");
+        }
+    }
+
     @Override public String getRefMapperConfig() { return null; }
     @Override public boolean shouldApplyMixin(String targetClassName, String mixinClassName) { return true; }
     @Override public void acceptTargets(Set<String> myTargets, Set<String> otherTargets) { }

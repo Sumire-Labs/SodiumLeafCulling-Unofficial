@@ -238,7 +238,11 @@ if (dualRendererTarget) {
     }
     val checkRendererMixins = tasks.register<JavaExec>("checkRendererMixins") {
         group = "verification"
-        dependsOn(compileRendererMixinSmoke)
+        dependsOn(compileRendererMixinSmoke, tasks.jar)
+        inputs.file(tasks.jar.flatMap { it.archiveFile })
+        argumentProviders.add(CommandLineArgumentProvider {
+            listOf(tasks.jar.get().archiveFile.get().asFile.absolutePath)
+        })
         classpath = sourceSets.main.get().runtimeClasspath + sourceSets.main.get().compileClasspath +
             files(compileRendererMixinSmoke.flatMap { it.destinationDirectory })
         mainClass.set("com.sumirelabs.sodiumleafculling.RendererMixinSelectionSmoke")
