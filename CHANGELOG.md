@@ -1,5 +1,8 @@
 # [Unreleased]
 
+- Make the NeoForge renderer Mixin check compatible with Gradle's
+  configuration cache.
+
 - Stop repeated distance-culling rebuilds after a terrain section loses its
   last leaf, while preserving cancellation and stale-result handling.
 

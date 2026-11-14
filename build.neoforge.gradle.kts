@@ -228,6 +228,7 @@ if (embeddiumClassesTarget) {
 }
 
 if (dualRendererTarget) {
+    val runtimeJar = tasks.jar.flatMap { it.archiveFile }
     val compileRendererMixinSmoke = tasks.register<JavaCompile>("compileRendererMixinSmoke") {
         dependsOn(tasks.classes)
         source(rootProject.file("tests/neoforge"))
@@ -239,9 +240,9 @@ if (dualRendererTarget) {
     val checkRendererMixins = tasks.register<JavaExec>("checkRendererMixins") {
         group = "verification"
         dependsOn(compileRendererMixinSmoke, tasks.jar)
-        inputs.file(tasks.jar.flatMap { it.archiveFile })
+        inputs.file(runtimeJar)
         argumentProviders.add(CommandLineArgumentProvider {
-            listOf(tasks.jar.get().archiveFile.get().asFile.absolutePath)
+            listOf(runtimeJar.get().asFile.absolutePath)
         })
         classpath = sourceSets.main.get().runtimeClasspath + sourceSets.main.get().compileClasspath +
             files(compileRendererMixinSmoke.flatMap { it.destinationDirectory })
