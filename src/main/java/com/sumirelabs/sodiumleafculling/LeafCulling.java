@@ -89,7 +89,7 @@ public final class LeafCulling {
         int index = /*? if >=1.17 {*/world.getSectionIndexFromSectionY(sectionY)/*?} else {*//*sectionY*//*?}*/;
         if (index < 0 || index >= sections.length) return true;
         LevelChunkSection section = sections[index];
-        return section == null || section./*? if >=1.17 {*/hasOnlyAir()/*?} else {*//*isEmpty()*//*?}*/;
+        return section == null || section./*? if >=1.18 {*/hasOnlyAir()/*?} else {*//*isEmpty()*//*?}*/;
     }
 
     public static boolean shouldCullDistantSide(BlockGetter view, BlockPos pos, BlockPos otherPos, BlockState otherState) {

@@ -6,7 +6,7 @@ Dates use UTC.
 
 ## [Unreleased]
 
-## [4.3.0] - 2026-11-14
+## [4.3.0] - 2026-11-15
 
 ### Added
 
@@ -16,6 +16,8 @@ Dates use UTC.
 
 ### Fixed
 
+- Fix Fabric 1.17 and 1.17.1 builds by using the section emptiness method
+  available before Minecraft 1.18.
 - Stop repeated distance-culling rebuilds after a terrain section loses its
   last leaf, while preserving cancellation and stale-result handling.
 - Report a clear client loading error when neither supported renderer is
