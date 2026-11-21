@@ -37,6 +37,8 @@ public final class LeafCullingConfig implements PerformanceSettingsAccessor {
     private volatile boolean distanceCulling;
     private volatile int distance = DistanceLeafCulling.DEFAULT_DISTANCE;
     private volatile boolean cullAdjacentBlocks;
+    // Read early by LeafCullingMixinCanceller; kept here so save() does not drop it.
+    private volatile boolean cancelMoreCullingLeaves;
     private volatile Set<String> excludedLeafBlocks = Collections.emptySet();
 
     private static final class Holder {
@@ -86,6 +88,7 @@ public final class LeafCullingConfig implements PerformanceSettingsAccessor {
                     readValue(values, "leaf_culling_distance", Integer.toString(distance))));
         } catch (NumberFormatException ignored) { }
         cullAdjacentBlocks = Boolean.parseBoolean(readValue(values, "cull_adjacent_blocks", "false"));
+        cancelMoreCullingLeaves = Boolean.parseBoolean(readValue(values, "cancel_moreculling_leaves", "false"));
         JsonElement exclusions = values.get("excluded_leaf_blocks");
         if (exclusions != null && exclusions.isJsonArray()) {
             Set<String> ids = new LinkedHashSet<>();
@@ -104,6 +107,7 @@ public final class LeafCullingConfig implements PerformanceSettingsAccessor {
         values.addProperty("distance_leaf_culling", distanceCulling);
         values.addProperty("leaf_culling_distance", distance);
         values.addProperty("cull_adjacent_blocks", cullAdjacentBlocks);
+        values.addProperty("cancel_moreculling_leaves", cancelMoreCullingLeaves);
         JsonArray exclusions = new JsonArray();
         for (String id : excludedLeafBlocks) exclusions.add(id);
         values.add("excluded_leaf_blocks", exclusions);
