@@ -107,11 +107,16 @@ java {
 }
 
 val productionJar = if (veryLegacy) {
-    tasks.named<Jar>("jar") { archiveClassifier.set("thin") }
+    val thin = tasks.named<Jar>("jar") { archiveClassifier.set("thin") }
     val shaded = tasks.named<ShadowJar>("shadowJar") {
         configurations = listOf(legacyExtras)
         archiveClassifier.set("")
         relocate("com.llamalad7.mixinextras", "com.sumirelabs.sodiumleafculling.shadow.mixinextras")
+        // MixinGradle attaches the generated refmap to `jar`, not `shadowJar`.
+        // Keep it in the shaded production artifact before reobfuscation too.
+        from(zipTree(thin.flatMap { it.archiveFile })) {
+            include("mixins.sodiumleafculling.refmap.json")
+        }
     }
     extensions.getByType<ObfuscationExtension>().reobfuscate(shaded, sourceSets.main.get()).also { artifact ->
         tasks.named("assemble") { dependsOn(artifact) }

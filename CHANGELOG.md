@@ -6,6 +6,20 @@ Dates use UTC.
 
 ## [Unreleased]
 
+## [4.3.1] - 2026-11-21
+
+### Changed
+
+- Allow MoreCulling's leaf modes alongside LeafCulling by default on Fabric.
+  Set `cancel_moreculling_leaves` to `true` in `config/seleafculling.json` to
+  disable them as before. This setting takes effect after restarting the game.
+
+### Fixed
+
+- Include the generated Mixin refmap in the shaded Forge 1.16.5 JAR, fixing
+  crashes when creating or loading worlds. Check declared Mixin refmaps in
+  every runtime JAR in CI.
+
 ## [4.3.0] - 2026-11-15
 
 ### Added
@@ -225,7 +239,8 @@ Dates use UTC.
 - Optimize the Embeddium rendering path for a small performance improvement.
 - Mark Xenon as incompatible.
 
-[Unreleased]: https://github.com/Sumire-Labs/SodiumLeafCulling-Unofficial/compare/4.3.0...stonecutter
+[Unreleased]: https://github.com/Sumire-Labs/SodiumLeafCulling-Unofficial/compare/4.3.1...stonecutter
+[4.3.1]: https://github.com/Sumire-Labs/SodiumLeafCulling-Unofficial/compare/4.3.0...4.3.1
 [4.3.0]: https://github.com/Sumire-Labs/SodiumLeafCulling-Unofficial/compare/4.2.0...4.3.0
 [4.2.0]: https://github.com/Sumire-Labs/SodiumLeafCulling-Unofficial/compare/4.1.0...4.2.0
 [4.1.0]: https://github.com/Sumire-Labs/SodiumLeafCulling-Unofficial/compare/4.0.2...4.1.0

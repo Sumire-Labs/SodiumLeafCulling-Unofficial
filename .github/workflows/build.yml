@@ -286,6 +286,8 @@ jobs:
             done
           fi
 
+          python3 scripts/verify-mixin-refmap.py "$jar"
+
           mkdir -p dist
           cp "$jar" dist/
           sha256sum "dist/$jar_name"
